@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\BookingController;
 use App\Http\Controllers\Api\EventController;
 use App\Http\Controllers\Api\TicketTypeController;
 use App\Http\Controllers\Api\UserController;
@@ -40,4 +41,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/events/{event}/ticket-types', [TicketTypeController::class, 'store']);
     Route::put('/ticket-types/{ticketType}', [TicketTypeController::class, 'update']);
     Route::delete('/ticket-types/{ticketType}', [TicketTypeController::class, 'destroy']);
+});
+
+// Bookings — customer-scoped, organiser-scoped-to-own-events, or admin.
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/bookings', [BookingController::class, 'index']);
+    Route::post('/bookings', [BookingController::class, 'store']);
+    Route::get('/bookings/{booking}', [BookingController::class, 'show']);
+    Route::put('/bookings/{booking}/cancel', [BookingController::class, 'cancel']);
+    Route::delete('/bookings/{booking}', [BookingController::class, 'destroy']);
 });
