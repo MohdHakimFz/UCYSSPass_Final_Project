@@ -8,15 +8,18 @@ use App\Http\Requests\Booking\StoreBookingRequest;
 use App\Models\Booking;
 use App\Models\TicketType;
 use App\Services\BookingService;
+use App\Services\QrCodeApiService;
 use App\Services\QrTicketService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class BookingController extends Controller
 {
     public function __construct(
         private readonly BookingService $bookings,
         private readonly QrTicketService $qrTickets,
+        private readonly QrCodeApiService $qrCodeApi,
     ) {}
 
     /**
@@ -75,6 +78,23 @@ class BookingController extends Controller
         $booking = $this->bookings->cancel($booking);
 
         return response()->json($booking);
+    }
+
+    /**
+     * Render the booking's signed ticket as a QR code image, fetched
+     * live from the third-party QR Code Generator API (spec §7).
+     */
+    public function qrCode(Booking $booking): Response
+    {
+        $this->authorize('view', $booking);
+
+        if (! $booking->qr_token) {
+            abort(404, 'This booking has no confirmed ticket to render a QR code for.');
+        }
+
+        $apiResponse = $this->qrCodeApi->fetch($booking);
+
+        return response($apiResponse->body())->header('Content-Type', $apiResponse->header('Content-Type'));
     }
 
     /**

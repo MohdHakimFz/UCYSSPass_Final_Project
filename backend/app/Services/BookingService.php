@@ -31,7 +31,9 @@ class BookingService
      */
     public function book(User $customer, TicketType $ticketType): Booking
     {
-        return DB::transaction(function () use ($customer, $ticketType) {
+        $notificationsToDispatch = [];
+
+        $booking = DB::transaction(function () use ($customer, $ticketType, &$notificationsToDispatch) {
             $hasActiveBooking = Booking::where('customer_id', $customer->id)
                 ->where('ticket_type_id', $ticketType->id)
                 ->whereIn('status', self::ACTIVE_STATUSES)
@@ -61,11 +63,19 @@ class BookingService
 
             if ($status === 'confirmed') {
                 $booking->update(['qr_token' => $this->qrTickets->generate($booking)]);
-                $this->notifications->notify($booking, 'confirmation');
+                $notificationsToDispatch[] = $this->notifications->record($booking, 'confirmation');
             }
 
             return $booking;
         });
+
+        // Dispatched after commit: an external HTTP call has no business
+        // holding the ticket_types row lock open for its duration.
+        foreach ($notificationsToDispatch as $notification) {
+            $this->notifications->dispatch($notification);
+        }
+
+        return $booking;
     }
 
     /**
@@ -81,12 +91,14 @@ class BookingService
      */
     public function cancel(Booking $booking): Booking
     {
-        return DB::transaction(function () use ($booking) {
+        $notificationsToDispatch = [];
+
+        $cancelled = DB::transaction(function () use ($booking, &$notificationsToDispatch) {
             $originalStatus = $booking->status;
             $wasHoldingASeat = in_array($originalStatus, ['confirmed', 'attended']);
 
             $booking->update(['status' => 'cancelled']);
-            $this->notifications->notify($booking, 'cancelled');
+            $notificationsToDispatch[] = $this->notifications->record($booking, 'cancelled');
 
             if ($wasHoldingASeat) {
                 $ticketType = TicketType::where('id', $booking->ticket_type_id)->lockForUpdate()->first();
@@ -102,7 +114,7 @@ class BookingService
                 if ($promoted) {
                     $promoted->update(['status' => 'confirmed']);
                     $promoted->update(['qr_token' => $this->qrTickets->generate($promoted)]);
-                    $this->notifications->notify($promoted, 'waitlist_promoted');
+                    $notificationsToDispatch[] = $this->notifications->record($promoted, 'waitlist_promoted');
                 } else {
                     $ticketType->increment('seats_remaining');
                 }
@@ -110,5 +122,11 @@ class BookingService
 
             return $booking->fresh();
         });
+
+        foreach ($notificationsToDispatch as $notification) {
+            $this->notifications->dispatch($notification);
+        }
+
+        return $cancelled;
     }
 }

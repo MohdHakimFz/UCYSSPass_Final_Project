@@ -7,18 +7,31 @@ use App\Models\Notification;
 
 class NotificationService
 {
+    public function __construct(private readonly EmailService $email) {}
+
     /**
-     * Record that a booking-lifecycle notification is owed to the
-     * customer. Dispatching it through the real email API (spec §7)
-     * happens separately — this just creates the row with sent_at/
-     * provider_response left null until that dispatch fills them in.
+     * Record that a notification is owed, without dispatching it yet.
+     *
+     * Callers running inside a DB transaction (e.g. BookingService's
+     * lockForUpdate() blocks) should use this and call dispatch()
+     * afterwards, once the transaction has committed — an external
+     * HTTP call has no business holding a row lock open.
      */
-    public function notify(Booking $booking, string $type): Notification
+    public function record(Booking $booking, string $type): Notification
     {
         return Notification::create([
             'booking_id' => $booking->id,
             'type' => $type,
             'channel' => 'email',
         ]);
+    }
+
+    /**
+     * Actually send a previously recorded notification through the
+     * email API (spec §7).
+     */
+    public function dispatch(Notification $notification): Notification
+    {
+        return $this->email->send($notification);
     }
 }
