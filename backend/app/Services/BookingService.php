@@ -16,7 +16,10 @@ class BookingService
      */
     private const ACTIVE_STATUSES = ['pending', 'confirmed', 'waitlisted'];
 
-    public function __construct(private readonly QrTicketService $qrTickets) {}
+    public function __construct(
+        private readonly QrTicketService $qrTickets,
+        private readonly NotificationService $notifications,
+    ) {}
 
     /**
      * Book a seat on a ticket type, or waitlist the customer if sold out.
@@ -58,6 +61,7 @@ class BookingService
 
             if ($status === 'confirmed') {
                 $booking->update(['qr_token' => $this->qrTickets->generate($booking)]);
+                $this->notifications->notify($booking, 'confirmation');
             }
 
             return $booking;
@@ -65,21 +69,46 @@ class BookingService
     }
 
     /**
-     * Cancel a booking, releasing its seat back to the pool if it was
-     * holding one (confirmed or attended).
+     * Cancel a booking (spec §5.4 state machine).
+     *
+     * If the cancelled booking was holding a seat (confirmed), that
+     * seat is immediately handed to the oldest waitlisted booking on
+     * the same ticket type instead of being released back to the pool
+     * — promoting them to confirmed and notifying them. If nobody is
+     * waiting, the seat is released back to seats_remaining. An
+     * already-attended booking just releases its seat with no
+     * promotion, since the holder already used the ticket.
      */
     public function cancel(Booking $booking): Booking
     {
         return DB::transaction(function () use ($booking) {
-            $wasHoldingASeat = in_array($booking->status, ['confirmed', 'attended']);
+            $originalStatus = $booking->status;
+            $wasHoldingASeat = in_array($originalStatus, ['confirmed', 'attended']);
 
             $booking->update(['status' => 'cancelled']);
+            $this->notifications->notify($booking, 'cancelled');
 
             if ($wasHoldingASeat) {
-                TicketType::where('id', $booking->ticket_type_id)->lockForUpdate()->increment('seats_remaining');
+                $ticketType = TicketType::where('id', $booking->ticket_type_id)->lockForUpdate()->first();
+
+                $promoted = $originalStatus === 'confirmed'
+                    ? Booking::where('ticket_type_id', $ticketType->id)
+                        ->where('status', 'waitlisted')
+                        ->orderBy('booked_at')
+                        ->lockForUpdate()
+                        ->first()
+                    : null;
+
+                if ($promoted) {
+                    $promoted->update(['status' => 'confirmed']);
+                    $promoted->update(['qr_token' => $this->qrTickets->generate($promoted)]);
+                    $this->notifications->notify($promoted, 'waitlist_promoted');
+                } else {
+                    $ticketType->increment('seats_remaining');
+                }
             }
 
-            return $booking;
+            return $booking->fresh();
         });
     }
 }
