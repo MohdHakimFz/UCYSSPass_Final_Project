@@ -1,0 +1,18 @@
+# OS / editor noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log
+
+# Node (frontend-admin, frontend-staff, frontend-customer-web, frontend-customer-mobile)
+node_modules/
+dist/
+.next/
+.expo/
+.turbo/
+
+# Env files at any level
+.env
+.env.local
+.env.*.local
