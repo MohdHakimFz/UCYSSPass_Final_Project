@@ -16,6 +16,8 @@ class BookingService
      */
     private const ACTIVE_STATUSES = ['pending', 'confirmed', 'waitlisted'];
 
+    public function __construct(private readonly QrTicketService $qrTickets) {}
+
     /**
      * Book a seat on a ticket type, or waitlist the customer if sold out.
      *
@@ -47,12 +49,18 @@ class BookingService
                 $status = 'confirmed';
             }
 
-            return Booking::create([
+            $booking = Booking::create([
                 'customer_id' => $customer->id,
                 'ticket_type_id' => $lockedTicketType->id,
                 'status' => $status,
                 'booked_at' => now(),
             ]);
+
+            if ($status === 'confirmed') {
+                $booking->update(['qr_token' => $this->qrTickets->generate($booking)]);
+            }
+
+            return $booking;
         });
     }
 

@@ -3,16 +3,21 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Booking\CheckinBookingRequest;
 use App\Http\Requests\Booking\StoreBookingRequest;
 use App\Models\Booking;
 use App\Models\TicketType;
 use App\Services\BookingService;
+use App\Services\QrTicketService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class BookingController extends Controller
 {
-    public function __construct(private readonly BookingService $bookings) {}
+    public function __construct(
+        private readonly BookingService $bookings,
+        private readonly QrTicketService $qrTickets,
+    ) {}
 
     /**
      * List bookings, scoped by role: customers see only their own,
@@ -68,6 +73,33 @@ class BookingController extends Controller
         $this->authorize('cancel', $booking);
 
         $booking = $this->bookings->cancel($booking);
+
+        return response()->json($booking);
+    }
+
+    /**
+     * Check a booking in at the venue. Verifies the HMAC signature
+     * scanned off the QR code before marking the booking attended
+     * (spec §5.2) — rejects tampered/forged tickets with 422.
+     */
+    public function checkin(CheckinBookingRequest $request, Booking $booking): JsonResponse
+    {
+        if ($booking->status !== 'confirmed') {
+            return response()->json([
+                'message' => 'Only confirmed bookings can be checked in.',
+            ], 409);
+        }
+
+        if (! $this->qrTickets->verify($booking, $request->validated('qr_token'))) {
+            return response()->json([
+                'message' => 'Invalid or tampered ticket.',
+            ], 422);
+        }
+
+        $booking->update([
+            'status' => 'attended',
+            'checked_in_at' => now(),
+        ]);
 
         return response()->json($booking);
     }
