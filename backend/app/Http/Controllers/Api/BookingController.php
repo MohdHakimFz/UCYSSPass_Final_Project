@@ -33,6 +33,7 @@ class BookingController extends Controller
         $user = $request->user();
 
         $bookings = Booking::query()
+            ->with(['customer:id,name,email', 'ticketType:id,event_id,name', 'ticketType.event:id,title'])
             ->when($user->role === 'customer', fn ($query) => $query->where('customer_id', $user->id))
             ->when($user->role === 'organiser', fn ($query) => $query->whereHas(
                 'ticketType.event',

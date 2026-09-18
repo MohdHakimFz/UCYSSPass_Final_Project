@@ -47,6 +47,7 @@ class DatabaseSeeder extends Seeder
                     ->count(3)
                     ->create([
                         'category' => $category,
+                        'status' => fn () => fake()->randomElement(['published', 'published', 'published', 'draft', 'completed', 'cancelled']),
                         'venue_id' => fn () => $venues->random()->id,
                         'organiser_id' => fn () => $organisers->random()->id,
                     ])

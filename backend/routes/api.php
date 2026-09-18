@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AdminStatsController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BookingController;
 use App\Http\Controllers\Api\EventController;
@@ -54,6 +55,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Anti-scalping: throttle booking creation to 5 attempts/minute per user (spec §5.3).
     Route::post('/bookings', [BookingController::class, 'store'])->middleware('throttle:5,1');
 });
+
+// Admin dashboard analytics.
+Route::get('/admin/stats', AdminStatsController::class)->middleware('auth:sanctum');
 
 // Check-in — scanning device (X-Api-Key) or a logged-in organiser/admin (Sanctum), spec §6.
 Route::post('/bookings/{booking}/checkin', [BookingController::class, 'checkin'])->middleware('checkin.auth');
