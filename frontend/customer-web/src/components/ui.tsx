@@ -1,3 +1,4 @@
+import { CheckCircle, Warning, WarningCircle } from '@phosphor-icons/react'
 import type { BookingStatus, EventStatus } from '../lib/api'
 
 const TONES: Record<string, { tone: string; label: string }> = {
@@ -20,35 +21,11 @@ export function Tag({ status }: { status: BookingStatus | EventStatus }) {
   )
 }
 
-function NoticeIcon({ tone }: { tone: 'ok' | 'error' | 'warn' }) {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      {tone === 'ok' && (
-        <>
-          <circle cx="12" cy="12" r="9" />
-          <path d="M8 12.5l3 3 5-6" />
-        </>
-      )}
-      {tone === 'error' && (
-        <>
-          <circle cx="12" cy="12" r="9" />
-          <path d="M12 7.5V13M12 16.5v.01" />
-        </>
-      )}
-      {tone === 'warn' && (
-        <>
-          <path d="M12 3.5l9.5 16.5h-19z" />
-          <path d="M12 10v4.5M12 17.5v.01" />
-        </>
-      )}
-    </svg>
-  )
-}
-
 export function Notice({ tone, children }: { tone: 'ok' | 'error' | 'warn'; children: React.ReactNode }) {
+  const Icon = tone === 'ok' ? CheckCircle : tone === 'error' ? WarningCircle : Warning
   return (
     <div className="notice" data-tone={tone} role={tone === 'error' ? 'alert' : 'status'}>
-      <NoticeIcon tone={tone} />
+      <Icon size={20} weight="bold" aria-hidden="true" />
       <div>{children}</div>
     </div>
   )
@@ -75,13 +52,3 @@ export function formatWhen(iso: string) {
 }
 
 export const CATEGORY_LABEL = { ctf: 'CTF', bootcamp: 'Bootcamp', conference: 'Conference', workshop: 'Workshop' } as const
-
-export function SeatBar({ capacity, remaining }: { capacity: number; remaining: number }) {
-  const held = Math.max(0, capacity - remaining)
-  const pct = capacity ? (held / capacity) * 100 : 0
-  return (
-    <div className="bar" role="img" aria-label={`${held} of ${capacity} seats held`}>
-      <i className="b-confirmed" style={{ width: `${pct}%` }} />
-    </div>
-  )
-}

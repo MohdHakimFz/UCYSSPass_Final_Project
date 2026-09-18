@@ -27,7 +27,7 @@ export default function Layout({ protectedRoute = false }: { protectedRoute?: bo
           <div className="who">
             {user ? (
               <>
-                <Link to="/profile">{user.name}</Link>
+                <Link to="/profile" className="who-name">{user.name}</Link>
                 <button onClick={() => signOut().then(() => navigate('/'))}>Sign out</button>
               </>
             ) : (

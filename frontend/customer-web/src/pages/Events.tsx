@@ -2,46 +2,82 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { type Category, type EventItem, type Paginated } from '../lib/api'
 import { useFetch } from '../lib/useFetch'
-import { CATEGORY_LABEL, Notice, SeatBar, Skeleton } from '../components/ui'
+import { CATEGORY_LABEL, Notice } from '../components/ui'
 
 const CATEGORIES = Object.keys(CATEGORY_LABEL) as Category[]
 
+// The wall repeats an asymmetric rhythm in three blocks, and a short last block stretches
+// so every row of the wall is always full.
+const BLOCKS: string[][] = [
+  ['xl', 'l', 'w'],
+  ['m', 'm', 'm'],
+  ['l', 'l2'],
+]
+const SHORT: Record<string, string[][]> = {
+  '0': [['f3'], ['xl', 'l3']],
+  '1': [['f2'], ['h', 'h']],
+  '2': [['f2']],
+}
+
+function wallSizes(count: number): string[] {
+  const out: string[] = []
+  let block = 0
+  while (out.length < count) {
+    const full = BLOCKS[block % BLOCKS.length]
+    const take = Math.min(full.length, count - out.length)
+    out.push(...(take === full.length ? full : SHORT[String(block % BLOCKS.length)][take - 1]))
+    block++
+  }
+  return out
+}
+
 function seatState(ev: EventItem) {
-  if (!ev.capacity) return { text: 'Tickets not on sale yet', tone: 'muted' }
+  if (!ev.capacity) return 'Tickets not on sale yet'
   const left = ev.seats_remaining ?? 0
-  if (left === 0) return { text: 'Sold out, join the waitlist', tone: 'held' }
-  if (left <= Math.max(5, ev.capacity * 0.1)) return { text: `Only ${left} seats left`, tone: 'held' }
-  return { text: `${left} seats left`, tone: 'cleared' }
+  if (left === 0) return 'Sold out, join the waitlist'
+  if (left <= Math.max(5, ev.capacity * 0.1)) return `Only ${left} seats left`
+  return `${left} seats left`
 }
 
 const priceText = (ev: EventItem) =>
-  ev.from_price == null ? '—' : Number(ev.from_price) === 0 ? 'Free' : `From RM ${Number(ev.from_price).toFixed(0)}`
+  ev.from_price == null ? '' : Number(ev.from_price) === 0 ? 'Free' : `From RM ${Number(ev.from_price).toFixed(0)}`
 
-// The soonest matching event, drawn as a ticket. It is the first result, not decoration.
-function FeaturedPass({ ev }: { ev: EventItem }) {
+function Poster({ ev, i, size }: { ev: EventItem; i: number; size: string }) {
   const d = new Date(ev.start_at)
-  const seats = seatState(ev)
   return (
-    <Link to={`/events/${ev.id}`} className="feature">
-      <div className="feature-stub" aria-hidden="true">
-        <span className="stub-day">{d.getDate()}</span>
-        <span className="stub-month">{d.toLocaleString('en-MY', { month: 'short' })}</span>
+    <Link
+      to={`/events/${ev.id}`}
+      className="poster"
+      data-cat={ev.category}
+      data-size={size}
+      style={{ '--i': i } as React.CSSProperties}
+    >
+      <div className="poster-art" aria-hidden="true" />
+      <div className="poster-date">
+        <span className="poster-day">{d.getDate()}</span>
+        <span className="poster-month">{d.toLocaleString('en-MY', { month: 'short' })}</span>
       </div>
-      <div className="feature-body">
+      <div className="poster-body">
         <h2>{ev.title}</h2>
         <p>
-          {CATEGORY_LABEL[ev.category]} · {ev.venue?.name ?? 'Venue to be announced'}
+          {CATEGORY_LABEL[ev.category]}, {ev.venue?.name ?? 'venue to be announced'}
         </p>
-        <p>{d.toLocaleTimeString('en-MY', { hour: '2-digit', minute: '2-digit' })}</p>
-        {ev.capacity ? <SeatBar capacity={ev.capacity} remaining={ev.seats_remaining ?? 0} /> : null}
-        <div className="feature-foot">
-          <span>
-            <strong>{priceText(ev)}</strong> · {seats.text}
-          </span>
-          <span className="feature-cta">Book a seat</span>
-        </div>
+      </div>
+      <div className="poster-foot">
+        <span>{priceText(ev)}</span>
+        <span>{seatState(ev)}</span>
       </div>
     </Link>
+  )
+}
+
+function WallSkeleton() {
+  return (
+    <div className="wall wall-skeleton" aria-busy="true" aria-label="Loading events">
+      {(['xl', 'l', 'w', 'm', 'm'] as const).map((size, i) => (
+        <div key={i} className="poster" data-size={size} />
+      ))}
+    </div>
   )
 }
 
@@ -52,15 +88,16 @@ export default function Events() {
   const [page, setPage] = useState(1)
   const [when, setWhen] = useState<'' | '7' | '30'>('')
   const [price, setPrice] = useState<'' | '0' | '50' | '100'>('')
+  const [now] = useState(() => Date.now())
 
   const qs = new URLSearchParams({
     status: 'published',
-    from: new Date().toISOString(),
+    from: new Date(now).toISOString(),
     per_page: '8',
     page: String(page),
   })
   if (query) qs.set('search', query)
-  if (when) qs.set('to', new Date(Date.now() + Number(when) * 86400000).toISOString())
+  if (when) qs.set('to', new Date(now + Number(when) * 86400000).toISOString())
   if (price) qs.set('max_price', price)
   if (category) qs.set('category', category)
   const { data, error } = useFetch<Paginated<EventItem>>(`/events?${qs}`)
@@ -75,75 +112,70 @@ export default function Events() {
     setPage(1)
   }
 
-  const featured = data?.data[0]
-  const rest = page === 1 ? (data?.data.slice(1) ?? []) : (data?.data ?? [])
-
   return (
     <>
       <section className="hero">
-        <div className="hero-copy">
-          <h1>Find your next CTF, bootcamp or conference.</h1>
-          <p className="lede-sub">Book a seat, get a signed QR pass, and walk straight in.</p>
-          <form
-            className="finder"
-            onSubmit={(e) => {
-              e.preventDefault()
-              setPage(1)
-              setQuery(search)
-            }}
-          >
-            <input
-              type="search"
-              className="search"
-              placeholder="Search events, for example “web security”"
-              aria-label="Search events"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-            <button className="btn">Search</button>
-          </form>
-          <div className="filters-row">
-            <div className="chips" role="group" aria-label="Category">
-              <button className="chip" aria-pressed={category === ''} onClick={() => { setCategory(''); setPage(1) }}>
-                All
+        <h1>Find your next CTF, bootcamp or conference.</h1>
+        <p className="lede-sub">Book a seat, get a signed QR pass, and walk straight in.</p>
+
+        <form
+          className="finder"
+          onSubmit={(e) => {
+            e.preventDefault()
+            setPage(1)
+            setQuery(search)
+          }}
+        >
+          <input
+            type="search"
+            className="search"
+            placeholder="Search events, for example web security"
+            aria-label="Search events"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <button className="btn">Search</button>
+        </form>
+
+        <div className="filters-row">
+          <div className="chips" role="group" aria-label="Category">
+            <button className="chip" aria-pressed={category === ''} onClick={() => { setCategory(''); setPage(1) }}>
+              All
+            </button>
+            {CATEGORIES.map((c) => (
+              <button key={c} className="chip" aria-pressed={category === c} onClick={() => { setCategory(c); setPage(1) }}>
+                {CATEGORY_LABEL[c]}
               </button>
-              {CATEGORIES.map((c) => (
-                <button key={c} className="chip" aria-pressed={category === c} onClick={() => { setCategory(c); setPage(1) }}>
-                  {CATEGORY_LABEL[c]}
-                </button>
-              ))}
-            </div>
-            <div className="selects">
-              <select className="pill-select" aria-label="When" value={when} onChange={(e) => { setWhen(e.target.value as typeof when); setPage(1) }}>
-                <option value="">Any date</option>
-                <option value="7">Next 7 days</option>
-                <option value="30">Next 30 days</option>
-              </select>
-              <select className="pill-select" aria-label="Price" value={price} onChange={(e) => { setPrice(e.target.value as typeof price); setPage(1) }}>
-                <option value="">Any price</option>
-                <option value="0">Free</option>
-                <option value="50">Up to RM 50</option>
-                <option value="100">Up to RM 100</option>
-              </select>
-              {hasFilters && (
-                <button className="link-btn" onClick={clearFilters}>
-                  Clear filters
-                </button>
-              )}
-            </div>
+            ))}
+          </div>
+          <div className="selects">
+            <select className="pill-select" aria-label="When" value={when} onChange={(e) => { setWhen(e.target.value as typeof when); setPage(1) }}>
+              <option value="">Any date</option>
+              <option value="7">Next 7 days</option>
+              <option value="30">Next 30 days</option>
+            </select>
+            <select className="pill-select" aria-label="Price" value={price} onChange={(e) => { setPrice(e.target.value as typeof price); setPage(1) }}>
+              <option value="">Any price</option>
+              <option value="0">Free</option>
+              <option value="50">Up to RM 50</option>
+              <option value="100">Up to RM 100</option>
+            </select>
+            {hasFilters && (
+              <button className="link-btn" onClick={clearFilters}>
+                Clear filters
+              </button>
+            )}
           </div>
         </div>
-
-        {page === 1 && (featured ? <FeaturedPass ev={featured} /> : !data && !error ? <div className="feature feature-skeleton" aria-hidden="true" /> : null)}
       </section>
 
       {error && <Notice tone="error">{error}</Notice>}
 
       {!data && !error ? (
-        <Skeleton rows={4} />
+        <WallSkeleton />
       ) : data && data.data.length === 0 ? (
         <div className="empty">
-          <p>Nothing matches yet. Try a different category or widen the date and price.</p>
+          <p>Nothing matches yet. Try a different category, or widen the date and price.</p>
           {hasFilters && (
             <button className="btn-quiet" style={{ marginTop: 16 }} onClick={clearFilters}>
               Clear filters
@@ -151,36 +183,12 @@ export default function Events() {
           )}
         </div>
       ) : (
-        rest.length > 0 && (
-          <ul className="passes">
-            {rest.map((ev) => {
-              const d = new Date(ev.start_at)
-              const seats = seatState(ev)
-              return (
-                <li key={ev.id}>
-                  <Link to={`/events/${ev.id}`} className="pass">
-                    <div className="stub" aria-hidden="true">
-                      <span className="stub-day">{d.getDate()}</span>
-                      <span className="stub-month">{d.toLocaleString('en-MY', { month: 'short' })}</span>
-                    </div>
-                    <div className="pass-main">
-                      <h2>{ev.title}</h2>
-                      <p>
-                        {CATEGORY_LABEL[ev.category]} · {ev.venue?.name ?? 'Venue to be announced'} ·{' '}
-                        {d.toLocaleTimeString('en-MY', { hour: '2-digit', minute: '2-digit' })}
-                      </p>
-                    </div>
-                    <div className="pass-side">
-                      <strong>{priceText(ev)}</strong>
-                      <span className="tag" data-tone={seats.tone}>
-                        {seats.text}
-                      </span>
-                    </div>
-                  </Link>
-                </li>
-              )
-            })}
-          </ul>
+        data && (
+          <div className="wall">
+            {wallSizes(data.data.length).map((size, i) => (
+              <Poster key={data.data[i].id} ev={data.data[i]} i={i} size={size} />
+            ))}
+          </div>
         )
       )}
 

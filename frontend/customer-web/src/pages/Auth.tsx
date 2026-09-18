@@ -41,7 +41,12 @@ export default function Auth({ mode }: { mode: 'login' | 'register' }) {
   const isLogin = mode === 'login'
 
   return (
-    <div className="auth-card">
+    <div className="auth-split">
+      <div className="auth-poster" aria-hidden="true">
+        <h2>{isLogin ? 'Show your pass. Walk straight in.' : 'Book a seat. Get your pass.'}</h2>
+      </div>
+      <div className="auth-form">
+        <div className="auth-card">
       <h1>{isLogin ? 'Sign in' : 'Create your account'}</h1>
       <p className="lede-sub" style={{ marginTop: 8, marginBottom: 24 }}>
         {isLogin ? 'Your passes and bookings are waiting.' : 'Book seats at security events and keep your passes in one place.'}
@@ -96,6 +101,9 @@ export default function Auth({ mode }: { mode: 'login' | 'register' }) {
           </>
         )}
       </p>
+        </div>
+      </div>
     </div>
   )
 }
+

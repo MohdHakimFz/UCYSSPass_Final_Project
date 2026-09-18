@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { CaretLeft } from '@phosphor-icons/react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { api, ApiError, errorText, type Booking, type EventItem, type TicketType } from '../lib/api'
 import { useAuth } from '../lib/auth'
@@ -66,23 +67,32 @@ export default function EventDetail() {
     <>
       <p className="crumb">
         <Link to="/" className="crumb-link">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M15 5l-7 7 7 7" />
-          </svg>
+          <CaretLeft size={16} weight="bold" aria-hidden="true" />
           All events
         </Link>
       </p>
-      <section className="detail-head">
-        <h1>{event.title}</h1>
-        <p className="lede-sub">
-          {CATEGORY_LABEL[event.category]} · {formatWhen(event.start_at)} · {event.venue?.name ?? 'Venue to be announced'}
-        </p>
-        <p style={{ marginTop: 16 }}>
-          <button className="btn-quiet" onClick={share}>
-            Share this event
-          </button>
-        </p>
-      </section>
+      <div className="detail-poster">
+        <div className="detail-date" data-cat={event.category}>
+          <div className="poster-art" aria-hidden="true" />
+          <div className="poster-date">
+            <span className="poster-day">{new Date(event.start_at).getDate()}</span>
+            <span className="poster-month">{new Date(event.start_at).toLocaleString('en-MY', { month: 'short' })}</span>
+          </div>
+        </div>
+        <div className="detail-info">
+          <h1>{event.title}</h1>
+          <p className="detail-meta">
+            {CATEGORY_LABEL[event.category]} at {event.venue?.name ?? 'a venue to be announced'}
+            <br />
+            {formatWhen(event.start_at)}
+          </p>
+          <div>
+            <button className="btn-quiet" onClick={share}>
+              Share this event
+            </button>
+          </div>
+        </div>
+      </div>
 
       {event.description && <p className="prose">{event.description}</p>}
 
