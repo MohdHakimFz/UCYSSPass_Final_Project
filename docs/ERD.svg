@@ -1,0 +1,230 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1580" height="1260" viewBox="0 0 1580 1260" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+<rect width="100%" height="100%" fill="#E4E8EC"/>
+<text x="60" y="62" font-size="32" font-weight="800" fill="#12263A">SentryPass</text>
+<text x="60" y="92" font-size="16" fill="#4B5D6E">Entity relationship diagram · PostgreSQL · the 6 domain tables (Laravel's own personal_access_tokens, sessions, cache and jobs tables are left out)</text>
+<polyline points="520,210.5 380,210.5" fill="none" stroke="#12263A" stroke-width="2"/>
+<text x="510" y="202.5" font-size="14" font-weight="700" text-anchor="end" fill="#12263A">N</text>
+<text x="390" y="202.5" font-size="14" font-weight="700" text-anchor="start" fill="#12263A">1</text>
+<polyline points="900,237.5 1060,237.5" fill="none" stroke="#12263A" stroke-width="2"/>
+<text x="910" y="229.5" font-size="14" font-weight="700" text-anchor="start" fill="#12263A">N</text>
+<text x="1050" y="229.5" font-size="14" font-weight="700" text-anchor="end" fill="#12263A">1</text>
+<polyline points="710,570 710,467" fill="none" stroke="#12263A" stroke-width="2"/>
+<text x="722" y="562" font-size="14" font-weight="700" text-anchor="start" fill="#12263A">N</text>
+<text x="722" y="487" font-size="14" font-weight="700" text-anchor="start" fill="#12263A">1</text>
+<polyline points="710,930 710,826" fill="none" stroke="#12263A" stroke-width="2"/>
+<text x="722" y="922" font-size="14" font-weight="700" text-anchor="start" fill="#12263A">N</text>
+<text x="722" y="846" font-size="14" font-weight="700" text-anchor="start" fill="#12263A">1</text>
+<polyline points="950,1010.5 1000,1010.5 1000,383 1060,383" fill="none" stroke="#12263A" stroke-width="2"/>
+<text x="960" y="1002.5" font-size="14" font-weight="700" text-anchor="start" fill="#12263A">N</text>
+<text x="1050" y="375" font-size="14" font-weight="700" text-anchor="end" fill="#12263A">1</text>
+<polyline points="420,1010.5 520,1010.5" fill="none" stroke="#12263A" stroke-width="2"/>
+<text x="430" y="1002.5" font-size="14" font-weight="700" text-anchor="start" fill="#12263A">N</text>
+<text x="510" y="1002.5" font-size="14" font-weight="700" text-anchor="end" fill="#12263A">1</text>
+<rect x="524" y="935" width="430" height="283" rx="6" fill="#12263A" opacity="0.12"/>
+<rect x="520" y="930" width="430" height="283" rx="6" fill="#F5F7F8" stroke="#12263A" stroke-width="2"/>
+<path d="M520,936 a6,6 0 0 1 6,-6 h418 a6,6 0 0 1 6,6 v34 h-430 z" fill="#12263A"/>
+<text x="536" y="957" font-size="18" font-weight="800" text-anchor="start" fill="#F5F7F8">bookings</text>
+<rect x="530" y="975" width="26" height="16" rx="3" fill="#F2C230"/>
+<text x="543.0" y="987" font-size="10.5" font-weight="700" text-anchor="middle" fill="#12263A">PK</text>
+<text x="564" y="988" font-size="14" font-weight="700" text-anchor="start" fill="#12263A">id</text>
+<text x="940" y="988" font-size="12.5" font-weight="500" text-anchor="end" fill="#4B5D6E">bigint</text>
+<rect x="522" y="997" width="426" height="27" fill="#E4E8EC" opacity="0.55"/>
+<rect x="530" y="1002" width="26" height="16" rx="3" fill="#0F8B6D"/>
+<text x="543.0" y="1014" font-size="10.5" font-weight="700" text-anchor="middle" fill="#fff">FK</text>
+<text x="564" y="1015" font-size="14" font-weight="500" text-anchor="start" fill="#12263A">customer_id</text>
+<text x="940" y="1015" font-size="12.5" font-weight="500" text-anchor="end" fill="#4B5D6E">bigint</text>
+<rect x="530" y="1029" width="26" height="16" rx="3" fill="#0F8B6D"/>
+<text x="543.0" y="1041" font-size="10.5" font-weight="700" text-anchor="middle" fill="#fff">FK</text>
+<text x="564" y="1042" font-size="14" font-weight="500" text-anchor="start" fill="#12263A">ticket_type_id</text>
+<text x="940" y="1042" font-size="12.5" font-weight="500" text-anchor="end" fill="#4B5D6E">bigint</text>
+<rect x="522" y="1051" width="426" height="27" fill="#E4E8EC" opacity="0.55"/>
+<text x="564" y="1069" font-size="14" font-weight="500" text-anchor="start" fill="#12263A">status</text>
+<text x="940" y="1069" font-size="11" font-weight="500" text-anchor="end" fill="#0F8B6D" font-style="italic">pending | confirmed | cancelled | waitlisted | attended</text>
+<text x="564" y="1096" font-size="14" font-weight="500" text-anchor="start" fill="#12263A">qr_token?</text>
+<text x="940" y="1096" font-size="12.5" font-weight="500" text-anchor="end" fill="#4B5D6E">text</text>
+<rect x="522" y="1105" width="426" height="27" fill="#E4E8EC" opacity="0.55"/>
+<text x="564" y="1123" font-size="14" font-weight="500" text-anchor="start" fill="#12263A">booked_at</text>
+<text x="940" y="1123" font-size="12.5" font-weight="500" text-anchor="end" fill="#4B5D6E">timestamp</text>
+<text x="564" y="1150" font-size="14" font-weight="500" text-anchor="start" fill="#12263A">checked_in_at?</text>
+<text x="940" y="1150" font-size="12.5" font-weight="500" text-anchor="end" fill="#4B5D6E">timestamp</text>
+<rect x="522" y="1159" width="426" height="27" fill="#E4E8EC" opacity="0.55"/>
+<text x="564" y="1177" font-size="14" font-weight="500" text-anchor="start" fill="#12263A">created_at?</text>
+<text x="940" y="1177" font-size="12.5" font-weight="500" text-anchor="end" fill="#4B5D6E">timestamp</text>
+<text x="564" y="1204" font-size="14" font-weight="500" text-anchor="start" fill="#12263A">updated_at?</text>
+<text x="940" y="1204" font-size="12.5" font-weight="500" text-anchor="end" fill="#4B5D6E">timestamp</text>
+<rect x="524" y="135" width="380" height="337" rx="6" fill="#12263A" opacity="0.12"/>
+<rect x="520" y="130" width="380" height="337" rx="6" fill="#F5F7F8" stroke="#12263A" stroke-width="2"/>
+<path d="M520,136 a6,6 0 0 1 6,-6 h368 a6,6 0 0 1 6,6 v34 h-380 z" fill="#12263A"/>
+<text x="536" y="157" font-size="18" font-weight="800" text-anchor="start" fill="#F5F7F8">events</text>
+<rect x="530" y="175" width="26" height="16" rx="3" fill="#F2C230"/>
+<text x="543.0" y="187" font-size="10.5" font-weight="700" text-anchor="middle" fill="#12263A">PK</text>
+<text x="564" y="188" font-size="14" font-weight="700" text-anchor="start" fill="#12263A">id</text>
+<text x="890" y="188" font-size="12.5" font-weight="500" text-anchor="end" fill="#4B5D6E">bigint</text>
+<rect x="522" y="197" width="376" height="27" fill="#E4E8EC" opacity="0.55"/>
+<rect x="530" y="202" width="26" height="16" rx="3" fill="#0F8B6D"/>
+<text x="543.0" y="214" font-size="10.5" font-weight="700" text-anchor="middle" fill="#fff">FK</text>
+<text x="564" y="215" font-size="14" font-weight="500" text-anchor="start" fill="#12263A">venue_id</text>
+<text x="890" y="215" font-size="12.5" font-weight="500" text-anchor="end" fill="#4B5D6E">bigint</text>
+<rect x="530" y="229" width="26" height="16" rx="3" fill="#0F8B6D"/>
+<text x="543.0" y="241" font-size="10.5" font-weight="700" text-anchor="middle" fill="#fff">FK</text>
+<text x="564" y="242" font-size="14" font-weight="500" text-anchor="start" fill="#12263A">organiser_id</text>
+<text x="890" y="242" font-size="12.5" font-weight="500" text-anchor="end" fill="#4B5D6E">bigint</text>
+<rect x="522" y="251" width="376" height="27" fill="#E4E8EC" opacity="0.55"/>
+<text x="564" y="269" font-size="14" font-weight="500" text-anchor="start" fill="#12263A">title</text>
+<text x="890" y="269" font-size="12.5" font-weight="500" text-anchor="end" fill="#4B5D6E">varchar(255)</text>
+<text x="564" y="296" font-size="14" font-weight="500" text-anchor="start" fill="#12263A">description?</text>
+<text x="890" y="296" font-size="12.5" font-weight="500" text-anchor="end" fill="#4B5D6E">text</text>
+<rect x="522" y="305" width="376" height="27" fill="#E4E8EC" opacity="0.55"/>
+<text x="564" y="323" font-size="14" font-weight="500" text-anchor="start" fill="#12263A">category</text>
+<text x="890" y="323" font-size="11" font-weight="500" text-anchor="end" fill="#0F8B6D" font-style="italic">ctf | bootcamp | conference | workshop</text>
+<text x="564" y="350" font-size="14" font-weight="500" text-anchor="start" fill="#12263A">start_at</text>
+<text x="890" y="350" font-size="12.5" font-weight="500" text-anchor="end" fill="#4B5D6E">timestamp</text>
+<rect x="522" y="359" width="376" height="27" fill="#E4E8EC" opacity="0.55"/>
+<text x="564" y="377" font-size="14" font-weight="500" text-anchor="start" fill="#12263A">end_at</text>
+<text x="890" y="377" font-size="12.5" font-weight="500" text-anchor="end" fill="#4B5D6E">timestamp</text>
+<text x="564" y="404" font-size="14" font-weight="500" text-anchor="start" fill="#12263A">status</text>
+<text x="890" y="404" font-size="11" font-weight="500" text-anchor="end" fill="#0F8B6D" font-style="italic">draft | published | cancelled | completed</text>
+<rect x="522" y="413" width="376" height="27" fill="#E4E8EC" opacity="0.55"/>
+<text x="564" y="431" font-size="14" font-weight="500" text-anchor="start" fill="#12263A">created_at?</text>
+<text x="890" y="431" font-size="12.5" font-weight="500" text-anchor="end" fill="#4B5D6E">timestamp</text>
+<text x="564" y="458" font-size="14" font-weight="500" text-anchor="start" fill="#12263A">updated_at?</text>
+<text x="890" y="458" font-size="12.5" font-weight="500" text-anchor="end" fill="#4B5D6E">timestamp</text>
+<rect x="64" y="935" width="360" height="256" rx="6" fill="#12263A" opacity="0.12"/>
+<rect x="60" y="930" width="360" height="256" rx="6" fill="#F5F7F8" stroke="#12263A" stroke-width="2"/>
+<path d="M60,936 a6,6 0 0 1 6,-6 h348 a6,6 0 0 1 6,6 v34 h-360 z" fill="#12263A"/>
+<text x="76" y="957" font-size="18" font-weight="800" text-anchor="start" fill="#F5F7F8">notifications</text>
+<rect x="70" y="975" width="26" height="16" rx="3" fill="#F2C230"/>
+<text x="83.0" y="987" font-size="10.5" font-weight="700" text-anchor="middle" fill="#12263A">PK</text>
+<text x="104" y="988" font-size="14" font-weight="700" text-anchor="start" fill="#12263A">id</text>
+<text x="410" y="988" font-size="12.5" font-weight="500" text-anchor="end" fill="#4B5D6E">bigint</text>
+<rect x="62" y="997" width="356" height="27" fill="#E4E8EC" opacity="0.55"/>
+<rect x="70" y="1002" width="26" height="16" rx="3" fill="#0F8B6D"/>
+<text x="83.0" y="1014" font-size="10.5" font-weight="700" text-anchor="middle" fill="#fff">FK</text>
+<text x="104" y="1015" font-size="14" font-weight="500" text-anchor="start" fill="#12263A">booking_id</text>
+<text x="410" y="1015" font-size="12.5" font-weight="500" text-anchor="end" fill="#4B5D6E">bigint</text>
+<text x="104" y="1042" font-size="14" font-weight="500" text-anchor="start" fill="#12263A">type</text>
+<text x="410" y="1042" font-size="11" font-weight="500" text-anchor="end" fill="#0F8B6D" font-style="italic">confirmation | waitlist_promoted | cancelled</text>
+<rect x="62" y="1051" width="356" height="27" fill="#E4E8EC" opacity="0.55"/>
+<text x="104" y="1069" font-size="14" font-weight="500" text-anchor="start" fill="#12263A">channel</text>
+<text x="410" y="1069" font-size="11" font-weight="500" text-anchor="end" fill="#0F8B6D" font-style="italic">email</text>
+<text x="104" y="1096" font-size="14" font-weight="500" text-anchor="start" fill="#12263A">sent_at?</text>
+<text x="410" y="1096" font-size="12.5" font-weight="500" text-anchor="end" fill="#4B5D6E">timestamp</text>
+<rect x="62" y="1105" width="356" height="27" fill="#E4E8EC" opacity="0.55"/>
+<text x="104" y="1123" font-size="14" font-weight="500" text-anchor="start" fill="#12263A">provider_response?</text>
+<text x="410" y="1123" font-size="12.5" font-weight="500" text-anchor="end" fill="#4B5D6E">jsonb</text>
+<text x="104" y="1150" font-size="14" font-weight="500" text-anchor="start" fill="#12263A">created_at?</text>
+<text x="410" y="1150" font-size="12.5" font-weight="500" text-anchor="end" fill="#4B5D6E">timestamp</text>
+<rect x="62" y="1159" width="356" height="27" fill="#E4E8EC" opacity="0.55"/>
+<text x="104" y="1177" font-size="14" font-weight="500" text-anchor="start" fill="#12263A">updated_at?</text>
+<text x="410" y="1177" font-size="12.5" font-weight="500" text-anchor="end" fill="#4B5D6E">timestamp</text>
+<rect x="524" y="575" width="380" height="256" rx="6" fill="#12263A" opacity="0.12"/>
+<rect x="520" y="570" width="380" height="256" rx="6" fill="#F5F7F8" stroke="#12263A" stroke-width="2"/>
+<path d="M520,576 a6,6 0 0 1 6,-6 h368 a6,6 0 0 1 6,6 v34 h-380 z" fill="#12263A"/>
+<text x="536" y="597" font-size="18" font-weight="800" text-anchor="start" fill="#F5F7F8">ticket_types</text>
+<rect x="530" y="615" width="26" height="16" rx="3" fill="#F2C230"/>
+<text x="543.0" y="627" font-size="10.5" font-weight="700" text-anchor="middle" fill="#12263A">PK</text>
+<text x="564" y="628" font-size="14" font-weight="700" text-anchor="start" fill="#12263A">id</text>
+<text x="890" y="628" font-size="12.5" font-weight="500" text-anchor="end" fill="#4B5D6E">bigint</text>
+<rect x="522" y="637" width="376" height="27" fill="#E4E8EC" opacity="0.55"/>
+<rect x="530" y="642" width="26" height="16" rx="3" fill="#0F8B6D"/>
+<text x="543.0" y="654" font-size="10.5" font-weight="700" text-anchor="middle" fill="#fff">FK</text>
+<text x="564" y="655" font-size="14" font-weight="500" text-anchor="start" fill="#12263A">event_id</text>
+<text x="890" y="655" font-size="12.5" font-weight="500" text-anchor="end" fill="#4B5D6E">bigint</text>
+<text x="564" y="682" font-size="14" font-weight="500" text-anchor="start" fill="#12263A">name</text>
+<text x="890" y="682" font-size="12.5" font-weight="500" text-anchor="end" fill="#4B5D6E">varchar(100)</text>
+<rect x="522" y="691" width="376" height="27" fill="#E4E8EC" opacity="0.55"/>
+<text x="564" y="709" font-size="14" font-weight="500" text-anchor="start" fill="#12263A">price</text>
+<text x="890" y="709" font-size="12.5" font-weight="500" text-anchor="end" fill="#4B5D6E">decimal(10,2)</text>
+<text x="564" y="736" font-size="14" font-weight="500" text-anchor="start" fill="#12263A">capacity</text>
+<text x="890" y="736" font-size="12.5" font-weight="500" text-anchor="end" fill="#4B5D6E">integer</text>
+<rect x="522" y="745" width="376" height="27" fill="#E4E8EC" opacity="0.55"/>
+<text x="564" y="763" font-size="14" font-weight="500" text-anchor="start" fill="#12263A">seats_remaining</text>
+<text x="890" y="763" font-size="12.5" font-weight="500" text-anchor="end" fill="#4B5D6E">integer</text>
+<text x="564" y="790" font-size="14" font-weight="500" text-anchor="start" fill="#12263A">created_at?</text>
+<text x="890" y="790" font-size="12.5" font-weight="500" text-anchor="end" fill="#4B5D6E">timestamp</text>
+<rect x="522" y="799" width="376" height="27" fill="#E4E8EC" opacity="0.55"/>
+<text x="564" y="817" font-size="14" font-weight="500" text-anchor="start" fill="#12263A">updated_at?</text>
+<text x="890" y="817" font-size="12.5" font-weight="500" text-anchor="end" fill="#4B5D6E">timestamp</text>
+<rect x="1064" y="135" width="360" height="283" rx="6" fill="#12263A" opacity="0.12"/>
+<rect x="1060" y="130" width="360" height="283" rx="6" fill="#F5F7F8" stroke="#12263A" stroke-width="2"/>
+<path d="M1060,136 a6,6 0 0 1 6,-6 h348 a6,6 0 0 1 6,6 v34 h-360 z" fill="#12263A"/>
+<text x="1076" y="157" font-size="18" font-weight="800" text-anchor="start" fill="#F5F7F8">users</text>
+<rect x="1070" y="175" width="26" height="16" rx="3" fill="#F2C230"/>
+<text x="1083.0" y="187" font-size="10.5" font-weight="700" text-anchor="middle" fill="#12263A">PK</text>
+<text x="1104" y="188" font-size="14" font-weight="700" text-anchor="start" fill="#12263A">id</text>
+<text x="1410" y="188" font-size="12.5" font-weight="500" text-anchor="end" fill="#4B5D6E">bigint</text>
+<rect x="1062" y="197" width="356" height="27" fill="#E4E8EC" opacity="0.55"/>
+<text x="1104" y="215" font-size="14" font-weight="500" text-anchor="start" fill="#12263A">name</text>
+<text x="1410" y="215" font-size="12.5" font-weight="500" text-anchor="end" fill="#4B5D6E">varchar(255)</text>
+<rect x="1070" y="229" width="26" height="16" rx="3" fill="#A86F00"/>
+<text x="1083.0" y="241" font-size="10.5" font-weight="700" text-anchor="middle" fill="#fff">UQ</text>
+<text x="1104" y="242" font-size="14" font-weight="500" text-anchor="start" fill="#12263A">email</text>
+<text x="1410" y="242" font-size="12.5" font-weight="500" text-anchor="end" fill="#4B5D6E">varchar(255)</text>
+<rect x="1062" y="251" width="356" height="27" fill="#E4E8EC" opacity="0.55"/>
+<text x="1104" y="269" font-size="14" font-weight="500" text-anchor="start" fill="#12263A">email_verified_at?</text>
+<text x="1410" y="269" font-size="12.5" font-weight="500" text-anchor="end" fill="#4B5D6E">timestamp</text>
+<text x="1104" y="296" font-size="14" font-weight="500" text-anchor="start" fill="#12263A">password</text>
+<text x="1410" y="296" font-size="12.5" font-weight="500" text-anchor="end" fill="#4B5D6E">varchar(255)</text>
+<rect x="1062" y="305" width="356" height="27" fill="#E4E8EC" opacity="0.55"/>
+<text x="1104" y="323" font-size="14" font-weight="500" text-anchor="start" fill="#12263A">role</text>
+<text x="1410" y="323" font-size="11" font-weight="500" text-anchor="end" fill="#0F8B6D" font-style="italic">admin | organiser | customer</text>
+<text x="1104" y="350" font-size="14" font-weight="500" text-anchor="start" fill="#12263A">remember_token?</text>
+<text x="1410" y="350" font-size="12.5" font-weight="500" text-anchor="end" fill="#4B5D6E">varchar(100)</text>
+<rect x="1062" y="359" width="356" height="27" fill="#E4E8EC" opacity="0.55"/>
+<text x="1104" y="377" font-size="14" font-weight="500" text-anchor="start" fill="#12263A">created_at?</text>
+<text x="1410" y="377" font-size="12.5" font-weight="500" text-anchor="end" fill="#4B5D6E">timestamp</text>
+<text x="1104" y="404" font-size="14" font-weight="500" text-anchor="start" fill="#12263A">updated_at?</text>
+<text x="1410" y="404" font-size="12.5" font-weight="500" text-anchor="end" fill="#4B5D6E">timestamp</text>
+<rect x="64" y="135" width="320" height="202" rx="6" fill="#12263A" opacity="0.12"/>
+<rect x="60" y="130" width="320" height="202" rx="6" fill="#F5F7F8" stroke="#12263A" stroke-width="2"/>
+<path d="M60,136 a6,6 0 0 1 6,-6 h308 a6,6 0 0 1 6,6 v34 h-320 z" fill="#12263A"/>
+<text x="76" y="157" font-size="18" font-weight="800" text-anchor="start" fill="#F5F7F8">venues</text>
+<rect x="70" y="175" width="26" height="16" rx="3" fill="#F2C230"/>
+<text x="83.0" y="187" font-size="10.5" font-weight="700" text-anchor="middle" fill="#12263A">PK</text>
+<text x="104" y="188" font-size="14" font-weight="700" text-anchor="start" fill="#12263A">id</text>
+<text x="370" y="188" font-size="12.5" font-weight="500" text-anchor="end" fill="#4B5D6E">bigint</text>
+<rect x="62" y="197" width="316" height="27" fill="#E4E8EC" opacity="0.55"/>
+<text x="104" y="215" font-size="14" font-weight="500" text-anchor="start" fill="#12263A">name</text>
+<text x="370" y="215" font-size="12.5" font-weight="500" text-anchor="end" fill="#4B5D6E">varchar(255)</text>
+<text x="104" y="242" font-size="14" font-weight="500" text-anchor="start" fill="#12263A">address</text>
+<text x="370" y="242" font-size="12.5" font-weight="500" text-anchor="end" fill="#4B5D6E">text</text>
+<rect x="62" y="251" width="316" height="27" fill="#E4E8EC" opacity="0.55"/>
+<text x="104" y="269" font-size="14" font-weight="500" text-anchor="start" fill="#12263A">capacity</text>
+<text x="370" y="269" font-size="12.5" font-weight="500" text-anchor="end" fill="#4B5D6E">integer</text>
+<text x="104" y="296" font-size="14" font-weight="500" text-anchor="start" fill="#12263A">created_at?</text>
+<text x="370" y="296" font-size="12.5" font-weight="500" text-anchor="end" fill="#4B5D6E">timestamp</text>
+<rect x="62" y="305" width="316" height="27" fill="#E4E8EC" opacity="0.55"/>
+<text x="104" y="323" font-size="14" font-weight="500" text-anchor="start" fill="#12263A">updated_at?</text>
+<text x="370" y="323" font-size="12.5" font-weight="500" text-anchor="end" fill="#4B5D6E">timestamp</text>
+<rect x="410.2" y="200.5" width="79.6" height="20" rx="10" fill="#F5F7F8" stroke="#C3CCD4" stroke-width="1.5"/>
+<text x="450.0" y="214.5" font-size="10.5" font-weight="700" text-anchor="middle" fill="#4B5D6E">RESTRICT</text>
+<rect x="944.3" y="227.5" width="71.39999999999999" height="20" rx="10" fill="#F5F7F8" stroke="#C3CCD4" stroke-width="1.5"/>
+<text x="980.0" y="241.5" font-size="10.5" font-weight="700" text-anchor="middle" fill="#4B5D6E">CASCADE</text>
+<rect x="674.3" y="508.5" width="71.39999999999999" height="20" rx="10" fill="#F5F7F8" stroke="#C3CCD4" stroke-width="1.5"/>
+<text x="710" y="522.5" font-size="10.5" font-weight="700" text-anchor="middle" fill="#4B5D6E">CASCADE</text>
+<rect x="674.3" y="868.0" width="71.39999999999999" height="20" rx="10" fill="#F5F7F8" stroke="#C3CCD4" stroke-width="1.5"/>
+<text x="710" y="882.0" font-size="10.5" font-weight="700" text-anchor="middle" fill="#4B5D6E">CASCADE</text>
+<rect x="964.3" y="686.75" width="71.39999999999999" height="20" rx="10" fill="#F5F7F8" stroke="#C3CCD4" stroke-width="1.5"/>
+<text x="1000" y="700.75" font-size="10.5" font-weight="700" text-anchor="middle" fill="#4B5D6E">CASCADE</text>
+<rect x="434.3" y="1000.5" width="71.39999999999999" height="20" rx="10" fill="#F5F7F8" stroke="#C3CCD4" stroke-width="1.5"/>
+<text x="470.0" y="1014.5" font-size="10.5" font-weight="700" text-anchor="middle" fill="#4B5D6E">CASCADE</text>
+<rect x="1060" y="520" width="470" height="330" rx="6" fill="#F5F7F8" stroke="#C3CCD4" stroke-width="2"/>
+<text x="1080" y="554" font-size="17" font-weight="800" text-anchor="start" fill="#12263A">How to read this</text>
+<rect x="1080" y="574" width="26" height="16" rx="3" fill="#F2C230"/>
+<text x="1093.0" y="586" font-size="10.5" font-weight="700" text-anchor="middle" fill="#12263A">PK</text>
+<text x="1126" y="587" font-size="13" font-weight="500" text-anchor="start" fill="#12263A">primary key (unsigned bigint, auto-increment)</text>
+<rect x="1080" y="602" width="26" height="16" rx="3" fill="#0F8B6D"/>
+<text x="1093.0" y="614" font-size="10.5" font-weight="700" text-anchor="middle" fill="#fff">FK</text>
+<text x="1126" y="615" font-size="13" font-weight="500" text-anchor="start" fill="#12263A">foreign key</text>
+<rect x="1080" y="630" width="26" height="16" rx="3" fill="#A86F00"/>
+<text x="1093.0" y="642" font-size="10.5" font-weight="700" text-anchor="middle" fill="#fff">UQ</text>
+<text x="1126" y="643" font-size="13" font-weight="500" text-anchor="start" fill="#12263A">unique</text>
+<text x="1080" y="672" font-size="13" font-weight="500" text-anchor="start" fill="#12263A">name?  is a nullable column</text>
+<text x="1080" y="696" font-size="13" font-weight="500" text-anchor="start" fill="#0F8B6D" font-style="italic">green italics are the allowed enum values</text>
+<text x="1080" y="720" font-size="13" font-weight="500" text-anchor="start" fill="#12263A">N at the child end, 1 at the parent end of a line</text>
+<text x="1080" y="744" font-size="13" font-weight="500" text-anchor="start" fill="#12263A">the pill is the foreign key&#x27;s ON DELETE rule</text>
+<line x1="1080" y1="764" x2="1510" y2="764" stroke="#C3CCD4" stroke-width="1.5"/>
+<text x="1080" y="788" font-size="13" font-weight="700" text-anchor="start" fill="#12263A">CHECK constraints</text>
+<text x="1080" y="808" font-size="12.5" font-weight="500" text-anchor="start" fill="#4B5D6E">venues.capacity &gt; 0  ·  events.end_at &gt; start_at</text>
+<text x="1080" y="827" font-size="12.5" font-weight="500" text-anchor="start" fill="#4B5D6E">ticket_types.capacity &gt;= 0  ·  0 &lt;= seats_remaining &lt;= capacity</text>
+</svg>

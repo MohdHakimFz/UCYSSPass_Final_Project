@@ -12,7 +12,7 @@ SentryPass/
 │   ├── staff/               Organiser Portal      React + Vite
 │   ├── customer-web/        Customer Web App      React + Vite
 │   └── customer-mobile/     Customer Mobile App   React Native + Expo
-├── docs/                    Project spec (and later: ERD, Postman collection, API docs)
+├── docs/                    API reference, ERD and database design, Postman collection, project spec
 └── README.md
 ```
 
@@ -23,6 +23,14 @@ SentryPass/
 | Organiser Portal | `frontend/staff/` | React + Vite | http://localhost:5174 |
 | Customer Web | `frontend/customer-web/` | React + Vite | http://localhost:5175 |
 | Customer Mobile | `frontend/customer-mobile/` | React Native + Expo | Expo Go / emulator |
+
+## Documentation
+
+Everything is in [`docs/`](docs/README.md):
+
+- [API reference](docs/api-documentation.md): every endpoint with examples
+- [Database design](docs/database.md): ERD, tables, constraints, sample data
+- [Postman collection](docs/postman/README.md): 105 requests, 156 assertions, runnable with Newman
 
 ## Run the API
 
