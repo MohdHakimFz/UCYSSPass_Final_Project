@@ -92,6 +92,14 @@ class DatabaseSeeder extends Seeder
             );
         }
 
+        // Confirmed/attended bookings carry a real signed ticket, so QR wallet and check-in work on seed data.
+        $qr = app(\App\Services\QrTicketService::class);
+        foreach ($bookings as $booking) {
+            $booking->update([
+                'qr_token' => in_array($booking->status, ['confirmed', 'attended']) ? $qr->generate($booking) : null,
+            ]);
+        }
+
         // --- Notifications: reflect the booking lifecycle ---
         foreach ($bookings as $booking) {
             $type = match ($booking->status) {

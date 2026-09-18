@@ -21,6 +21,11 @@ class EventController extends Controller
         $direction = $request->string('direction', 'asc') === 'desc' ? 'desc' : 'asc';
 
         $events = Event::query()
+            ->with('venue:id,name')
+            ->withMin('ticketTypes as from_price', 'price')
+            ->withSum('ticketTypes as seats_remaining', 'seats_remaining')
+            ->withSum('ticketTypes as capacity', 'capacity')
+            ->when($request->filled('organiser_id'), fn ($query) => $query->where('organiser_id', $request->integer('organiser_id')))
             ->when($request->filled('category'), fn ($query) => $query->where('category', $request->string('category')))
             ->when($request->filled('venue_id'), fn ($query) => $query->where('venue_id', $request->integer('venue_id')))
             ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')))
@@ -55,7 +60,7 @@ class EventController extends Controller
      */
     public function show(Event $event): JsonResponse
     {
-        return response()->json($event->load('ticketTypes'));
+        return response()->json($event->load('venue', 'ticketTypes'));
     }
 
     /**

@@ -33,13 +33,22 @@ class BookingController extends Controller
         $user = $request->user();
 
         $bookings = Booking::query()
-            ->with(['customer:id,name,email', 'ticketType:id,event_id,name', 'ticketType.event:id,title'])
+            ->with([
+                'customer:id,name,email',
+                'ticketType:id,event_id,name,price',
+                'ticketType.event:id,title,category,start_at,end_at,venue_id',
+                'ticketType.event.venue:id,name',
+            ])
             ->when($user->role === 'customer', fn ($query) => $query->where('customer_id', $user->id))
             ->when($user->role === 'organiser', fn ($query) => $query->whereHas(
                 'ticketType.event',
                 fn ($query) => $query->where('organiser_id', $user->id)
             ))
             ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')))
+            ->when($request->filled('event_id'), fn ($query) => $query->whereHas(
+                'ticketType',
+                fn ($query) => $query->where('event_id', $request->integer('event_id'))
+            ))
             ->orderByDesc('booked_at')
             ->paginate($request->integer('per_page', 15));
 

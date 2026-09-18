@@ -36,6 +36,11 @@ export async function api<T = unknown>(
 
   const data = await res.json().catch(() => ({}));
 
+  if (res.status === 401 && token && !path.startsWith("/auth/")) {
+    tokenStore.clear();
+    window.location.assign("/login");
+  }
+
   if (!res.ok) {
     throw new ApiError(data.message ?? "Something went wrong.", res.status, data.errors);
   }
