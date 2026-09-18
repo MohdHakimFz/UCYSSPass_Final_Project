@@ -68,9 +68,9 @@ export default function EventDetailPage() {
             <i className="b-confirmed" style={{ width: `${stats.capacity ? (stats.confirmed / stats.capacity) * 100 : 0}%` }} />
           </div>
           <div className="key">
-            <span style={{ ["--sw" as string]: "var(--ink)" }}>Checked in</span>
-            <span style={{ ["--sw" as string]: "var(--cleared)" }}>Confirmed, not yet arrived</span>
-            <span style={{ ["--sw" as string]: "#d2d9df" }}>Open seat</span>
+            <span style={{ ["--sw" as string]: "#0043ce" }}>Checked in</span>
+            <span style={{ ["--sw" as string]: "#24a148" }}>Confirmed, not yet arrived</span>
+            <span style={{ ["--sw" as string]: "#e0e0e0" }}>Open seat</span>
           </div>
         </section>
       )}

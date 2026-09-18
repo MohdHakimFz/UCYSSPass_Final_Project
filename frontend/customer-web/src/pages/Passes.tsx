@@ -99,7 +99,7 @@ export default function Passes() {
       ) : data && data.data.length === 0 ? (
         <div className="empty">
           <p>You have no passes yet.</p>
-          <Link className="btn" style={{ marginTop: 16 }} to="/">
+          <Link className="btn" style={{ marginTop: 16 }} to="/events">
             Browse events
           </Link>
         </div>

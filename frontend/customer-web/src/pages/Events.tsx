@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { type Category, type EventItem, type Paginated } from '../lib/api'
 import { useFetch } from '../lib/useFetch'
 import { CATEGORY_LABEL, Notice } from '../components/ui'
@@ -84,7 +84,9 @@ function WallSkeleton() {
 export default function Events() {
   const [search, setSearch] = useState('')
   const [query, setQuery] = useState('')
-  const [category, setCategory] = useState<'' | Category>('')
+  const [params] = useSearchParams()
+  const initial = params.get('category')
+  const [category, setCategory] = useState<'' | Category>(CATEGORIES.includes(initial as Category) ? (initial as Category) : '')
   const [page, setPage] = useState(1)
   const [when, setWhen] = useState<'' | '7' | '30'>('')
   const [price, setPrice] = useState<'' | '0' | '50' | '100'>('')

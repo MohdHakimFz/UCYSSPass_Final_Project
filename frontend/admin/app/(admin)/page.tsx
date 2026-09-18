@@ -31,23 +31,44 @@ export default function Overview() {
 
   return (
     <>
-      <section>
-        <h1 className="lede">
-          {waiting === 0
-            ? "Every ticket request has a seat."
-            : `${waiting} ${waiting === 1 ? "person is" : "people are"} waiting on sold-out tickets.`}
-        </h1>
-        <p className="lede-sub">
-          {upcoming === 0
-            ? "No published events are coming up. Organisers can publish events from their portal."
-            : `${upcoming} published ${upcoming === 1 ? "event is" : "events are"} coming up, with ${held} of ${capacity} seats held (${
-                capacity ? Math.round((held / capacity) * 100) : 0
-              }%).`}{" "}
-          {last14} {last14 === 1 ? "booking was" : "bookings were"} made in the last two weeks.
-        </p>
-      </section>
+      <div className="page-head">
+        <h1>Overview</h1>
+      </div>
 
-      <section>
+      <div className="kpis">
+        <div className="tile">
+          <span className="kpi-label">Seats held</span>
+          <strong className="kpi-value">
+            {held}
+            <small> / {capacity}</small>
+          </strong>
+          <span className="kpi-note">
+            {capacity ? Math.round((held / capacity) * 100) : 0}% across {upcoming} upcoming {upcoming === 1 ? "event" : "events"}
+          </span>
+        </div>
+        <div className="tile">
+          <span className="kpi-label">On waitlists</span>
+          <strong className="kpi-value">{waiting}</strong>
+          <span className="kpi-note">{waiting === 0 ? "Every request has a seat" : "waiting on sold-out tickets"}</span>
+        </div>
+        <div className="tile">
+          <span className="kpi-label">Check-in rate</span>
+          <strong className="kpi-value">
+            {arrivedBase ? Math.round((attended / arrivedBase) * 100) : 0}
+            <small>%</small>
+          </strong>
+          <span className="kpi-note">
+            {attended} of {arrivedBase} confirmed guests
+          </span>
+        </div>
+        <div className="tile">
+          <span className="kpi-label">Bookings, 14 days</span>
+          <strong className="kpi-value">{last14}</strong>
+          <span className="kpi-note">new bookings in the last two weeks</span>
+        </div>
+      </div>
+
+      <section className="tile">
         <h2 className="section-title">Seat manifest</h2>
         <p className="section-note">Upcoming published events, soonest first. Waitlisted people are counted beside the seat total.</p>
         {upcoming === 0 ? (
@@ -82,14 +103,14 @@ export default function Overview() {
           </ul>
         )}
         <div className="key">
-          <span style={{ ["--sw" as string]: "var(--ink)" }}>Checked in</span>
-          <span style={{ ["--sw" as string]: "var(--cleared)" }}>Confirmed</span>
-          <span style={{ ["--sw" as string]: "#d2d9df" }}>Open seat</span>
+          <span style={{ ["--sw" as string]: "#0043ce" }}>Checked in</span>
+          <span style={{ ["--sw" as string]: "#24a148" }}>Confirmed</span>
+          <span style={{ ["--sw" as string]: "#e0e0e0" }}>Open seat</span>
         </div>
       </section>
 
       <section className="pair">
-        <div>
+        <div className="tile">
           <h2 className="section-title">Did people show up?</h2>
           <p className="section-note">
             {arrivedBase === 0
@@ -101,12 +122,12 @@ export default function Overview() {
             <i className="b-confirmed" style={{ width: `${arrivedBase ? (confirmed / arrivedBase) * 100 : 0}%` }} />
           </div>
           <div className="key">
-            <span style={{ ["--sw" as string]: "var(--ink)" }}>Checked in</span>
-            <span style={{ ["--sw" as string]: "var(--cleared)" }}>Confirmed, not yet arrived</span>
+            <span style={{ ["--sw" as string]: "#0043ce" }}>Checked in</span>
+            <span style={{ ["--sw" as string]: "#24a148" }}>Confirmed, not yet arrived</span>
           </div>
         </div>
 
-        <div>
+        <div className="tile">
           <h2 className="section-title">Events by type</h2>
           <p className="section-note">All events, every status.</p>
           <ul className="hbars">
@@ -126,7 +147,7 @@ export default function Overview() {
       </section>
 
       <section className="pair">
-        <div>
+        <div className="tile">
           <h2 className="section-title">Bookings, last 14 days</h2>
           <p className="section-note">One bar per day, oldest on the left.</p>
           <div className="days" role="img" aria-label={`${last14} bookings over 14 days`}>
@@ -146,7 +167,7 @@ export default function Overview() {
           </div>
         </div>
 
-        <div>
+        <div className="tile">
           <h2 className="section-title">Who&apos;s on the platform</h2>
           <p className="section-note">Accounts by role.</p>
           <ul className="tally">

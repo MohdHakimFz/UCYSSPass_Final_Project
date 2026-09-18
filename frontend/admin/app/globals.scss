@@ -3,6 +3,17 @@
 );
 @use '@carbon/react';
 
+// Fallbacks so the layout never depends on Carbon emitting theme variables.
+:root {
+  --cds-background: #ffffff;
+  --cds-layer-01: #f4f4f4;
+  --cds-text-primary: #161616;
+  --cds-text-secondary: #525252;
+  --cds-border-subtle-01: #e0e0e0;
+  --cds-border-strong-01: #8d8d8d;
+  --cds-link-primary: #0f62fe;
+}
+
 body {
   margin: 0;
   font-family: 'IBM Plex Sans', system-ui, sans-serif;
@@ -45,7 +56,7 @@ body {
 }
 
 section {
-  margin-top: 48px;
+  margin-top: 40px;
 }
 
 section:first-child {
@@ -169,7 +180,63 @@ section:first-child {
   }
 }
 
-/* ---------- Overview charts ---------- */
+/* ---------- Overview ---------- */
+
+.tile {
+  background: var(--cds-layer-01);
+  padding: 24px;
+
+  .section-note {
+    margin-bottom: 20px;
+  }
+}
+
+section.tile {
+  margin-top: 16px;
+}
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+
+  .tile {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    border-top: 3px solid #0f62fe;
+  }
+}
+
+.kpi-label {
+  font-size: 0.875rem;
+  color: var(--cds-text-secondary);
+}
+
+.kpi-value {
+  font-size: 2.625rem;
+  font-weight: 300;
+  line-height: 1.2;
+
+  small {
+    font-size: 1.25rem;
+    color: var(--cds-text-secondary);
+  }
+}
+
+.kpi-note {
+  font-size: 0.75rem;
+  color: var(--cds-text-secondary);
+}
+
+.manifest {
+  background: transparent;
+}
+
+.manifest li {
+  padding: 14px 0;
+}
+
 
 .manifest {
   list-style: none;
@@ -212,8 +279,8 @@ section:first-child {
 
 .bar {
   display: flex;
-  height: 8px;
-  background: var(--cds-layer-accent-01);
+  height: 10px;
+  background: #e0e0e0;
   overflow: hidden;
 
   i {
@@ -259,7 +326,8 @@ section:first-child {
 .pair {
   display: grid;
   grid-template-columns: 1.4fr 1fr;
-  gap: 48px;
+  gap: 16px;
+  margin-top: 16px;
 }
 
 .days {
@@ -394,6 +462,14 @@ section:first-child {
 }
 
 @media (max-width: 800px) {
+  .kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .kpi-value {
+    font-size: 2rem;
+  }
+
   .page {
     padding: 72px 16px 48px;
   }

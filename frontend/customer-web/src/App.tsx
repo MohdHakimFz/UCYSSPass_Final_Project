@@ -2,6 +2,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { AuthProvider } from './lib/auth'
 import Layout from './components/Layout'
 import Auth from './pages/Auth'
+import Home from './pages/Home'
 import Events from './pages/Events'
 import EventDetail from './pages/EventDetail'
 import Passes from './pages/Passes'
@@ -13,7 +14,8 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route element={<Layout />}>
-            <Route path="/" element={<Events />} />
+            <Route path="/" element={<Home />} />
+            <Route path="/events" element={<Events />} />
             <Route path="/events/:id" element={<EventDetail />} />
             <Route path="/login" element={<Auth mode="login" />} />
             <Route path="/register" element={<Auth mode="register" />} />

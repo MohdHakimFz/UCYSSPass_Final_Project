@@ -66,7 +66,7 @@ export default function EventDetail() {
   return (
     <>
       <p className="crumb">
-        <Link to="/" className="crumb-link">
+        <Link to="/events" className="crumb-link">
           <CaretLeft size={16} weight="bold" aria-hidden="true" />
           All events
         </Link>

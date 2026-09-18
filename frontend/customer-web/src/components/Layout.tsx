@@ -6,6 +6,7 @@ export default function Layout({ protectedRoute = false }: { protectedRoute?: bo
   const { user, loading, signOut } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
+  const isHome = location.pathname === '/'
 
   useEffect(() => {
     if (protectedRoute && !loading && !user) navigate(`/login?next=${encodeURIComponent(location.pathname)}`, { replace: true })
@@ -19,7 +20,7 @@ export default function Layout({ protectedRoute = false }: { protectedRoute?: bo
             SentryPass
           </Link>
           <nav className="nav" aria-label="Main">
-            <NavLink to="/" end>
+            <NavLink to="/events">
               Events
             </NavLink>
             <NavLink to="/passes">My passes</NavLink>
@@ -41,7 +42,7 @@ export default function Layout({ protectedRoute = false }: { protectedRoute?: bo
           </div>
         </div>
       </header>
-      <main className="page">{protectedRoute && (loading || !user) ? <p className="loading">Checking your session…</p> : <Outlet />}</main>
+      <main className={isHome ? 'home-main' : 'page'}>{protectedRoute && (loading || !user) ? <p className="loading">Checking your session…</p> : <Outlet />}</main>
     </>
   )
 }
