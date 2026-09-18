@@ -8,7 +8,7 @@ import { CATEGORY_LABEL, Notice, formatWhen, Skeleton } from '@/customer/ui'
 
 export default function EventDetail() {
   const { id } = useParams()
-  const { user } = useAuth()
+  const { user, loading: sessionLoading } = useAuth()
   const navigate = useNavigate()
   const { data: event, error, reload } = useFetch<EventItem>(`/events/${id}`)
   const [busyId, setBusyId] = useState<number | null>(null)
@@ -116,7 +116,7 @@ export default function EventDetail() {
                   </p>
                 </div>
                 <strong className="price">{Number(t.price) === 0 ? 'Free' : `RM ${Number(t.price).toFixed(2)}`}</strong>
-                <button className="btn" disabled={!bookable || busyId === t.id} onClick={() => book(t)}>
+                <button className="btn" disabled={!bookable || sessionLoading || busyId === t.id} onClick={() => book(t)}>
                   {busyId === t.id ? 'Booking…' : t.seats_remaining > 0 ? 'Book this pass' : 'Join waitlist'}
                 </button>
               </li>

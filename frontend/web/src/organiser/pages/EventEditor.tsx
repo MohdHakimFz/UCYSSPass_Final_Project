@@ -84,7 +84,7 @@ export default function EventEditor() {
       <EventForm
         key={event?.id ?? 'new'}
         event={event}
-        venues={venues?.data ?? []}
+        venues={venues?.data ?? null}
         onSaved={(saved) => (isNew ? navigate(`/organiser/events/${saved.id}`, { replace: true }) : reloadAll())}
       />
 
@@ -112,7 +112,7 @@ function EventForm({
   onSaved,
 }: {
   event: EventItem | null
-  venues: Venue[]
+  venues: Venue[] | null
   onSaved: (e: EventItem) => void
 }) {
   const [f, setF] = useState({
@@ -134,7 +134,7 @@ function EventForm({
     setNote(null)
     const body = {
       ...f,
-      venue_id: Number(f.venue_id || venues[0]?.id),
+      venue_id: Number(f.venue_id || venues?.[0]?.id),
       start_at: new Date(f.start_at).toISOString(),
       end_at: new Date(f.end_at).toISOString(),
       description: f.description || null,
@@ -169,8 +169,8 @@ function EventForm({
             <SelectItem key={c} value={c} text={CATEGORY_LABEL[c]} />
           ))}
         </Select>
-        <Select id="venue" labelText="Venue" required value={f.venue_id || String(venues[0]?.id ?? '')} onChange={(e) => setF({ ...f, venue_id: e.target.value })}>
-          {venues.map((v) => (
+        <Select id="venue" labelText="Venue" required disabled={!venues?.length} value={f.venue_id || String(venues?.[0]?.id ?? '')} onChange={(e) => setF({ ...f, venue_id: e.target.value })}>
+          {(venues ?? []).map((v) => (
             <SelectItem key={v.id} value={String(v.id)} text={`${v.name} (holds ${v.capacity})`} />
           ))}
         </Select>
@@ -184,9 +184,11 @@ function EventForm({
       </div>
       <TextArea id="description" labelText="Description" rows={4} value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} style={{ marginBottom: 24 }} />
       <div className="form-actions">
-        <Button type="submit" disabled={busy}>
+        <Button type="submit" disabled={busy || !venues?.length}>
           {busy ? 'Saving…' : event ? 'Save event' : 'Create event'}
         </Button>
+        {venues === null && <span className="sub">Loading venues…</span>}
+        {venues?.length === 0 && <span className="sub">There are no venues yet. Ask an administrator to add one.</span>}
       </div>
     </form>
   )
