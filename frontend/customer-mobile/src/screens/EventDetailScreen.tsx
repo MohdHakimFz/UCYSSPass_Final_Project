@@ -5,6 +5,7 @@ import { api, ApiError, CATEGORY_LABEL, errorText, type Booking, type EventItem,
 import { useAuth } from '../lib/auth'
 import { useFetch } from '../lib/useFetch'
 import { Button, Empty, Notice, Skeleton, formatWhen } from '../components/ui'
+import { PosterArt, POSTER } from '../components/PosterArt'
 import { colors, fonts } from '../theme'
 import type { RootParamList } from '../../App'
 
@@ -48,9 +49,16 @@ export default function EventDetailScreen({ route, navigation }: NativeStackScre
 
   return (
     <ScrollView style={{ backgroundColor: colors.concrete }} contentContainerStyle={s.pad}>
+      <View style={s.hero}>
+        <PosterArt category={event.category} />
+        <Text style={[s.heroDay, { color: POSTER[event.category].ink }]}>{new Date(event.start_at).getDate()}</Text>
+        <Text style={[s.heroMonth, { color: POSTER[event.category].ink }]}>
+          {new Date(event.start_at).toLocaleString('en-MY', { month: 'long', year: 'numeric' }).toUpperCase()}
+        </Text>
+      </View>
       <Text style={s.h1}>{event.title}</Text>
       <Text style={s.sub}>
-        {CATEGORY_LABEL[event.category]} · {formatWhen(event.start_at)} · {event.venue?.name ?? 'Venue to be announced'}
+        {CATEGORY_LABEL[event.category]}, {formatWhen(event.start_at)}, {event.venue?.name ?? 'Venue to be announced'}
       </Text>
       <View style={{ alignSelf: 'flex-start' }}>
         <Button
@@ -97,6 +105,9 @@ export default function EventDetailScreen({ route, navigation }: NativeStackScre
 }
 
 const s = StyleSheet.create({
+  hero: { height: 200, overflow: 'hidden', justifyContent: 'flex-end', padding: 16 },
+  heroDay: { fontFamily: fonts.heavy, fontSize: 96, lineHeight: 96, letterSpacing: -3 },
+  heroMonth: { fontFamily: fonts.heavy, fontSize: 15, letterSpacing: 2 },
   pad: { padding: 16, gap: 12 },
   loading: { fontFamily: fonts.regular, color: colors.inkSoft, textAlign: 'center', padding: 32 },
   h1: { fontFamily: fonts.heavy, fontSize: 28, lineHeight: 32, color: colors.ink },

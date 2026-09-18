@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { ActivityIndicator, Animated, Pressable, StyleSheet, Text, TextInput, View, type TextInputProps } from 'react-native'
-import Svg, { Circle, Path } from 'react-native-svg'
+import { CheckCircle, Warning, WarningCircle } from 'phosphor-react-native'
 import { colors, fonts } from '../theme'
 import type { BookingStatus } from '../lib/api'
 
@@ -61,7 +61,7 @@ export function StatusTag({ status }: { status: BookingStatus }) {
   const t = TONE[status]
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-      <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: t.dot }} />
+      <View style={{ width: 10, height: 10, borderRadius: 0, backgroundColor: t.dot }} />
       <Text style={{ fontFamily: fonts.semibold, fontSize: 14, color: colors.ink }}>{t.label}</Text>
     </View>
   )
@@ -69,34 +69,14 @@ export function StatusTag({ status }: { status: BookingStatus }) {
 
 function NoticeIcon({ tone }: { tone: 'ok' | 'error' | 'warn' }) {
   const color = tone === 'ok' ? colors.cleared : tone === 'error' ? colors.revoked : colors.held
-  return (
-    <Svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-      {tone === 'ok' && (
-        <>
-          <Circle cx={12} cy={12} r={9} />
-          <Path d="M8 12.5l3 3 5-6" />
-        </>
-      )}
-      {tone === 'error' && (
-        <>
-          <Circle cx={12} cy={12} r={9} />
-          <Path d="M12 7.5V13M12 16.5v.01" />
-        </>
-      )}
-      {tone === 'warn' && (
-        <>
-          <Path d="M12 3.5l9.5 16.5h-19z" />
-          <Path d="M12 10v4.5M12 17.5v.01" />
-        </>
-      )}
-    </Svg>
-  )
+  const Icon = tone === 'ok' ? CheckCircle : tone === 'error' ? WarningCircle : Warning
+  return <Icon size={20} color={color} weight="bold" />
 }
 
 export function Notice({ tone, text }: { tone: 'ok' | 'error' | 'warn'; text: string }) {
   const bg = tone === 'ok' ? '#DCEFE8' : tone === 'error' ? '#F3DCDA' : '#F3ECD7'
   return (
-    <View accessibilityRole="alert" style={{ flexDirection: 'row', gap: 12, backgroundColor: bg, padding: 12, borderRadius: 3, alignItems: 'flex-start' }}>
+    <View accessibilityRole="alert" style={{ flexDirection: 'row', gap: 12, backgroundColor: bg, padding: 12, borderRadius: 0, alignItems: 'flex-start' }}>
       <View style={{ marginTop: 1 }}>
         <NoticeIcon tone={tone} />
       </View>
@@ -131,7 +111,7 @@ export function Skeleton({ rows = 3, height = 84 }: { rows?: number; height?: nu
   return (
     <View accessibilityLabel="Loading" style={{ gap: 12 }}>
       {Array.from({ length: rows }, (_, i) => (
-        <Animated.View key={i} style={{ height, borderRadius: 3, backgroundColor: '#D5DCE2', opacity: pulse }} />
+        <Animated.View key={i} style={{ height, borderRadius: 0, backgroundColor: '#D5DCE2', opacity: pulse }} />
       ))}
     </View>
   )
@@ -142,7 +122,7 @@ export function formatWhen(iso: string) {
 }
 
 const s = StyleSheet.create({
-  btn: { minHeight: 48, paddingHorizontal: 18, alignItems: 'center', justifyContent: 'center', borderRadius: 3, borderWidth: 2, borderColor: colors.ink },
+  btn: { minHeight: 48, paddingHorizontal: 18, alignItems: 'center', justifyContent: 'center', borderRadius: 0, borderWidth: 2, borderColor: colors.ink },
   btnPrimary: { backgroundColor: colors.badge },
   btnQuiet: { backgroundColor: 'transparent' },
   btnDanger: { backgroundColor: 'transparent', borderColor: 'transparent' },
@@ -152,7 +132,7 @@ const s = StyleSheet.create({
     minHeight: 48,
     borderWidth: 2,
     borderColor: colors.ink,
-    borderRadius: 3,
+    borderRadius: 0,
     backgroundColor: '#fff',
     paddingHorizontal: 12,
     fontFamily: fonts.regular,

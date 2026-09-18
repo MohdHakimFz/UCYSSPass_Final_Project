@@ -34,10 +34,10 @@ function Tabs() {
         headerStyle: { backgroundColor: colors.ink },
         headerTintColor: colors.paper,
         headerTitleStyle: { fontFamily: fonts.heavy },
-        tabBarActiveTintColor: colors.ink,
+        tabBarActiveTintColor: colors.accent,
         tabBarInactiveTintColor: colors.inkSoft,
         tabBarLabelStyle: { fontFamily: fonts.semibold, fontSize: 13 },
-        tabBarStyle: { backgroundColor: colors.paper, height: 60, paddingBottom: 6 },
+        tabBarStyle: { backgroundColor: colors.paper, height: 60, paddingBottom: 6, borderTopWidth: 2, borderTopColor: colors.ink },
         tabBarIconStyle: { display: 'none' },
         tabBarLabelPosition: 'beside-icon',
       }}

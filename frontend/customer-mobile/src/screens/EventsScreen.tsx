@@ -5,6 +5,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { CATEGORY_LABEL, type Category, type EventItem, type Paginated } from '../lib/api'
 import { useFetch } from '../lib/useFetch'
 import { Empty, Notice, Skeleton } from '../components/ui'
+import { PosterArt, POSTER } from '../components/PosterArt'
 import { colors, fonts } from '../theme'
 import type { RootParamList } from '../../App'
 
@@ -71,7 +72,7 @@ export default function EventsScreen() {
   return (
     <FlatList
       style={{ backgroundColor: colors.concrete }}
-      contentContainerStyle={{ padding: 16, gap: 12 }}
+      contentContainerStyle={{ padding: 16, gap: 8 }}
       data={data?.data ?? []}
       keyExtractor={(e) => String(e.id)}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}
@@ -120,29 +121,34 @@ export default function EventsScreen() {
           <Empty text="Nothing matches yet. Try a different category, or widen the date and price." />
         ) : null
       }
-      renderItem={({ item: ev }) => {
+      renderItem={({ item: ev, index: i }) => {
         const d = new Date(ev.start_at)
         const seats = seatState(ev)
+        const tone = POSTER[ev.category]
+        const featured = i === 0
         return (
           <Pressable
             onPress={() => navigation.navigate('EventDetail', { id: ev.id })}
             accessibilityRole="button"
-            style={({ pressed }) => [s.pass, pressed && { opacity: 0.85 }]}
+            accessibilityLabel={ev.title}
+            style={({ pressed }) => [s.poster, { minHeight: featured ? 260 : 190 }, pressed && { opacity: 0.88 }]}
           >
-            <View style={s.stub}>
-              <Text style={s.stubDay}>{d.getDate()}</Text>
-              <Text style={s.stubMonth}>{d.toLocaleString('en-MY', { month: 'short' })}</Text>
+            <PosterArt category={ev.category} />
+            <View style={s.posterTop}>
+              <View>
+                <Text style={[s.day, { color: tone.ink, fontSize: featured ? 88 : 64, lineHeight: featured ? 88 : 64 }]}>{d.getDate()}</Text>
+                <Text style={[s.month, { color: tone.ink }]}>{d.toLocaleString('en-MY', { month: 'short' }).toUpperCase()}</Text>
+              </View>
+              <Text style={[s.cat, { color: tone.bg, backgroundColor: tone.ink }]}>{CATEGORY_LABEL[ev.category].toUpperCase()}</Text>
             </View>
-            <View style={{ flex: 1, padding: 14, gap: 4 }}>
-              <Text style={s.title}>{ev.title}</Text>
-              <Text style={s.sub}>
-                {CATEGORY_LABEL[ev.category]} · {ev.venue?.name ?? 'Venue to be announced'}
-              </Text>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 6 }}>
-                <Text style={s.price}>
-                  {ev.from_price != null ? (Number(ev.from_price) === 0 ? 'Free' : `From RM ${Number(ev.from_price).toFixed(0)}`) : '—'}
+            <View style={s.posterBody}>
+              <Text style={[s.title, { color: tone.ink, fontSize: featured ? 26 : 20 }]}>{ev.title}</Text>
+              <Text style={[s.sub, { color: tone.ink }]}>{ev.venue?.name ?? 'Venue to be announced'}</Text>
+              <View style={s.posterFoot}>
+                <Text style={[s.price, { color: tone.ink }]}>
+                  {ev.from_price != null ? (Number(ev.from_price) === 0 ? 'Free' : `From RM ${Number(ev.from_price).toFixed(0)}`) : 'Not on sale'}
                 </Text>
-                <Text style={[s.seat, { color: seats.color }]}>{seats.text}</Text>
+                <Text style={[s.seat, { color: tone.ink }]}>{seats.text}</Text>
               </View>
             </View>
           </Pressable>
@@ -158,31 +164,26 @@ const s = StyleSheet.create({
     minHeight: 48,
     borderWidth: 2,
     borderColor: colors.ink,
-    borderRadius: 3,
+    borderRadius: 0,
     backgroundColor: '#fff',
     paddingHorizontal: 12,
     fontFamily: fonts.regular,
     fontSize: 16,
     color: colors.ink,
   },
-  chip: { paddingHorizontal: 16, minHeight: 40, justifyContent: 'center', borderRadius: 999, borderWidth: 2, borderColor: colors.ink },
+  chip: { paddingHorizontal: 14, minHeight: 40, justifyContent: 'center', borderRadius: 0, borderWidth: 2, borderColor: colors.ink },
   chipOn: { backgroundColor: colors.ink },
   chipText: { fontFamily: fonts.semibold, fontSize: 14, color: colors.ink },
   divider: { width: 2, marginVertical: 8, backgroundColor: colors.line },
-  pass: { flexDirection: 'row', backgroundColor: colors.paper, borderRadius: 3, overflow: 'hidden' },
-  stub: {
-    width: 70,
-    backgroundColor: colors.ink,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRightWidth: 3,
-    borderRightColor: colors.concrete,
-    borderStyle: 'dashed',
-  },
-  stubDay: { fontFamily: fonts.heavy, fontSize: 28, color: colors.paper },
-  stubMonth: { fontFamily: fonts.semibold, fontSize: 14, color: colors.badge },
-  title: { fontFamily: fonts.heavy, fontSize: 17, color: colors.ink },
-  sub: { fontFamily: fonts.regular, fontSize: 14, color: colors.inkSoft },
-  price: { fontFamily: fonts.heavy, fontSize: 15, color: colors.ink },
+  poster: { overflow: 'hidden', justifyContent: 'space-between', padding: 16 },
+  posterTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  posterBody: { gap: 2, marginTop: 20 },
+  posterFoot: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 8 },
+  day: { fontFamily: fonts.heavy, letterSpacing: -2 },
+  month: { fontFamily: fonts.heavy, fontSize: 16, letterSpacing: 2 },
+  cat: { fontFamily: fonts.heavy, fontSize: 11, letterSpacing: 1.5, paddingHorizontal: 8, paddingVertical: 5, overflow: 'hidden' },
+  title: { fontFamily: fonts.heavy, letterSpacing: -0.5 },
+  sub: { fontFamily: fonts.semibold, fontSize: 14 },
+  price: { fontFamily: fonts.heavy, fontSize: 15 },
   seat: { fontFamily: fonts.semibold, fontSize: 13 },
 })
