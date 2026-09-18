@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/auth'
+import { portalFor } from '../lib/portals'
 
 export default function Layout({ protectedRoute = false }: { protectedRoute?: boolean }) {
   const { user, loading, signOut } = useAuth()
@@ -28,6 +29,11 @@ export default function Layout({ protectedRoute = false }: { protectedRoute?: bo
           <div className="who">
             {user ? (
               <>
+                {portalFor(user) && (
+                  <a href={portalFor(user)!.url} className="who-name">
+                    {portalFor(user)!.label}
+                  </a>
+                )}
                 <Link to="/profile" className="who-name">{user.name}</Link>
                 <button onClick={() => signOut().then(() => navigate('/'))}>Sign out</button>
               </>

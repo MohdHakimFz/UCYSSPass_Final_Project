@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { api, errorText, tokenStore, type User } from '../lib/api'
 import { useAuth } from '../lib/auth'
+import { portalFor } from '../lib/portals'
 import { Notice } from '../components/ui'
 
 export default function Auth({ mode }: { mode: 'login' | 'register' }) {
@@ -14,7 +15,10 @@ export default function Auth({ mode }: { mode: 'login' | 'register' }) {
   const [busy, setBusy] = useState(false)
 
   useEffect(() => {
-    if (!loading && user) navigate(next, { replace: true })
+    if (loading || !user) return
+    const portal = portalFor(user)
+    if (portal) window.location.replace(portal.url)
+    else navigate(next, { replace: true })
   }, [loading, user, navigate, next])
 
   async function onSubmit(e: React.FormEvent) {
@@ -23,7 +27,12 @@ export default function Auth({ mode }: { mode: 'login' | 'register' }) {
     setError(null)
     try {
       if (mode === 'login') {
-        await signIn(f.email, f.password)
+        const signedIn = await signIn(f.email, f.password)
+        const portal = portalFor(signedIn)
+        if (portal) {
+          window.location.replace(portal.url)
+          return
+        }
       } else {
         const res = await api<{ user: User; token: string }>('/auth/register', { method: 'POST', body: f })
         tokenStore.set(res.token)
@@ -48,6 +57,7 @@ export default function Auth({ mode }: { mode: 'login' | 'register' }) {
       <div className="auth-form">
         <div className="auth-card">
       <h1>{isLogin ? 'Sign in' : 'Create your account'}</h1>
+      {isLogin && params.get('portal') && <p className="auth-portal">Sign in to continue to the {params.get('portal') === 'admin' ? 'admin dashboard' : 'organiser portal'}.</p>}
       <p className="lede-sub" style={{ marginTop: 8, marginBottom: 24 }}>
         {isLogin ? 'Your passes and bookings are waiting.' : 'Book seats at security events and keep your passes in one place.'}
       </p>

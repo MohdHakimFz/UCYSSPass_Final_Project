@@ -625,3 +625,8 @@
   line-clamp: 3;
   overflow: hidden;
 }
+
+.auth-portal {
+  margin-top: 8px;
+  color: var(--ink-soft);
+}

@@ -15,6 +15,7 @@ import {
 import { type Category, type EventItem, type Paginated } from '../lib/api'
 import { useFetch } from '../lib/useFetch'
 import { CATEGORY_LABEL } from '../components/ui'
+import { ORGANISER_URL } from '../lib/portals'
 
 const CATEGORIES = Object.keys(CATEGORY_LABEL) as Category[]
 
@@ -245,7 +246,7 @@ export default function Home() {
               <ShieldCheck size={22} weight="bold" aria-hidden="true" /> Every pass verified before entry
             </li>
           </ul>
-          <a className="btn btn-inverse" href="http://localhost:5174" rel="noreferrer">
+          <a className="btn btn-inverse" href={ORGANISER_URL} rel="noreferrer">
             Open the organiser portal <ArrowRight weight="bold" aria-hidden="true" />
           </a>
         </div>

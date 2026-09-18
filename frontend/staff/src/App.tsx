@@ -2,7 +2,7 @@ import { lazy, Suspense } from 'react'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { AuthProvider } from './lib/auth'
 import Layout from './components/Layout'
-import Login from './pages/Login'
+import { Callback, SignIn } from './pages/SignIn'
 import MyEvents from './pages/MyEvents'
 import EventEditor from './pages/EventEditor'
 
@@ -14,7 +14,8 @@ export default function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/login" element={<Login />} />
+          <Route path="/login" element={<SignIn />} />
+          <Route path="/auth/callback" element={<Callback />} />
           <Route element={<Layout />}>
             <Route path="/" element={<MyEvents />} />
             <Route path="/events/:id" element={<EventEditor />} />
