@@ -11,6 +11,10 @@ class CheckinBookingRequest extends FormRequest
      */
     public function authorize(): bool
     {
+        if ($this->attributes->get('api_key_authenticated')) {
+            return true;
+        }
+
         return $this->user()->can('checkin', $this->route('booking'));
     }
 

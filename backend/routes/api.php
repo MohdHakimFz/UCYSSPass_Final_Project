@@ -49,9 +49,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/bookings/{booking}', [BookingController::class, 'show']);
     Route::get('/bookings/{booking}/qr-code', [BookingController::class, 'qrCode']);
     Route::put('/bookings/{booking}/cancel', [BookingController::class, 'cancel']);
-    Route::post('/bookings/{booking}/checkin', [BookingController::class, 'checkin']);
     Route::delete('/bookings/{booking}', [BookingController::class, 'destroy']);
 
     // Anti-scalping: throttle booking creation to 5 attempts/minute per user (spec §5.3).
     Route::post('/bookings', [BookingController::class, 'store'])->middleware('throttle:5,1');
 });
+
+// Check-in — scanning device (X-Api-Key) or a logged-in organiser/admin (Sanctum), spec §6.
+Route::post('/bookings/{booking}/checkin', [BookingController::class, 'checkin'])->middleware('checkin.auth');

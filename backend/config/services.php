@@ -23,6 +23,10 @@ return [
         'from' => env('RESEND_FROM_EMAIL', 'SentryPass <onboarding@resend.dev>'),
     ],
 
+    'checkin' => [
+        'api_key' => env('CHECKIN_API_KEY'),
+    ],
+
     'ses' => [
         'key' => env('AWS_ACCESS_KEY_ID'),
         'secret' => env('AWS_SECRET_ACCESS_KEY'),
