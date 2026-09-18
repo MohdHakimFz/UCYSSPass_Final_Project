@@ -19,6 +19,9 @@ services:
             IGNITION_LOCAL_SITES_PATH: '${PWD}'
         volumes:
             - '.:/var/www/html'
+            # vendor/ lives on a Docker-native volume: reading thousands of small files
+            # through the Windows bind mount costs ~5ms each and made every request take seconds.
+            - 'sail-vendor:/var/www/html/vendor'
         networks:
             - sail
         depends_on:
@@ -53,4 +56,6 @@ networks:
         driver: bridge
 volumes:
     sail-pgsql:
+        driver: local
+    sail-vendor:
         driver: local
