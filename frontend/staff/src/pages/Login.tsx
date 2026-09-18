@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Button, PasswordInput, TextInput } from '@carbon/react'
 import { errorText } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { Notice } from '../components/ui'
@@ -33,8 +34,8 @@ export default function Login() {
   return (
     <div className="gate">
       <aside className="gate-side">
-        <div className="wordmark">
-          <span>Organiser</span>SentryPass
+        <div style={{ fontSize: '1rem' }}>
+          <strong style={{ fontWeight: 600 }}>SentryPass</strong> Organiser
         </div>
         <div>
           <h1>Run the door as well as the event.</h1>
@@ -42,26 +43,21 @@ export default function Login() {
         </div>
       </aside>
       <div className="gate-form">
-        <form onSubmit={onSubmit}>
+        <form onSubmit={onSubmit} className="stack">
           <h2>Sign in</h2>
           {error && <Notice tone="error">{error}</Notice>}
-          <label className="field">
-            Email
-            <input type="email" required autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} />
-          </label>
-          <label className="field">
-            Password
-            <input
-              type="password"
-              required
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </label>
-          <button className="btn" disabled={busy}>
+          <TextInput id="email" type="email" labelText="Email" required autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <PasswordInput
+            id="password"
+            labelText="Password"
+            required
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <Button type="submit" disabled={busy} style={{ width: '100%', maxWidth: '100%' }}>
             {busy ? 'Signing in…' : 'Sign in'}
-          </button>
+          </Button>
         </form>
       </div>
     </div>

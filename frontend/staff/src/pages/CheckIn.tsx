@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Html5Qrcode } from 'html5-qrcode'
+import { Button, ProgressBar, Select, SelectItem, TextArea } from '@carbon/react'
+import { CheckmarkFilled, ErrorFilled, Camera, StopFilled } from '@carbon/icons-react'
 import { api, ApiError, errorText, type Booking, type EventItem, type EventStats, type Paginated } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { useFetch } from '../lib/useFetch'
@@ -22,12 +24,7 @@ function parsePass(raw: string): { id: number; token: string } | null {
 }
 
 function ResultIcon({ ok }: { ok: boolean }) {
-  return (
-    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <circle cx="12" cy="12" r="10" />
-      {ok ? <path d="M7.5 12.5l3 3 6-7" /> : <path d="M8.5 8.5l7 7M15.5 8.5l-7 7" />}
-    </svg>
-  )
+  return ok ? <CheckmarkFilled size={48} aria-hidden="true" /> : <ErrorFilled size={48} aria-hidden="true" />
 }
 
 export default function CheckIn() {
@@ -130,17 +127,14 @@ export default function CheckIn() {
     <>
       <div className="page-head">
         <h1>Check-in</h1>
-        <label className="field event-pick">
-          Event
-          <select value={eventId} onChange={(e) => setChosen(e.target.value)}>
-            {events?.data.length === 0 && <option value="">No published events</option>}
+        <div style={{ minWidth: 280 }}>
+          <Select id="event" labelText="Event" value={eventId} onChange={(e) => setChosen(e.target.value)}>
+            {events?.data.length === 0 && <SelectItem value="" text="No published events" />}
             {events?.data.map((ev) => (
-              <option key={ev.id} value={ev.id}>
-                {ev.title}
-              </option>
+              <SelectItem key={ev.id} value={String(ev.id)} text={ev.title} />
             ))}
-          </select>
-        </label>
+          </Select>
+        </div>
       </div>
 
       {outcome && (
@@ -155,7 +149,7 @@ export default function CheckIn() {
                   {outcome.booking.ticket_type?.event ? ` for ${outcome.booking.ticket_type.event.title}` : ''} is checked in.
                 </p>
                 {eventId && outcome.booking.ticket_type?.event && String(outcome.booking.ticket_type.event.id) !== eventId && (
-                  <p className="result-warn">This ticket is for a different event from the one selected above.</p>
+                  <p>This ticket is for a different event from the one selected above.</p>
                 )}
               </>
             ) : (
@@ -165,88 +159,94 @@ export default function CheckIn() {
               </>
             )}
           </div>
-          <button className="btn" onClick={scanNext}>
+          <Button kind="tertiary" onClick={scanNext} style={{ color: '#fff', borderColor: '#fff' }}>
             Scan next guest
-          </button>
+          </Button>
         </div>
       )}
 
       <div className="door">
         <div className="pane">
-          <h2 className="section-title">Scan a pass</h2>
-          <p className="section-note">Point the camera at the QR code on the guest&apos;s ticket.</p>
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 400 }}>Scan a pass</h2>
+          <p className="sub" style={{ margin: '4px 0 16px', fontSize: '0.875rem' }}>
+            Point the camera at the QR code on the guest&apos;s ticket.
+          </p>
           <div id="reader" className="reader" hidden={!scanning} />
           {scanning ? (
-            <button className="btn-quiet" onClick={() => setScanning(false)}>
+            <Button kind="tertiary" renderIcon={StopFilled} onClick={() => setScanning(false)}>
               Stop scanning
-            </button>
+            </Button>
           ) : (
-            <button className="btn scan-btn" onClick={scanNext}>
+            <Button renderIcon={Camera} onClick={scanNext}>
               Start scanning
-            </button>
+            </Button>
           )}
           {camError && (
-            <p className="notice" data-tone="warn" style={{ marginTop: 16 }}>
+            <p className="sub" style={{ marginTop: 16, fontSize: '0.875rem' }}>
               {camError}
             </p>
           )}
 
-          <details className="manual">
-            <summary>Can&apos;t scan? Enter the ticket instead</summary>
+          <details style={{ marginTop: 32 }}>
+            <summary style={{ cursor: 'pointer', fontWeight: 600 }}>Can&apos;t scan? Enter the ticket instead</summary>
             <form
+              className="stack"
+              style={{ marginTop: 16 }}
               onSubmit={(e) => {
                 e.preventDefault()
                 void submit(manual)
               }}
             >
-              <label className="field">
-                Ticket text (booking number, then signature)
-                <textarea rows={3} value={manual} onChange={(e) => setManual(e.target.value)} placeholder="31 7f14877428db33fd…" />
-              </label>
-              <button className="btn-quiet" disabled={busy || !manual.trim()}>
+              <TextArea
+                id="manual"
+                labelText="Ticket text (booking number, then signature)"
+                rows={3}
+                value={manual}
+                onChange={(e) => setManual(e.target.value)}
+                placeholder="31 7f14877428db33fd…"
+              />
+              <Button type="submit" kind="tertiary" disabled={busy || !manual.trim()}>
                 Check in
-              </button>
+              </Button>
             </form>
           </details>
         </div>
 
-        <aside className="pane count" aria-label="Door count">
+        <aside className="pane" aria-label="Door count">
           {!stats ? (
-            <p className="loading" style={{ textAlign: 'left', padding: 0 }}>
-              Loading the door count…
-            </p>
+            <p className="sub">Loading the door count…</p>
           ) : held === 0 ? (
             <>
-              <h2 className="section-title">No confirmed guests yet</h2>
-              <p className="section-note">
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 400 }}>No confirmed guests yet</h2>
+              <p className="sub" style={{ marginTop: 4 }}>
                 Guests appear here once they book{stats.waitlisted > 0 ? `. ${stats.waitlisted} on the waitlist` : ''}.
               </p>
             </>
           ) : (
             <>
-              <h2 className="wide count-figure">
+              <p className="count-figure">
                 {stats.attended} <span>of {held} arrived</span>
-              </h2>
-              <div className="bar" role="img" aria-label={`${stats.attended} of ${held} checked in`}>
-                <i className="b-attended" style={{ width: `${(stats.attended / held) * 100}%` }} />
-              </div>
-              <p className="section-note" style={{ marginTop: 10 }}>
-                {held - stats.attended} still to arrive
-                {stats.waitlisted > 0 ? `, ${stats.waitlisted} on the waitlist` : ''}.
               </p>
+              <ProgressBar
+                label="Arrived"
+                hideLabel
+                value={stats.attended}
+                max={held}
+                helperText={`${held - stats.attended} still to arrive${stats.waitlisted > 0 ? `, ${stats.waitlisted} on the waitlist` : ''}`}
+              />
             </>
           )}
 
           {stats && stats.recent_checkins.length > 0 && (
             <>
-              <h3 className="recent-title">Just checked in</h3>
+              <h3 style={{ fontSize: '1rem', fontWeight: 600, marginTop: 32 }}>Just checked in</h3>
               <ul className="tally">
                 {stats.recent_checkins.slice(0, 5).map((c) => (
                   <li key={c.booking_id}>
                     <span>
-                      {c.name} <span className="sub-inline">· {c.tier}</span>
+                      {c.name} <span className="sub" style={{ display: 'inline' }}>({c.tier})</span>
                     </span>
-                    <span className="sub-inline">{formatWhen(c.checked_in_at)}</span>
+                    <span className="sub" style={{ display: 'inline' }}>{formatWhen(c.checked_in_at)}</span>
                   </li>
                 ))}
               </ul>

@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { Button, ProgressBar, Select, SelectItem, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TextArea, TextInput } from '@carbon/react'
+import { Add, Copy, Download } from '@carbon/icons-react'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
   api,
@@ -14,7 +16,7 @@ import {
   type Venue,
 } from '../lib/api'
 import { useFetch } from '../lib/useFetch'
-import { CATEGORY_LABEL, Notice, Tag, formatWhen, Skeleton } from '../components/ui'
+import { CATEGORY_LABEL, Notice, StatusTag, formatWhen, Skeleton } from '../components/ui'
 
 const CATEGORIES = Object.keys(CATEGORY_LABEL) as Category[]
 const STATUSES: EventStatus[] = ['draft', 'published', 'cancelled', 'completed']
@@ -56,22 +58,24 @@ export default function EventEditor() {
     <>
       <div className="page-head">
         <h1>{isNew ? 'Create event' : event!.title}</h1>
-        {!isNew && <Tag status={event!.status} />}
+        {!isNew && <StatusTag status={event!.status} />}
       </div>
 
       {actionNote && <Notice tone="error">{actionNote}</Notice>}
 
       {!isNew && (
         <div className="form-actions" style={{ marginBottom: 24 }}>
-          <button className="btn-quiet" onClick={duplicate}>
+          <Button kind="tertiary" size="md" renderIcon={Copy} onClick={duplicate}>
             Duplicate event
-          </button>
-          <button
-            className="btn-quiet"
+          </Button>
+          <Button
+            kind="tertiary"
+            size="md"
+            renderIcon={Download}
             onClick={() => downloadFile(`/events/${id}/export`, `attendees-event-${id}.csv`).catch((e) => setActionNote(errorText(e)))}
           >
             Export attendees (CSV)
-          </button>
+          </Button>
         </div>
       )}
 
@@ -86,14 +90,14 @@ export default function EventEditor() {
 
       {!isNew && event && (
         <>
-          <section>
-            <h2 className="section-title">Ticket tiers</h2>
-            <p className="section-note">Each tier has its own price and seat count. When a tier sells out, new bookings join its waitlist.</p>
+          <section className="section">
+            <h2>Ticket tiers</h2>
+            <p className="note">Each tier has its own price and seat count. When a tier sells out, new bookings join its waitlist.</p>
             <Tiers event={event} stats={stats} onChange={reloadAll} />
           </section>
-          <section>
-            <h2 className="section-title">Attendees</h2>
-            <p className="section-note">Everyone booked on this event. People are checked in from the Check-in tab.</p>
+          <section className="section">
+            <h2>Attendees</h2>
+            <p className="note">Everyone booked on this event. People are checked in from the Check-in tab.</p>
             <Attendees eventId={event.id} />
           </section>
         </>
@@ -156,60 +160,33 @@ function EventForm({
   }
 
   return (
-    <form className="panel" onSubmit={save}>
+    <form className="pane" onSubmit={save} style={{ marginTop: 24 }}>
       {note && <Notice tone={note.tone}>{note.text}</Notice>}
-      <div className="form-grid">
-        <label className="field">
-          Title
-          <input required value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} />
-        </label>
-        <label className="field">
-          Category
-          <select value={f.category} onChange={(e) => setF({ ...f, category: e.target.value as Category })}>
-            {CATEGORIES.map((c) => (
-              <option key={c} value={c}>
-                {CATEGORY_LABEL[c]}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="field">
-          Venue
-          <select required value={f.venue_id || String(venues[0]?.id ?? '')} onChange={(e) => setF({ ...f, venue_id: e.target.value })}>
-            {venues.map((v) => (
-              <option key={v.id} value={v.id}>
-                {v.name} (holds {v.capacity})
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="field">
-          Status
-          <select value={f.status} onChange={(e) => setF({ ...f, status: e.target.value as EventStatus })}>
-            {STATUSES.map((s) => (
-              <option key={s} value={s}>
-                {s[0].toUpperCase() + s.slice(1)}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="field">
-          Starts
-          <input required type="datetime-local" value={f.start_at} onChange={(e) => setF({ ...f, start_at: e.target.value })} />
-        </label>
-        <label className="field">
-          Ends
-          <input required type="datetime-local" value={f.end_at} onChange={(e) => setF({ ...f, end_at: e.target.value })} />
-        </label>
+      <div className="form-grid" style={{ marginTop: note ? 16 : 0 }}>
+        <TextInput id="title" labelText="Title" required value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} />
+        <Select id="category" labelText="Category" value={f.category} onChange={(e) => setF({ ...f, category: e.target.value as Category })}>
+          {CATEGORIES.map((c) => (
+            <SelectItem key={c} value={c} text={CATEGORY_LABEL[c]} />
+          ))}
+        </Select>
+        <Select id="venue" labelText="Venue" required value={f.venue_id || String(venues[0]?.id ?? '')} onChange={(e) => setF({ ...f, venue_id: e.target.value })}>
+          {venues.map((v) => (
+            <SelectItem key={v.id} value={String(v.id)} text={`${v.name} (holds ${v.capacity})`} />
+          ))}
+        </Select>
+        <Select id="status" labelText="Status" value={f.status} onChange={(e) => setF({ ...f, status: e.target.value as EventStatus })}>
+          {STATUSES.map((s) => (
+            <SelectItem key={s} value={s} text={s[0].toUpperCase() + s.slice(1)} />
+          ))}
+        </Select>
+        <TextInput id="start" labelText="Starts" required type="datetime-local" value={f.start_at} onChange={(e) => setF({ ...f, start_at: e.target.value })} />
+        <TextInput id="end" labelText="Ends" required type="datetime-local" value={f.end_at} onChange={(e) => setF({ ...f, end_at: e.target.value })} />
       </div>
-      <label className="field" style={{ marginBottom: 20 }}>
-        Description
-        <textarea rows={4} value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} />
-      </label>
+      <TextArea id="description" labelText="Description" rows={4} value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} style={{ marginBottom: 24 }} />
       <div className="form-actions">
-        <button className="btn" disabled={busy}>
+        <Button type="submit" disabled={busy}>
           {busy ? 'Saving…' : event ? 'Save event' : 'Create event'}
-        </button>
+        </Button>
       </div>
     </form>
   )
@@ -255,76 +232,64 @@ function Tiers({ event, stats, onChange }: { event: EventItem; stats: EventStats
       {tiers.length === 0 ? (
         <p className="empty">No tiers yet. Add one (for example Early bird, Standard or VIP) to open bookings.</p>
       ) : (
-        <div className="ledger-wrap">
-          <table className="ledger">
-            <thead>
-              <tr>
-                <th>Tier</th>
-                <th>Price</th>
-                <th>Seats left</th>
-                <th>Waitlist</th>
-                <th />
-              </tr>
-            </thead>
-            <tbody>
-              {tiers.map((t) => (
-                <tr key={t.id}>
-                  <td>
-                    <strong>{t.name}</strong>
-                  </td>
-                  <td data-label="Price">RM {Number(t.price).toFixed(2)}</td>
-                  <td data-label="Seats left">
-                    {t.seats_remaining} of {t.capacity}
-                  </td>
-                  <td data-label="Waitlist">{waitByTier.get(t.id) ?? 0}</td>
-                  <td className="actions">
-                    <button
-                      className="btn-quiet"
-                      onClick={() => setDraft({ id: t.id, name: t.name, price: String(Number(t.price)), capacity: String(t.capacity) })}
-                    >
+        <Table aria-label="Ticket tiers">
+          <TableHead>
+            <TableRow>
+              <TableHeader>Tier</TableHeader>
+              <TableHeader>Price</TableHeader>
+              <TableHeader>Seats left</TableHeader>
+              <TableHeader>Waitlist</TableHeader>
+              <TableHeader />
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {tiers.map((t) => (
+              <TableRow key={t.id}>
+                <TableCell>
+                  <strong>{t.name}</strong>
+                </TableCell>
+                <TableCell>RM {Number(t.price).toFixed(2)}</TableCell>
+                <TableCell>
+                  {t.seats_remaining} of {t.capacity}
+                </TableCell>
+                <TableCell>{waitByTier.get(t.id) ?? 0}</TableCell>
+                <TableCell>
+                  <div className="form-actions">
+                    <Button kind="ghost" size="sm" onClick={() => setDraft({ id: t.id, name: t.name, price: String(Number(t.price)), capacity: String(t.capacity) })}>
                       Edit
-                    </button>{' '}
-                    <button className="btn-danger" onClick={() => remove(t)}>
+                    </Button>
+                    <Button kind="danger--ghost" size="sm" onClick={() => remove(t)}>
                       Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       )}
 
       {draft ? (
-        <form className="panel" onSubmit={save} style={{ marginTop: 16 }}>
-          <h2>{draft.id ? 'Edit tier' : 'Add tier'}</h2>
-          <div className="form-grid">
-            <label className="field">
-              Name
-              <input required value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
-            </label>
-            <label className="field">
-              Price (RM)
-              <input required type="number" min={0} step="0.01" value={draft.price} onChange={(e) => setDraft({ ...draft, price: e.target.value })} />
-            </label>
-            <label className="field">
-              Seats
-              <input required type="number" min={0} value={draft.capacity} onChange={(e) => setDraft({ ...draft, capacity: e.target.value })} />
-            </label>
+        <form className="pane" onSubmit={save} style={{ marginTop: 16 }}>
+          <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: 16 }}>{draft.id ? 'Edit tier' : 'Add tier'}</h3>
+          <div className="form-grid" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
+            <TextInput id="tier-name" labelText="Name" required value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
+            <TextInput id="tier-price" labelText="Price (RM)" required type="number" min={0} step="0.01" value={draft.price} onChange={(e) => setDraft({ ...draft, price: e.target.value })} />
+            <TextInput id="tier-seats" labelText="Seats" required type="number" min={0} value={draft.capacity} onChange={(e) => setDraft({ ...draft, capacity: e.target.value })} />
           </div>
           <div className="form-actions">
-            <button className="btn">Save tier</button>
-            <button type="button" className="btn-quiet" onClick={() => setDraft(null)}>
+            <Button type="submit">Save tier</Button>
+            <Button type="button" kind="ghost" onClick={() => setDraft(null)}>
               Cancel
-            </button>
+            </Button>
           </div>
         </form>
       ) : (
-        <p style={{ marginTop: 16 }}>
-          <button className="btn-quiet" onClick={() => setDraft({ name: '', price: '0', capacity: '50' })}>
+        <div style={{ marginTop: 16 }}>
+          <Button kind="tertiary" renderIcon={Add} onClick={() => setDraft({ name: '', price: '0', capacity: '50' })}>
             Add tier
-          </button>
-        </p>
+          </Button>
+        </div>
       )}
     </>
   )
@@ -338,56 +303,58 @@ function Attendees({ eventId }: { eventId: number }) {
   if (data.data.length === 0) return <p className="empty">Nobody has booked yet.</p>
 
   return (
-    <div className="ledger-wrap">
-      <table className="ledger">
-        <thead>
-          <tr>
-            <th>Attendee</th>
-            <th>Tier</th>
-            <th>Booked</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.data.map((b) => (
-            <tr key={b.id}>
-              <td>
-                <strong>{b.customer?.name}</strong>
-                <span className="sub">{b.customer?.email}</span>
-              </td>
-              <td data-label="Tier">{b.ticket_type?.name}</td>
-              <td data-label="Booked">{formatWhen(b.booked_at)}</td>
-              <td data-label="Status">
-                <Tag status={b.status} />
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <Table aria-label="Attendees">
+      <TableHead>
+        <TableRow>
+          <TableHeader>Attendee</TableHeader>
+          <TableHeader>Tier</TableHeader>
+          <TableHeader>Booked</TableHeader>
+          <TableHeader>Status</TableHeader>
+        </TableRow>
+      </TableHead>
+      <TableBody>
+        {data.data.map((b) => (
+          <TableRow key={b.id}>
+            <TableCell>
+              <strong>{b.customer?.name}</strong>
+              <span className="sub">{b.customer?.email}</span>
+            </TableCell>
+            <TableCell>{b.ticket_type?.name}</TableCell>
+            <TableCell>{formatWhen(b.booked_at)}</TableCell>
+            <TableCell>
+              <StatusTag status={b.status} />
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
   )
 }
 
 function StatsPanel({ stats }: { stats: EventStats }) {
-  const pct = (n: number) => (stats.capacity ? (n / stats.capacity) * 100 : 0)
   return (
-    <section style={{ marginBottom: 40 }}>
-      <h2 className="section-title">How it&apos;s going</h2>
-      <p className="lede-sub" style={{ marginTop: 0, marginBottom: 16 }}>
-        {stats.held} of {stats.capacity} seats are held ({stats.fill_rate}%). {stats.attended} of {stats.held} guests have checked in (
-        {stats.check_in_rate}%).{' '}
-        {stats.waitlisted > 0 ? `${stats.waitlisted} ${stats.waitlisted === 1 ? 'person is' : 'people are'} waiting for a seat. ` : ''}
-        {stats.event_ended ? `${stats.no_show} confirmed guests never showed up.` : ''}
-      </p>
-      <div className="bar" role="img" aria-label={`${stats.attended} checked in, ${stats.confirmed} confirmed, ${stats.seats_remaining} open`}>
-        <i className="b-attended" style={{ width: `${pct(stats.attended)}%` }} />
-        <i className="b-confirmed" style={{ width: `${pct(stats.confirmed)}%` }} />
+    <section>
+      <div className="stat-row">
+        <div>
+          <strong>
+            {stats.held}/{stats.capacity}
+          </strong>
+          <span>Seats held ({stats.fill_rate}%)</span>
+        </div>
+        <div>
+          <strong>{stats.attended}</strong>
+          <span>Checked in ({stats.check_in_rate}%)</span>
+        </div>
+        <div>
+          <strong>{stats.waitlisted}</strong>
+          <span>On the waitlist</span>
+        </div>
+        <div>
+          <strong>{stats.event_ended ? stats.no_show : stats.seats_remaining}</strong>
+          <span>{stats.event_ended ? 'No-shows' : 'Seats open'}</span>
+        </div>
       </div>
-      <div className="key">
-        <span style={{ ['--sw' as string]: 'var(--ink)' }}>Checked in</span>
-        <span style={{ ['--sw' as string]: 'var(--cleared)' }}>Confirmed, not yet arrived</span>
-        <span style={{ ['--sw' as string]: '#d2d9df' }}>Open seat</span>
-      </div>
+      <ProgressBar label="Checked in" value={stats.attended} max={Math.max(stats.held, 1)} helperText={`${stats.attended} of ${stats.held} guests have checked in`} />
     </section>
   )
 }
