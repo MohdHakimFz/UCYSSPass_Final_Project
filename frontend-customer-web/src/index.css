@@ -1182,3 +1182,31 @@ button:disabled {
     gap: 12px;
   }
 }
+
+.filters {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin: -16px 0 28px;
+}
+
+.filters .field {
+  min-width: 160px;
+}
+
+.split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+}
+
+@media (max-width: 860px) {
+  .split {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .filters .field {
+    flex: 1;
+  }
+}

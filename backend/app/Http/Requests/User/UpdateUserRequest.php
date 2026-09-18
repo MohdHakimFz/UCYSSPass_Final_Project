@@ -31,6 +31,11 @@ class UpdateUserRequest extends FormRequest
             'password' => ['sometimes', 'required', 'string', 'min:8'],
         ];
 
+        // Changing your own password needs your current one, so a stolen token can't lock you out.
+        if ($this->user()->id === $this->route('user')->id) {
+            $rules['current_password'] = ['required_with:password', 'current_password:sanctum'];
+        }
+
         if ($this->user()->role === 'admin') {
             $rules['role'] = ['sometimes', 'required', 'in:admin,organiser,customer'];
         }

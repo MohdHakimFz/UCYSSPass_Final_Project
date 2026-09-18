@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react'
 import { api, setUnauthorisedHandler, tokenStore, type User } from './api'
+import { clearCache } from './offline'
 
 type AuthState = {
   user: User | null
@@ -7,6 +8,7 @@ type AuthState = {
   signIn: (email: string, password: string) => Promise<void>
   register: (f: { name: string; email: string; password: string; password_confirmation: string }) => Promise<void>
   signOut: () => Promise<void>
+  refresh: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthState | null>(null)
@@ -39,10 +41,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = useCallback(async () => {
     await api('/auth/logout', { method: 'POST' }).catch(() => undefined)
     await tokenStore.clear()
+    await clearCache()
     setUser(null)
   }, [])
 
-  return <AuthContext.Provider value={{ user, loading, signIn, register, signOut }}>{children}</AuthContext.Provider>
+  const refresh = useCallback(async () => {
+    setUser(await api<User>('/auth/me'))
+  }, [])
+
+  return <AuthContext.Provider value={{ user, loading, signIn, register, signOut, refresh }}>{children}</AuthContext.Provider>
 }
 
 export function useAuth() {

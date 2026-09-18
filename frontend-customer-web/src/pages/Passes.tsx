@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { api, apiBlobUrl, errorText, type Booking, type Paginated } from '../lib/api'
 import { useFetch } from '../lib/useFetch'
 import { CATEGORY_LABEL, Notice, Tag, formatWhen } from '../components/ui'
+import { downloadIcs } from '../lib/ics'
 
 function QrPass({ booking }: { booking: Booking }) {
   const [src, setSrc] = useState<string | null>(null)
@@ -91,7 +92,12 @@ export default function Passes() {
                   </div>
 
                   {b.status === 'waitlisted' && (
-                    <p className="sub">You&apos;re on the waitlist. You&apos;ll be confirmed and emailed if a seat opens.</p>
+                    <p className="sub">
+                      {b.waitlist_position
+                        ? `You're number ${b.waitlist_position} in the queue. `
+                        : "You're on the waitlist. "}
+                      You&apos;ll be confirmed and emailed if a seat opens.
+                    </p>
                   )}
                   {b.status === 'attended' && b.checked_in_at && <p className="sub">Checked in {formatWhen(b.checked_in_at)}.</p>}
 
@@ -102,6 +108,11 @@ export default function Passes() {
                       {canShow && (
                         <button className="btn" onClick={() => setOpen(open === b.id ? null : b.id)}>
                           {open === b.id ? 'Hide pass' : 'Show pass'}
+                        </button>
+                      )}
+                      {canShow && (
+                        <button className="btn-quiet" onClick={() => downloadIcs(b)}>
+                          Add to calendar
                         </button>
                       )}
                       {canCancel && (

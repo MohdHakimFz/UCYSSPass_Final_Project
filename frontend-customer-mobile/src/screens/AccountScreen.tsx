@@ -16,7 +16,10 @@ export default function AccountScreen() {
       <Text style={s.h1}>{user ? user.name : 'You\'re browsing as a guest.'}</Text>
       <Text style={s.sub}>{user ? user.email : 'Sign in to book seats and see your passes.'}</Text>
       {user ? (
-        <Button title="Sign out" variant="quiet" onPress={signOut} />
+        <>
+          <Button title="Edit profile" onPress={() => navigation.navigate('Profile')} />
+          <Button title="Sign out" variant="quiet" onPress={signOut} />
+        </>
       ) : (
         <>
           <Button title="Sign in" onPress={() => navigation.navigate('Login')} />

@@ -10,6 +10,37 @@ import type { RootParamList } from '../../App'
 
 const CATEGORIES = Object.keys(CATEGORY_LABEL) as Category[]
 
+function ChipRow<T extends string>({
+  label,
+  value,
+  onChange,
+  options,
+}: {
+  label: string
+  value: T
+  onChange: (v: T) => void
+  options: [T, string][]
+}) {
+  return (
+    <View style={{ gap: 6 }}>
+      <Text style={{ fontFamily: fonts.semibold, fontSize: 14, color: colors.ink }}>{label}</Text>
+      <View style={s.chips}>
+        {options.map(([v, text]) => (
+          <Pressable
+            key={v || 'any'}
+            onPress={() => onChange(v)}
+            accessibilityRole="button"
+            accessibilityState={{ selected: value === v }}
+            style={[s.chip, value === v && s.chipOn]}
+          >
+            <Text style={[s.chipText, value === v && { color: colors.paper }]}>{text}</Text>
+          </Pressable>
+        ))}
+      </View>
+    </View>
+  )
+}
+
 function seatState(ev: EventItem) {
   if (!ev.capacity) return { text: 'Not on sale yet', color: colors.inkSoft }
   const left = ev.seats_remaining ?? 0
@@ -23,13 +54,17 @@ export default function EventsScreen() {
   const [search, setSearch] = useState('')
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState<'' | Category>('')
+  const [when, setWhen] = useState<'' | '7' | '30'>('')
+  const [price, setPrice] = useState<'' | '0' | '50' | '100'>('')
 
   const path = useMemo(() => {
     const qs = new URLSearchParams({ status: 'published', from: new Date().toISOString(), per_page: '30' })
     if (query) qs.set('search', query)
     if (category) qs.set('category', category)
+    if (when) qs.set('to', new Date(Date.now() + Number(when) * 86400000).toISOString())
+    if (price) qs.set('max_price', price)
     return `/events?${qs}`
-  }, [query, category])
+  }, [query, category, when, price])
 
   const { data, error, refresh, refreshing } = useFetch<Paginated<EventItem>>(path)
 
@@ -67,6 +102,18 @@ export default function EventsScreen() {
               </Pressable>
             ))}
           </View>
+          <ChipRow
+            label="When"
+            value={when}
+            onChange={setWhen}
+            options={[['', 'Any date'], ['7', 'Next 7 days'], ['30', 'Next 30 days']]}
+          />
+          <ChipRow
+            label="Price"
+            value={price}
+            onChange={setPrice}
+            options={[['', 'Any'], ['0', 'Free'], ['50', 'Up to RM 50'], ['100', 'Up to RM 100']]}
+          />
           {error && <Notice tone="error" text={error} />}
         </View>
       }

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ScrollView, StyleSheet, Text, View } from 'react-native'
+import { ScrollView, Share, StyleSheet, Text, View } from 'react-native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { api, ApiError, CATEGORY_LABEL, errorText, type Booking, type EventItem, type TicketType } from '../lib/api'
 import { useAuth } from '../lib/auth'
@@ -53,6 +53,15 @@ export default function EventDetailScreen({ route, navigation }: NativeStackScre
       <Text style={s.sub}>
         {formatWhen(event.start_at)} · {event.venue?.name ?? 'Venue to be announced'}
       </Text>
+      <View style={{ alignSelf: 'flex-start' }}>
+        <Button
+          title="Share this event"
+          variant="quiet"
+          onPress={() =>
+            Share.share({ message: `${event.title} · ${formatWhen(event.start_at)} · ${event.venue?.name ?? 'Venue to be announced'}` }).catch(() => undefined)
+          }
+        />
+      </View>
       {event.description ? <Text style={s.body}>{event.description}</Text> : null}
 
       <Text style={s.h2}>Choose your pass</Text>

@@ -7,6 +7,7 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "scheme": "sentrypass",
+    "plugins": [["expo-calendar", { "calendarPermission": "SentryPass adds your event passes to your calendar." }]],
     "ios": {
       "supportsTablet": true
     },

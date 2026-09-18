@@ -12,12 +12,14 @@ import EventDetailScreen from './src/screens/EventDetailScreen'
 import PassesScreen from './src/screens/PassesScreen'
 import AccountScreen from './src/screens/AccountScreen'
 import AuthScreen from './src/screens/AuthScreen'
+import ProfileScreen from './src/screens/ProfileScreen'
 
 export type RootParamList = {
   Tabs: undefined
   EventDetail: { id: number }
   Login: undefined
   Register: undefined
+  Profile: undefined
 }
 
 const Stack = createNativeStackNavigator<RootParamList>()
@@ -74,6 +76,7 @@ export default function App() {
             <Stack.Screen name="EventDetail" component={EventDetailScreen} options={{ title: 'Event' }} />
             <Stack.Screen name="Login" component={AuthScreen} options={{ title: 'Sign in' }} />
             <Stack.Screen name="Register" component={AuthScreen} options={{ title: 'Create account' }} />
+            <Stack.Screen name="Profile" component={ProfileScreen} options={{ title: 'Profile' }} />
           </Stack.Navigator>
         </NavigationContainer>
       </AuthProvider>

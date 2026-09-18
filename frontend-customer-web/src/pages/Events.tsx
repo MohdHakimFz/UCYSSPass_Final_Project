@@ -19,6 +19,8 @@ export default function Events() {
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState<'' | Category>('')
   const [page, setPage] = useState(1)
+  const [when, setWhen] = useState<'' | '7' | '30'>('')
+  const [price, setPrice] = useState<'' | '0' | '50' | '100'>('')
 
   const qs = new URLSearchParams({
     status: 'published',
@@ -27,6 +29,8 @@ export default function Events() {
     page: String(page),
   })
   if (query) qs.set('search', query)
+  if (when) qs.set('to', new Date(Date.now() + Number(when) * 86400000).toISOString())
+  if (price) qs.set('max_price', price)
   if (category) qs.set('category', category)
   const { data, error } = useFetch<Paginated<EventItem>>(`/events?${qs}`)
 
@@ -64,6 +68,26 @@ export default function Events() {
           ))}
         </div>
       </section>
+
+      <div className="filters">
+        <label className="field">
+          When
+          <select value={when} onChange={(e) => { setWhen(e.target.value as typeof when); setPage(1) }}>
+            <option value="">Any date</option>
+            <option value="7">Next 7 days</option>
+            <option value="30">Next 30 days</option>
+          </select>
+        </label>
+        <label className="field">
+          Price
+          <select value={price} onChange={(e) => { setPrice(e.target.value as typeof price); setPage(1) }}>
+            <option value="">Any price</option>
+            <option value="0">Free</option>
+            <option value="50">Up to RM 50</option>
+            <option value="100">Up to RM 100</option>
+          </select>
+        </label>
+      </div>
 
       {error && <Notice tone="error">{error}</Notice>}
 

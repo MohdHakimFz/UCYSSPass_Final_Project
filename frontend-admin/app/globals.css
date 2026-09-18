@@ -848,3 +848,61 @@ button:disabled {
     animation: none;
   }
 }
+
+/* ---------- Detail pages, charts, raw responses ---------- */
+
+.crumb {
+  margin-bottom: 20px;
+}
+
+.prose {
+  max-width: 62ch;
+  margin-bottom: 8px;
+}
+
+.hbars {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.hbars li {
+  display: grid;
+  grid-template-columns: 110px 1fr 32px;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.hbars strong {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.raw {
+  margin-top: 6px;
+  font-size: 14px;
+}
+
+.raw summary {
+  cursor: pointer;
+  color: var(--ink-soft);
+}
+
+.raw pre {
+  margin: 8px 0 0;
+  padding: 12px;
+  background: var(--concrete);
+  overflow-x: auto;
+  font-size: 13px;
+  max-width: 100%;
+}
+
+.ledger td[data-label] > div {
+  min-width: 0;
+}
+
+.ledger .tag {
+  display: inline-flex;
+}

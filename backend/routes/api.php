@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\Api\AdminNotificationController;
 use App\Http\Controllers\Api\AdminStatsController;
+use App\Http\Controllers\Api\ExportController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BookingController;
 use App\Http\Controllers\Api\EventController;
@@ -56,8 +58,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/bookings', [BookingController::class, 'store'])->middleware('throttle:5,1');
 });
 
-// Admin dashboard analytics.
-Route::get('/admin/stats', AdminStatsController::class)->middleware('auth:sanctum');
+// Admin dashboard analytics, email log and exports.
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/admin/stats', AdminStatsController::class);
+    Route::get('/admin/notifications', AdminNotificationController::class);
+    Route::get('/admin/export/users', [ExportController::class, 'users']);
+    Route::get('/admin/export/bookings', [ExportController::class, 'bookings']);
+
+    // Organiser tools for an event they own.
+    Route::get('/events/{event}/stats', [EventController::class, 'stats']);
+    Route::get('/events/{event}/export', [ExportController::class, 'attendees']);
+    Route::post('/events/{event}/duplicate', [EventController::class, 'duplicate']);
+});
 
 // Check-in — scanning device (X-Api-Key) or a logged-in organiser/admin (Sanctum), spec §6.
 Route::post('/bookings/{booking}/checkin', [BookingController::class, 'checkin'])->middleware('checkin.auth');

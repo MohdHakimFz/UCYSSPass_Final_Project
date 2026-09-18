@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { api, errorText, type Stats } from "@/lib/api";
 import { Notice, Tag, formatWhen } from "@/components/ui";
 
+const CATEGORY_LABEL: Record<string, string> = { ctf: "CTF", bootcamp: "Bootcamp", conference: "Conference", workshop: "Workshop" };
 const ROLE_LABEL = { admin: "Administrators", organiser: "Organisers", customer: "Customers" } as const;
 
 export default function Overview() {
@@ -23,6 +24,10 @@ export default function Overview() {
   const upcoming = stats.seat_manifest.length;
   const perDayMax = Math.max(1, ...stats.bookings_per_day.map((d) => d.total));
   const last14 = stats.bookings_per_day.reduce((n, d) => n + d.total, 0);
+  const attended = stats.bookings_by_status.attended ?? 0;
+  const confirmed = stats.bookings_by_status.confirmed ?? 0;
+  const arrivedBase = attended + confirmed;
+  const catMax = Math.max(1, ...Object.values(stats.events_by_category));
 
   return (
     <>
@@ -80,6 +85,43 @@ export default function Overview() {
           <span style={{ ["--sw" as string]: "var(--ink)" }}>Checked in</span>
           <span style={{ ["--sw" as string]: "var(--cleared)" }}>Confirmed</span>
           <span style={{ ["--sw" as string]: "#d2d9df" }}>Open seat</span>
+        </div>
+      </section>
+
+      <section className="pair">
+        <div>
+          <h2 className="section-title">Did people show up?</h2>
+          <p className="section-note">
+            {arrivedBase === 0
+              ? "No confirmed guests yet."
+              : `${attended} of ${arrivedBase} confirmed guests have checked in (${Math.round((attended / arrivedBase) * 100)}%).`}
+          </p>
+          <div className="bar" role="img" aria-label={`${attended} checked in, ${confirmed} not yet arrived`}>
+            <i className="b-attended" style={{ width: `${arrivedBase ? (attended / arrivedBase) * 100 : 0}%` }} />
+            <i className="b-confirmed" style={{ width: `${arrivedBase ? (confirmed / arrivedBase) * 100 : 0}%` }} />
+          </div>
+          <div className="key">
+            <span style={{ ["--sw" as string]: "var(--ink)" }}>Checked in</span>
+            <span style={{ ["--sw" as string]: "var(--cleared)" }}>Confirmed, not yet arrived</span>
+          </div>
+        </div>
+
+        <div>
+          <h2 className="section-title">Events by type</h2>
+          <p className="section-note">All events, every status.</p>
+          <ul className="hbars">
+            {Object.entries(stats.events_by_category)
+              .sort((a, b) => b[1] - a[1])
+              .map(([cat, n]) => (
+                <li key={cat}>
+                  <span>{CATEGORY_LABEL[cat] ?? cat}</span>
+                  <div className="bar">
+                    <i className="b-attended" style={{ width: `${(n / catMax) * 100}%` }} />
+                  </div>
+                  <strong>{n}</strong>
+                </li>
+              ))}
+          </ul>
         </div>
       </section>
 

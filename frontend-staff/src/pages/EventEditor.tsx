@@ -2,10 +2,12 @@ import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
   api,
+  downloadFile,
   errorText,
   type Booking,
   type Category,
   type EventItem,
+  type EventStats,
   type EventStatus,
   type Paginated,
   type TicketType,
@@ -29,6 +31,23 @@ export default function EventEditor() {
   const navigate = useNavigate()
   const { data: event, error: loadError, reload } = useFetch<EventItem>(isNew ? null : `/events/${id}`)
   const { data: venues } = useFetch<Paginated<Venue>>('/venues?per_page=100')
+  const { data: stats, reload: reloadStats } = useFetch<EventStats>(isNew ? null : `/events/${id}/stats`)
+  const [actionNote, setActionNote] = useState<string | null>(null)
+
+  const reloadAll = () => {
+    reload()
+    reloadStats()
+  }
+
+  async function duplicate() {
+    setActionNote(null)
+    try {
+      const copy = await api<EventItem>(`/events/${id}/duplicate`, { method: 'POST' })
+      navigate(`/events/${copy.id}`)
+    } catch (err) {
+      setActionNote(errorText(err))
+    }
+  }
 
   if (!isNew && !event && !loadError) return <p className="loading">Loading event…</p>
   if (loadError) return <Notice tone="error">{loadError}</Notice>
@@ -40,11 +59,29 @@ export default function EventEditor() {
         {!isNew && <Tag status={event!.status} />}
       </div>
 
+      {actionNote && <Notice tone="error">{actionNote}</Notice>}
+
+      {!isNew && (
+        <div className="form-actions" style={{ marginBottom: 24 }}>
+          <button className="btn-quiet" onClick={duplicate}>
+            Duplicate event
+          </button>
+          <button
+            className="btn-quiet"
+            onClick={() => downloadFile(`/events/${id}/export`, `attendees-event-${id}.csv`).catch((e) => setActionNote(errorText(e)))}
+          >
+            Export attendees (CSV)
+          </button>
+        </div>
+      )}
+
+      {stats && <StatsPanel stats={stats} />}
+
       <EventForm
         key={event?.id ?? 'new'}
         event={event}
         venues={venues?.data ?? []}
-        onSaved={(saved) => (isNew ? navigate(`/events/${saved.id}`, { replace: true }) : reload())}
+        onSaved={(saved) => (isNew ? navigate(`/events/${saved.id}`, { replace: true }) : reloadAll())}
       />
 
       {!isNew && event && (
@@ -52,7 +89,7 @@ export default function EventEditor() {
           <section>
             <h2 className="section-title">Ticket tiers</h2>
             <p className="section-note">Each tier has its own price and seat count. When a tier sells out, new bookings join its waitlist.</p>
-            <Tiers event={event} onChange={reload} />
+            <Tiers event={event} stats={stats} onChange={reloadAll} />
           </section>
           <section>
             <h2 className="section-title">Attendees</h2>
@@ -88,6 +125,7 @@ function EventForm({
 
   async function save(e: React.FormEvent) {
     e.preventDefault()
+    if (event && f.status === 'cancelled' && event.status !== 'cancelled' && !window.confirm('Cancel this event? Every active booking is cancelled and those attendees are emailed.')) return
     setBusy(true)
     setNote(null)
     const body = {
@@ -99,9 +137,16 @@ function EventForm({
     }
     try {
       const saved = event
-        ? await api<EventItem>(`/events/${event.id}`, { method: 'PUT', body })
-        : await api<EventItem>('/events', { method: 'POST', body })
-      setNote({ tone: 'ok', text: event ? 'Event saved.' : 'Event created. Add ticket tiers next.' })
+        ? await api<EventItem & { cancelled_bookings?: number }>(`/events/${event.id}`, { method: 'PUT', body })
+        : await api<EventItem & { cancelled_bookings?: number }>('/events', { method: 'POST', body })
+      setNote({
+        tone: 'ok',
+        text: !event
+          ? 'Event created. Add ticket tiers next.'
+          : saved.cancelled_bookings
+            ? `Event cancelled. ${saved.cancelled_bookings} bookings were cancelled and the attendees emailed.`
+            : 'Event saved.',
+      })
       onSaved(saved)
     } catch (err) {
       setNote({ tone: 'error', text: errorText(err) })
@@ -172,7 +217,8 @@ function EventForm({
 
 type Tier = { id?: number; name: string; price: string; capacity: string }
 
-function Tiers({ event, onChange }: { event: EventItem; onChange: () => void }) {
+function Tiers({ event, stats, onChange }: { event: EventItem; stats: EventStats | null; onChange: () => void }) {
+  const waitByTier = new Map(stats?.tiers.map((t) => [t.id, t.waitlisted]))
   const tiers = event.ticket_types ?? []
   const [draft, setDraft] = useState<Tier | null>(null)
   const [note, setNote] = useState<{ tone: 'ok' | 'error'; text: string } | null>(null)
@@ -216,6 +262,7 @@ function Tiers({ event, onChange }: { event: EventItem; onChange: () => void }) 
                 <th>Tier</th>
                 <th>Price</th>
                 <th>Seats left</th>
+                <th>Waitlist</th>
                 <th />
               </tr>
             </thead>
@@ -229,6 +276,7 @@ function Tiers({ event, onChange }: { event: EventItem; onChange: () => void }) 
                   <td data-label="Seats left">
                     {t.seats_remaining} of {t.capacity}
                   </td>
+                  <td data-label="Waitlist">{waitByTier.get(t.id) ?? 0}</td>
                   <td className="actions">
                     <button
                       className="btn-quiet"
@@ -317,5 +365,29 @@ function Attendees({ eventId }: { eventId: number }) {
         </tbody>
       </table>
     </div>
+  )
+}
+
+function StatsPanel({ stats }: { stats: EventStats }) {
+  const pct = (n: number) => (stats.capacity ? (n / stats.capacity) * 100 : 0)
+  return (
+    <section style={{ marginBottom: 40 }}>
+      <h2 className="section-title">How it&apos;s going</h2>
+      <p className="lede-sub" style={{ marginTop: 0, marginBottom: 16 }}>
+        {stats.held} of {stats.capacity} seats are held ({stats.fill_rate}%). {stats.attended} of {stats.held} guests have checked in (
+        {stats.check_in_rate}%).{' '}
+        {stats.waitlisted > 0 ? `${stats.waitlisted} ${stats.waitlisted === 1 ? 'person is' : 'people are'} waiting for a seat. ` : ''}
+        {stats.event_ended ? `${stats.no_show} confirmed guests never showed up.` : ''}
+      </p>
+      <div className="bar" role="img" aria-label={`${stats.attended} checked in, ${stats.confirmed} confirmed, ${stats.seats_remaining} open`}>
+        <i className="b-attended" style={{ width: `${pct(stats.attended)}%` }} />
+        <i className="b-confirmed" style={{ width: `${pct(stats.confirmed)}%` }} />
+      </div>
+      <div className="key">
+        <span style={{ ['--sw' as string]: 'var(--ink)' }}>Checked in</span>
+        <span style={{ ['--sw' as string]: 'var(--cleared)' }}>Confirmed, not yet arrived</span>
+        <span style={{ ['--sw' as string]: '#d2d9df' }}>Open seat</span>
+      </div>
+    </section>
   )
 }

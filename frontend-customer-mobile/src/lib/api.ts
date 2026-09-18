@@ -119,10 +119,11 @@ export type Booking = {
   booked_at: string
   checked_in_at: string | null
   qr_token: string | null
+  waitlist_position?: number
   ticket_type?: {
     id: number
     name: string
     price: string
-    event?: { id: number; title: string; category: Category; start_at: string; venue?: { id: number; name: string } }
+    event?: { id: number; title: string; category: Category; start_at: string; end_at: string; venue?: { id: number; name: string } }
   }
 }

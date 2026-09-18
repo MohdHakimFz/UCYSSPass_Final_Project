@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { api, errorText, type Paginated, type Role, type User } from "@/lib/api";
+import { api, downloadFile, errorText, type Paginated, type Role, type User } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { useFetch } from "@/lib/useFetch";
 import { Notice, Pager } from "@/components/ui";
@@ -69,9 +69,17 @@ export default function PeoplePage() {
     <>
       <div className="page-head">
         <h1>People</h1>
-        <button className="btn" onClick={() => setAdding(true)}>
-          Add account
-        </button>
+        <div className="form-actions">
+          <button
+            className="btn-quiet"
+            onClick={() => downloadFile("/admin/export/users", "sentrypass-users.csv").catch((e) => setNote({ tone: "error", text: errorText(e) }))}
+          >
+            Export CSV
+          </button>
+          <button className="btn" onClick={() => setAdding(true)}>
+            Add account
+          </button>
+        </div>
       </div>
 
       {note && <Notice tone={note.tone}>{note.text}</Notice>}

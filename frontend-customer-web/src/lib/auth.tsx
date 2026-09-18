@@ -6,6 +6,7 @@ type AuthState = {
   loading: boolean
   signIn: (email: string, password: string) => Promise<User>
   signOut: () => Promise<void>
+  refresh: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthState | null>(null)
@@ -39,7 +40,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null)
   }, [])
 
-  return <AuthContext.Provider value={{ user, loading, signIn, signOut }}>{children}</AuthContext.Provider>
+  const refresh = useCallback(async () => {
+    setUser(await api<User>('/auth/me'))
+  }, [])
+
+  return <AuthContext.Provider value={{ user, loading, signIn, signOut, refresh }}>{children}</AuthContext.Provider>
 }
 
 // eslint-disable-next-line react-refresh/only-export-components

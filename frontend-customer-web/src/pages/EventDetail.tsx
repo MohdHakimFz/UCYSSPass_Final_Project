@@ -44,6 +44,19 @@ export default function EventDetail() {
     }
   }
 
+  async function share() {
+    const url = window.location.href
+    try {
+      if (navigator.share) await navigator.share({ title: event?.title, url })
+      else {
+        await navigator.clipboard.writeText(url)
+        setNote({ tone: 'ok', text: 'Link copied. Paste it anywhere to share this event.' })
+      }
+    } catch {
+      /* the person closed the share sheet */
+    }
+  }
+
   if (error) return <Notice tone="error">{error}</Notice>
   if (!event) return <p className="loading">Loading event…</p>
 
@@ -59,6 +72,11 @@ export default function EventDetail() {
         <h1>{event.title}</h1>
         <p className="lede-sub">
           {formatWhen(event.start_at)} · {event.venue?.name ?? 'Venue to be announced'}
+        </p>
+        <p style={{ marginTop: 16 }}>
+          <button className="btn-quiet" onClick={share}>
+            Share this event
+          </button>
         </p>
       </section>
 

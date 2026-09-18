@@ -5,6 +5,7 @@ import Auth from './pages/Auth'
 import Events from './pages/Events'
 import EventDetail from './pages/EventDetail'
 import Passes from './pages/Passes'
+import Profile from './pages/Profile'
 
 export default function App() {
   return (
@@ -19,6 +20,7 @@ export default function App() {
           </Route>
           <Route element={<Layout protectedRoute />}>
             <Route path="/passes" element={<Passes />} />
+            <Route path="/profile" element={<Profile />} />
           </Route>
         </Routes>
       </BrowserRouter>

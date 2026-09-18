@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { api, errorText, type EventItem, type EventStatus, type Paginated } from "@/lib/api";
 import { useFetch } from "@/lib/useFetch";
@@ -26,10 +27,16 @@ export default function EventsPage() {
   const { data: rows, error: loadError, reload: load } = useFetch<Paginated<EventItem>>(`/events?${qs}`);
 
   async function setEventStatus(ev: EventItem, next: EventStatus) {
+    if (next === "cancelled" && !window.confirm(`Cancel ${ev.title}? Every active booking is cancelled and those attendees are emailed.`)) return;
     setNote(null);
     try {
-      await api(`/events/${ev.id}`, { method: "PUT", body: { status: next } });
-      setNote({ tone: "ok", text: `${ev.title} is now ${next}.` });
+      const res = await api<EventItem & { cancelled_bookings?: number }>(`/events/${ev.id}`, { method: "PUT", body: { status: next } });
+      setNote({
+        tone: "ok",
+        text: res.cancelled_bookings
+          ? `${ev.title} is cancelled. ${res.cancelled_bookings} bookings were cancelled and the attendees emailed.`
+          : `${ev.title} is now ${next}.`,
+      });
       await load();
     } catch (err) {
       setNote({ tone: "error", text: errorText(err) });
@@ -112,7 +119,9 @@ export default function EventsPage() {
               {rows.data.map((ev) => (
                 <tr key={ev.id}>
                   <td>
-                    <strong>{ev.title}</strong>
+                    <Link href={`/events/${ev.id}`}>
+                      <strong>{ev.title}</strong>
+                    </Link>
                     <span className="sub">{CATEGORY[ev.category]}</span>
                   </td>
                   <td data-label="Starts">{formatWhen(ev.start_at)}</td>

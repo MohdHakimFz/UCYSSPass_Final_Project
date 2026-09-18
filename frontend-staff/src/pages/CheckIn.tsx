@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { Html5Qrcode } from 'html5-qrcode'
-import { api, ApiError, errorText, type Booking } from '../lib/api'
+import { api, ApiError, errorText, type Booking, type EventItem, type EventStats, type Paginated } from '../lib/api'
+import { useAuth } from '../lib/auth'
+import { useFetch } from '../lib/useFetch'
+import { formatWhen } from '../components/ui'
 
 type Outcome =
   | { kind: 'ok'; booking: Booking }
@@ -26,6 +29,23 @@ export default function CheckIn() {
   const [busy, setBusy] = useState(false)
   const handling = useRef(false)
 
+  const { user } = useAuth()
+  const mine = user?.role === 'organiser' ? `&organiser_id=${user.id}` : ''
+  const { data: events } = useFetch<Paginated<EventItem>>(`/events?status=published&per_page=50&sort=start_at${mine}`)
+  const [chosen, setChosen] = useState('')
+  const eventId = chosen || (events?.data[0] ? String(events.data[0].id) : '')
+  const { data: stats, reload } = useFetch<EventStats>(eventId ? `/events/${eventId}/stats` : null)
+
+  // Keep the door count fresh while other staff are also scanning.
+  const reloadRef = useRef(reload)
+  useEffect(() => {
+    reloadRef.current = reload
+  })
+  useEffect(() => {
+    const t = setInterval(() => reloadRef.current(), 10000)
+    return () => clearInterval(t)
+  }, [])
+
   async function submit(raw: string) {
     if (handling.current) return
     handling.current = true
@@ -39,6 +59,7 @@ export default function CheckIn() {
       try {
         const booking = await api<Booking>(`/bookings/${pass.id}/checkin`, { method: 'POST', body: { qr_token: pass.token } })
         setOutcome({ kind: 'ok', booking })
+        reloadRef.current()
       } catch (err) {
         const status = err instanceof ApiError ? err.status : 0
         setOutcome({
@@ -86,6 +107,48 @@ export default function CheckIn() {
       <div className="page-head">
         <h1>Check-in</h1>
       </div>
+
+      <section style={{ marginBottom: 40 }}>
+        <label className="field" style={{ maxWidth: 420, marginBottom: 20 }}>
+          Checking in guests for
+          <select value={eventId} onChange={(e) => setChosen(e.target.value)}>
+            {events?.data.length === 0 && <option value="">No published events</option>}
+            {events?.data.map((ev) => (
+              <option key={ev.id} value={ev.id}>
+                {ev.title}
+              </option>
+            ))}
+          </select>
+        </label>
+        {stats && (
+          <>
+            <h2 className="wide" style={{ fontSize: 'clamp(28px, 5vw, 44px)' }}>
+              {stats.attended} / {stats.held} checked in
+            </h2>
+            <p className="section-note" style={{ marginTop: 8 }}>
+              {stats.held - stats.attended} guests still to arrive
+              {stats.waitlisted > 0 ? `, ${stats.waitlisted} on the waitlist` : ''}.
+            </p>
+            <div className="bar" role="img" aria-label={`${stats.attended} of ${stats.held} checked in`}>
+              <i className="b-attended" style={{ width: `${stats.held ? (stats.attended / stats.held) * 100 : 0}%` }} />
+            </div>
+            {stats.recent_checkins.length > 0 && (
+              <ul className="tally" style={{ marginTop: 20 }}>
+                {stats.recent_checkins.slice(0, 5).map((c) => (
+                  <li key={c.booking_id}>
+                    <span>
+                      {c.name} <span className="sub" style={{ display: 'inline' }}>· {c.tier}</span>
+                    </span>
+                    <span className="sub" style={{ display: 'inline' }}>
+                      {formatWhen(c.checked_in_at)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </>
+        )}
+      </section>
 
       <div className="split">
         <section>
@@ -141,6 +204,9 @@ export default function CheckIn() {
                 Booking #{outcome.booking.id}
                 {outcome.booking.ticket_type?.event ? ` for ${outcome.booking.ticket_type.event.title}` : ''} is now checked in.
               </p>
+              {eventId && outcome.booking.ticket_type?.event && String(outcome.booking.ticket_type.event.id) !== eventId && (
+                <p style={{ marginTop: 8, fontWeight: 600 }}>Heads up: this ticket is for a different event from the one selected above.</p>
+              )}
             </>
           ) : (
             <>

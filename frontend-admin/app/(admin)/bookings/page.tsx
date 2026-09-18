@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { api, errorText, type Booking, type BookingStatus, type Paginated } from "@/lib/api";
+import { api, downloadFile, errorText, type Booking, type BookingStatus, type Paginated } from "@/lib/api";
 import { useFetch } from "@/lib/useFetch";
 import { Notice, Pager, Tag, formatWhen } from "@/components/ui";
 
@@ -50,6 +50,12 @@ export default function BookingsPage() {
     <>
       <div className="page-head">
         <h1>Bookings</h1>
+        <button
+          className="btn-quiet"
+          onClick={() => downloadFile("/admin/export/bookings", "sentrypass-bookings.csv").catch((e) => setNote({ tone: "error", text: errorText(e) }))}
+        >
+          Export CSV
+        </button>
       </div>
 
       {note && <Notice tone={note.tone}>{note.text}</Notice>}

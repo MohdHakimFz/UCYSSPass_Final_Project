@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Exceptions\BookingConflictException;
 use App\Models\Booking;
+use App\Models\Event;
 use App\Models\TicketType;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -107,6 +108,7 @@ class BookingService
                     ? Booking::where('ticket_type_id', $ticketType->id)
                         ->where('status', 'waitlisted')
                         ->orderBy('booked_at')
+                        ->orderBy('id')
                         ->lockForUpdate()
                         ->first()
                     : null;
@@ -128,5 +130,36 @@ class BookingService
         }
 
         return $cancelled;
+    }
+
+    /**
+     * Cancel every active booking on an event that has itself been
+     * cancelled, and notify each attendee. No waitlist promotion: the
+     * whole event is off, so there is nobody to promote into.
+     */
+    public function cancelForEvent(Event $event): int
+    {
+        $notificationsToDispatch = [];
+
+        $count = DB::transaction(function () use ($event, &$notificationsToDispatch) {
+            $bookings = Booking::query()
+                ->whereHas('ticketType', fn ($query) => $query->where('event_id', $event->id))
+                ->whereIn('status', self::ACTIVE_STATUSES)
+                ->lockForUpdate()
+                ->get();
+
+            foreach ($bookings as $booking) {
+                $booking->update(['status' => 'cancelled']);
+                $notificationsToDispatch[] = $this->notifications->record($booking, 'cancelled');
+            }
+
+            return $bookings->count();
+        });
+
+        foreach ($notificationsToDispatch as $notification) {
+            $this->notifications->dispatch($notification);
+        }
+
+        return $count;
     }
 }

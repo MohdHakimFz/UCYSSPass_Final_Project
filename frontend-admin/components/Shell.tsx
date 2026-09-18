@@ -11,6 +11,7 @@ const LINKS = [
   { href: "/bookings", label: "Bookings" },
   { href: "/venues", label: "Venues" },
   { href: "/users", label: "People" },
+  { href: "/notifications", label: "Emails" },
 ];
 
 export default function Shell({ children }: { children: React.ReactNode }) {

@@ -52,7 +52,7 @@ class UserController extends Controller
      */
     public function update(UpdateUserRequest $request, User $user): JsonResponse
     {
-        $user->update($request->validated());
+        $user->update(collect($request->validated())->except('current_password')->all());
 
         return response()->json($user);
     }

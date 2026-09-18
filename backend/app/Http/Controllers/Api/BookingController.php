@@ -52,7 +52,28 @@ class BookingController extends Controller
             ->orderByDesc('booked_at')
             ->paginate($request->integer('per_page', 15));
 
+        $bookings->getCollection()->each(fn (Booking $booking) => $this->withWaitlistPosition($booking));
+
         return response()->json($bookings);
+    }
+
+    /**
+     * Where a waitlisted booking sits in its tier's queue (1 = next to be promoted),
+     * using the same booked_at then id order the promotion logic uses.
+     */
+    private function withWaitlistPosition(Booking $booking): Booking
+    {
+        if ($booking->status === 'waitlisted') {
+            $booking->setAttribute('waitlist_position', Booking::query()
+                ->where('ticket_type_id', $booking->ticket_type_id)
+                ->where('status', 'waitlisted')
+                ->where(fn ($query) => $query
+                    ->where('booked_at', '<', $booking->booked_at)
+                    ->orWhere(fn ($query) => $query->where('booked_at', $booking->booked_at)->where('id', '<=', $booking->id)))
+                ->count());
+        }
+
+        return $booking;
     }
 
     /**
@@ -65,7 +86,7 @@ class BookingController extends Controller
 
         $booking = $this->bookings->book($request->user(), $ticketType);
 
-        return response()->json($booking, 201);
+        return response()->json($this->withWaitlistPosition($booking), 201);
     }
 
     /**
@@ -75,7 +96,7 @@ class BookingController extends Controller
     {
         $this->authorize('view', $booking);
 
-        return response()->json($booking);
+        return response()->json($this->withWaitlistPosition($booking));
     }
 
     /**

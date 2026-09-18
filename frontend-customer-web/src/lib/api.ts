@@ -91,6 +91,7 @@ export type Booking = {
   booked_at: string
   checked_in_at: string | null
   qr_token: string | null
+  waitlist_position?: number
   ticket_type?: {
     id: number
     name: string
