@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Button, Search, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TextInput } from "@carbon/react";
 import { api, errorText, type Paginated, type Venue } from "@/lib/api";
 import { useFetch } from "@/lib/useFetch";
 import { Notice, Pager, Skeleton } from "@/components/ui";
@@ -55,44 +56,35 @@ export default function VenuesPage() {
     <>
       <div className="page-head">
         <h1>Venues</h1>
-        <button className="btn" onClick={() => setDraft({ ...BLANK })}>
+        <Button onClick={() => setDraft({ ...BLANK })}>
           Add venue
-        </button>
+        </Button>
       </div>
 
       {note && <Notice tone={note.tone}>{note.text}</Notice>}
       {loadError && <Notice tone="error">{loadError}</Notice>}
 
       {draft && (
-        <form className="panel" onSubmit={save}>
+        <form className="pane" onSubmit={save}>
           <h2>{draft.id ? "Edit venue" : "Add venue"}</h2>
           <div className="form-grid">
-            <label className="field">
-              Name
-              <input required value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
-            </label>
-            <label className="field">
-              Address
-              <input required value={draft.address} onChange={(e) => setDraft({ ...draft, address: e.target.value })} />
-            </label>
-            <label className="field">
-              Capacity
-              <input
+            <TextInput id="f-1" labelText="Name" required value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
+            <TextInput id="f-2" labelText="Address" required value={draft.address} onChange={(e) => setDraft({ ...draft, address: e.target.value })} />
+            <TextInput id="f-3" labelText="Capacity"
                 required
                 type="number"
                 min={1}
                 value={draft.capacity}
                 onChange={(e) => setDraft({ ...draft, capacity: e.target.value })}
               />
-            </label>
           </div>
           <div className="form-actions">
-            <button className="btn" disabled={busy}>
+            <Button disabled={busy}>
               {busy ? "Saving…" : "Save venue"}
-            </button>
-            <button type="button" className="btn-quiet" onClick={() => setDraft(null)}>
+            </Button>
+            <Button type="button" kind="ghost" onClick={() => setDraft(null)}>
               Cancel
-            </button>
+            </Button>
           </div>
         </form>
       )}
@@ -105,15 +97,13 @@ export default function VenuesPage() {
           setQuery(search);
         }}
       >
-        <input
-          className="search"
-          type="search"
+        <Search size="lg"
           placeholder="Search venues by name"
-          aria-label="Search venues by name"
+          labelText="Search venues by name"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-        <button className="btn-quiet">Search</button>
+        <Button kind="tertiary" size="md">Search</Button>
       </form>
 
       {!rows ? (
@@ -121,39 +111,37 @@ export default function VenuesPage() {
       ) : rows.data.length === 0 ? (
         <p className="empty">{query ? `No venues match “${query}”.` : "No venues yet. Add the first one to start scheduling events."}</p>
       ) : (
-        <div className="ledger-wrap">
-          <table className="ledger">
-            <thead>
-              <tr>
-                <th>Venue</th>
-                <th>Capacity</th>
-                <th />
-              </tr>
-            </thead>
-            <tbody>
+        <Table>
+            <TableHead>
+              <TableRow>
+                <TableHeader>Venue</TableHeader>
+                <TableHeader>Capacity</TableHeader>
+                <TableHeader />
+              </TableRow>
+            </TableHead>
+            <TableBody>
               {rows.data.map((v) => (
-                <tr key={v.id}>
-                  <td>
+                <TableRow key={v.id}>
+                  <TableCell>
                     <strong>{v.name}</strong>
                     <span className="sub">{v.address}</span>
-                  </td>
-                  <td data-label="Capacity">{v.capacity}</td>
-                  <td className="actions">
-                    <button
-                      className="btn-quiet"
+                  </TableCell>
+                  <TableCell>{v.capacity}</TableCell>
+                  <TableCell>
+                    <Button
+                      kind="ghost" size="sm"
                       onClick={() => setDraft({ id: v.id, name: v.name, address: v.address, capacity: String(v.capacity) })}
                     >
                       Edit
-                    </button>{" "}
-                    <button className="btn-danger" onClick={() => remove(v)}>
+                    </Button>{" "}
+                    <Button kind="danger--ghost" size="sm" onClick={() => remove(v)}>
                       Delete
-                    </button>
-                  </td>
-                </tr>
+                    </Button>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </TableBody>
+          </Table>
       )}
       {rows && <Pager page={rows.current_page} last={rows.last_page} total={rows.total} onPage={setPage} />}
     </>

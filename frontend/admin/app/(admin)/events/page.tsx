@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { Button, Search, Select, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@carbon/react";
 import { api, errorText, type EventItem, type EventStatus, type Paginated } from "@/lib/api";
 import { useFetch } from "@/lib/useFetch";
 import { Notice, Pager, Tag, formatWhen, Skeleton } from "@/components/ui";
@@ -72,17 +73,14 @@ export default function EventsPage() {
           setQuery(search);
         }}
       >
-        <input
-          className="search"
-          type="search"
+        <Search size="lg"
           placeholder="Search events by title"
-          aria-label="Search events by title"
+          labelText="Search events by title"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-        <select
-          className="search"
-          aria-label="Filter by status"
+        <Select id="s-1" size="sm"
+          hideLabel labelText="Filter by status"
           value={status}
           onChange={(e) => {
             setPage(1);
@@ -96,8 +94,8 @@ export default function EventsPage() {
               {s[0].toUpperCase() + s.slice(1)}
             </option>
           ))}
-        </select>
-        <button className="btn-quiet">Search</button>
+        </Select>
+        <Button kind="tertiary" size="md">Search</Button>
       </form>
 
       {!rows ? (
@@ -105,33 +103,31 @@ export default function EventsPage() {
       ) : rows.data.length === 0 ? (
         <p className="empty">No events match. Organisers create events from their own portal.</p>
       ) : (
-        <div className="ledger-wrap">
-          <table className="ledger">
-            <thead>
-              <tr>
-                <th>Event</th>
-                <th>Starts</th>
-                <th>Status</th>
-                <th />
-              </tr>
-            </thead>
-            <tbody>
+        <Table>
+            <TableHead>
+              <TableRow>
+                <TableHeader>Event</TableHeader>
+                <TableHeader>Starts</TableHeader>
+                <TableHeader>Status</TableHeader>
+                <TableHeader />
+              </TableRow>
+            </TableHead>
+            <TableBody>
               {rows.data.map((ev) => (
-                <tr key={ev.id}>
-                  <td>
+                <TableRow key={ev.id}>
+                  <TableCell>
                     <Link href={`/events/${ev.id}`}>
                       <strong>{ev.title}</strong>
                     </Link>
                     <span className="sub">{CATEGORY[ev.category]}</span>
-                  </td>
-                  <td data-label="Starts">{formatWhen(ev.start_at)}</td>
-                  <td data-label="Status">
+                  </TableCell>
+                  <TableCell>{formatWhen(ev.start_at)}</TableCell>
+                  <TableCell>
                     <Tag status={ev.status} />
-                  </td>
-                  <td className="actions">
-                    <select
-                      className="select"
-                      aria-label={`Status for ${ev.title}`}
+                  </TableCell>
+                  <TableCell>
+                    <Select id="s-2" size="sm"
+                      hideLabel labelText={`Status for ${ev.title}`}
                       value={ev.status}
                       onChange={(e) => setEventStatus(ev, e.target.value as EventStatus)}
                     >
@@ -140,16 +136,15 @@ export default function EventsPage() {
                           {s[0].toUpperCase() + s.slice(1)}
                         </option>
                       ))}
-                    </select>{" "}
-                    <button className="btn-danger" onClick={() => remove(ev)}>
+                    </Select>{" "}
+                    <Button kind="danger--ghost" size="sm" onClick={() => remove(ev)}>
                       Delete
-                    </button>
-                  </td>
-                </tr>
+                    </Button>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </TableBody>
+          </Table>
       )}
       {rows && <Pager page={rows.current_page} last={rows.last_page} total={rows.total} onPage={setPage} />}
     </>

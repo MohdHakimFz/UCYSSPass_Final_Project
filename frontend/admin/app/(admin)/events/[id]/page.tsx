@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
+import { Button, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@carbon/react";
 import {
   downloadFile,
   errorText,
@@ -79,32 +80,30 @@ export default function EventDetailPage() {
         {(event.ticket_types ?? []).length === 0 ? (
           <p className="empty">No tiers yet. The organiser adds these from their portal.</p>
         ) : (
-          <div className="ledger-wrap">
-            <table className="ledger">
-              <thead>
-                <tr>
-                  <th>Tier</th>
-                  <th>Price</th>
-                  <th>Seats left</th>
-                  <th>Waitlist</th>
-                </tr>
-              </thead>
-              <tbody>
+          <Table>
+              <TableHead>
+                <TableRow>
+                  <TableHeader>Tier</TableHeader>
+                  <TableHeader>Price</TableHeader>
+                  <TableHeader>Seats left</TableHeader>
+                  <TableHeader>Waitlist</TableHeader>
+                </TableRow>
+              </TableHead>
+              <TableBody>
                 {event.ticket_types!.map((t) => (
-                  <tr key={t.id}>
-                    <td>
+                  <TableRow key={t.id}>
+                    <TableCell>
                       <strong>{t.name}</strong>
-                    </td>
-                    <td data-label="Price">{Number(t.price) === 0 ? "Free" : `RM ${Number(t.price).toFixed(2)}`}</td>
-                    <td data-label="Seats left">
+                    </TableCell>
+                    <TableCell>{Number(t.price) === 0 ? "Free" : `RM ${Number(t.price).toFixed(2)}`}</TableCell>
+                    <TableCell>
                       {t.seats_remaining} of {t.capacity}
-                    </td>
-                    <td data-label="Waitlist">{waitByTier.get(t.id) ?? 0}</td>
-                  </tr>
+                    </TableCell>
+                    <TableCell>{waitByTier.get(t.id) ?? 0}</TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
-          </div>
+              </TableBody>
+            </Table>
         )}
       </section>
 
@@ -113,45 +112,43 @@ export default function EventDetailPage() {
           <h2 className="section-title" style={{ margin: 0 }}>
             Bookings
           </h2>
-          <button
-            className="btn-quiet"
+          <Button
+            kind="tertiary" size="md"
             onClick={() => downloadFile(`/events/${id}/export`, `attendees-event-${id}.csv`).catch((e) => setNote(errorText(e)))}
           >
             Export attendees (CSV)
-          </button>
+          </Button>
         </div>
         {!bookings ? (
           <Skeleton rows={5} />
         ) : bookings.data.length === 0 ? (
           <p className="empty">Nobody has booked this event yet.</p>
         ) : (
-          <div className="ledger-wrap">
-            <table className="ledger">
-              <thead>
-                <tr>
-                  <th>Attendee</th>
-                  <th>Tier</th>
-                  <th>Booked</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
+          <Table>
+              <TableHead>
+                <TableRow>
+                  <TableHeader>Attendee</TableHeader>
+                  <TableHeader>Tier</TableHeader>
+                  <TableHeader>Booked</TableHeader>
+                  <TableHeader>Status</TableHeader>
+                </TableRow>
+              </TableHead>
+              <TableBody>
                 {bookings.data.map((b) => (
-                  <tr key={b.id}>
-                    <td>
+                  <TableRow key={b.id}>
+                    <TableCell>
                       <strong>{b.customer?.name}</strong>
                       <span className="sub">{b.customer?.email}</span>
-                    </td>
-                    <td data-label="Tier">{b.ticket_type?.name}</td>
-                    <td data-label="Booked">{formatWhen(b.booked_at)}</td>
-                    <td data-label="Status">
+                    </TableCell>
+                    <TableCell>{b.ticket_type?.name}</TableCell>
+                    <TableCell>{formatWhen(b.booked_at)}</TableCell>
+                    <TableCell>
                       <Tag status={b.status} />
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
-          </div>
+              </TableBody>
+            </Table>
         )}
         {bookings && <Pager page={bookings.current_page} last={bookings.last_page} total={bookings.total} onPage={setPage} />}
       </section>

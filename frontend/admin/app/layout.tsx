@@ -1,13 +1,9 @@
 import type { Metadata } from "next";
-import { Archivo } from "next/font/google";
 import { AuthProvider } from "@/lib/auth";
+import "@fontsource/ibm-plex-sans/400.css";
+import "@fontsource/ibm-plex-sans/600.css";
+import "@fontsource/ibm-plex-mono/400.css";
 import "./globals.css";
-
-const archivo = Archivo({
-  variable: "--font-archivo",
-  subsets: ["latin"],
-  axes: ["wdth"],
-});
 
 export const metadata: Metadata = {
   title: "SentryPass Admin",
@@ -16,7 +12,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={archivo.variable}>
+    <html lang="en">
       <body>
         <AuthProvider>{children}</AuthProvider>
       </body>

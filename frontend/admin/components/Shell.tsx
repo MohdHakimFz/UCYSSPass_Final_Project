@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { Button, Header, HeaderGlobalAction, HeaderGlobalBar, HeaderMenuItem, HeaderName, HeaderNavigation } from "@carbon/react";
+import { Logout } from "@carbon/icons-react";
 import { useAuth } from "@/lib/auth";
 
 const LINKS = [
@@ -25,47 +27,49 @@ export default function Shell({ children }: { children: React.ReactNode }) {
 
   if (loading || !user) return <p className="loading">Checking your session…</p>;
 
+  const leave = () => signOut().then(() => router.replace("/login"));
+
   if (user.role !== "admin") {
     return (
       <main className="page">
         <h1 className="lede">This dashboard is for administrators.</h1>
         <p className="lede-sub">
-          You&apos;re signed in as {user.email}, which has the {user.role} role. Sign in with an admin
-          account to continue.
+          You&apos;re signed in as {user.email}, which has the {user.role} role. Sign in with an admin account to continue.
         </p>
-        <p style={{ marginTop: 24 }}>
-          <button className="btn" onClick={() => signOut().then(() => router.replace("/login"))}>
+        <div style={{ marginTop: 24 }}>
+          <Button kind="tertiary" onClick={leave}>
             Sign out
-          </button>
-        </p>
+          </Button>
+        </div>
       </main>
     );
   }
 
   return (
     <>
-      <header className="masthead">
-        <div className="masthead-inner">
-          <Link href="/" className="wordmark">
-            <span>Admin</span>SentryPass
-          </Link>
-          <nav className="nav" aria-label="Main">
-            {LINKS.map((l) => (
-              <Link
-                key={l.href}
-                href={l.href}
-                aria-current={(l.href === "/" ? pathname === "/" : pathname.startsWith(l.href)) ? "page" : undefined}
-              >
-                {l.label}
-              </Link>
-            ))}
-          </nav>
-          <div className="who">
-            <span>{user.name}</span>
-            <button onClick={() => signOut().then(() => router.replace("/login"))}>Sign out</button>
-          </div>
-        </div>
-      </header>
+      <Header aria-label="SentryPass Admin">
+        <HeaderName as={Link} href="/" prefix="SentryPass">
+          Admin
+        </HeaderName>
+        <HeaderNavigation aria-label="Main">
+          {LINKS.map((l) => (
+            <HeaderMenuItem
+              key={l.href}
+              as={Link}
+              href={l.href}
+              isCurrentPage={l.href === "/" ? pathname === "/" : pathname.startsWith(l.href)}
+            >
+              {l.label}
+            </HeaderMenuItem>
+          ))}
+        </HeaderNavigation>
+        <HeaderGlobalBar>
+          <span style={{ color: "#fff", fontSize: "0.875rem", padding: "0 8px" }}>{user.name}</span>
+          <HeaderGlobalAction aria-label="Sign out" tooltipAlignment="end" onClick={leave}>
+            <Logout size={20} />
+          </HeaderGlobalAction>
+        </HeaderGlobalBar>
+      </Header>
       <main className="page">{children}</main>
     </>
   );

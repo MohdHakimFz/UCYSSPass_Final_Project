@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Button, Select, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TextInput } from "@carbon/react";
 import { api, downloadFile, errorText, type Paginated, type Role, type User } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { useFetch } from "@/lib/useFetch";
@@ -70,15 +71,15 @@ export default function PeoplePage() {
       <div className="page-head">
         <h1>People</h1>
         <div className="form-actions">
-          <button
-            className="btn-quiet"
+          <Button
+            kind="tertiary" size="md"
             onClick={() => downloadFile("/admin/export/users", "sentrypass-users.csv").catch((e) => setNote({ tone: "error", text: errorText(e) }))}
           >
             Export CSV
-          </button>
-          <button className="btn" onClick={() => setAdding(true)}>
+          </Button>
+          <Button onClick={() => setAdding(true)}>
             Add account
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -86,20 +87,12 @@ export default function PeoplePage() {
       {loadError && <Notice tone="error">{loadError}</Notice>}
 
       {adding && (
-        <form className="panel" onSubmit={create}>
+        <form className="pane" onSubmit={create}>
           <h2>Add an organiser or admin account</h2>
           <div className="form-grid">
-            <label className="field">
-              Full name
-              <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-            </label>
-            <label className="field">
-              Email
-              <input required type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-            </label>
-            <label className="field">
-              Temporary password
-              <input
+            <TextInput id="f-1" labelText="Full name" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+            <TextInput id="f-2" labelText="Email" required type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+            <TextInput id="f-3" labelText="Temporary password"
                 required
                 type="password"
                 minLength={8}
@@ -107,33 +100,27 @@ export default function PeoplePage() {
                 value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
               />
-            </label>
-            <label className="field">
-              Role
-              <select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value as Role })}>
+            <Select id="s-4" labelText="Role" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value as Role })}>
                 {ROLES.map((r) => (
                   <option key={r.value} value={r.value}>
                     {r.label}
                   </option>
                 ))}
-              </select>
-            </label>
+              </Select>
           </div>
           <div className="form-actions">
-            <button className="btn" disabled={busy}>
+            <Button disabled={busy}>
               {busy ? "Adding…" : "Add account"}
-            </button>
-            <button type="button" className="btn-quiet" onClick={() => setAdding(false)}>
+            </Button>
+            <Button type="button" kind="ghost" onClick={() => setAdding(false)}>
               Cancel
-            </button>
+            </Button>
           </div>
         </form>
       )}
 
       <div className="toolbar">
-        <label className="field" style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-          Show
-          <select
+        <Select id="s-5" labelText="Show"
             value={role}
             onChange={(e) => {
               setPage(1);
@@ -146,8 +133,7 @@ export default function PeoplePage() {
                 {r.label}s
               </option>
             ))}
-          </select>
-        </label>
+          </Select>
       </div>
 
       {!rows ? (
@@ -155,27 +141,25 @@ export default function PeoplePage() {
       ) : rows.data.length === 0 ? (
         <p className="empty">No accounts with that role yet.</p>
       ) : (
-        <div className="ledger-wrap">
-          <table className="ledger">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Role</th>
-                <th>Joined</th>
-                <th />
-              </tr>
-            </thead>
-            <tbody>
+        <Table>
+            <TableHead>
+              <TableRow>
+                <TableHeader>Name</TableHeader>
+                <TableHeader>Role</TableHeader>
+                <TableHeader>Joined</TableHeader>
+                <TableHeader />
+              </TableRow>
+            </TableHead>
+            <TableBody>
               {rows.data.map((u) => (
-                <tr key={u.id}>
-                  <td>
+                <TableRow key={u.id}>
+                  <TableCell>
                     <strong>{u.name}</strong>
                     <span className="sub">{u.email}</span>
-                  </td>
-                  <td data-label="Role">
-                    <select
-                      className="select"
-                      aria-label={`Role for ${u.name}`}
+                  </TableCell>
+                  <TableCell>
+                    <Select id="s-6" size="sm"
+                      hideLabel labelText={`Role for ${u.name}`}
                       value={u.role}
                       disabled={u.id === me?.id}
                       onChange={(e) => changeRole(u, e.target.value as Role)}
@@ -185,21 +169,20 @@ export default function PeoplePage() {
                           {r.label}
                         </option>
                       ))}
-                    </select>
-                  </td>
-                  <td data-label="Joined">{new Date(u.created_at).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" })}</td>
-                  <td className="actions">
+                    </Select>
+                  </TableCell>
+                  <TableCell>{new Date(u.created_at).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" })}</TableCell>
+                  <TableCell>
                     {u.id !== me?.id && (
-                      <button className="btn-danger" onClick={() => remove(u)}>
+                      <Button kind="danger--ghost" size="sm" onClick={() => remove(u)}>
                         Delete
-                      </button>
+                      </Button>
                     )}
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </TableBody>
+          </Table>
       )}
       {rows && <Pager page={rows.current_page} last={rows.last_page} total={rows.total} onPage={setPage} />}
     </>

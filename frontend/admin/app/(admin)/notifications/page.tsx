@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Select, Tag as CarbonTag, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@carbon/react";
 import type { NotificationRow, Paginated } from "@/lib/api";
 import { useFetch } from "@/lib/useFetch";
 import { Notice, Pager, formatWhen, Skeleton } from "@/components/ui";
@@ -13,11 +14,11 @@ const TYPES = [
 
 function delivery(n: NotificationRow) {
   const r = n.provider_response;
-  if (!r) return { tone: "held", label: "Pending" };
-  if (r.status === "skipped") return { tone: "held", label: "Not sent (no API key)" };
+  if (!r) return { type: "warm-gray" as const, label: "Pending" };
+  if (r.status === "skipped") return { type: "warm-gray" as const, label: "Not sent (no API key)" };
   const accepted = typeof r.status === "number" ? r.status >= 200 && r.status < 300 : ["delivered", "sent"].includes(String(r.status));
-  if (accepted) return { tone: "cleared", label: "Delivered to provider" };
-  return { tone: "revoked", label: "Provider rejected it" };
+  if (accepted) return { type: "green" as const, label: "Delivered to provider" };
+  return { type: "red" as const, label: "Provider rejected it" };
 }
 
 export default function NotificationsPage() {
@@ -40,9 +41,7 @@ export default function NotificationsPage() {
       {error && <Notice tone="error">{error}</Notice>}
 
       <div className="toolbar">
-        <label className="field" style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-          Show
-          <select
+        <Select id="s-1" labelText="Show"
             value={type}
             onChange={(e) => {
               setPage(1);
@@ -55,8 +54,7 @@ export default function NotificationsPage() {
                 {t.label}
               </option>
             ))}
-          </select>
-        </label>
+          </Select>
       </div>
 
       {!data && !error ? (
@@ -65,49 +63,47 @@ export default function NotificationsPage() {
         <p className="empty">No emails yet. They appear when someone books, cancels or is promoted from a waitlist.</p>
       ) : (
         data && (
-          <div className="ledger-wrap">
-            <table className="ledger">
-              <thead>
-                <tr>
-                  <th>Recipient</th>
-                  <th>Email</th>
-                  <th>Sent</th>
-                  <th>Delivery</th>
-                </tr>
-              </thead>
-              <tbody>
+          <Table>
+              <TableHead>
+                <TableRow>
+                  <TableHeader>Recipient</TableHeader>
+                  <TableHeader>Email</TableHeader>
+                  <TableHeader>Sent</TableHeader>
+                  <TableHeader>Delivery</TableHeader>
+                </TableRow>
+              </TableHead>
+              <TableBody>
                 {data.data.map((n) => {
                   const d = delivery(n);
                   return (
-                    <tr key={n.id}>
-                      <td>
+                    <TableRow key={n.id}>
+                      <TableCell>
                         <strong>{n.booking?.customer?.name ?? "Deleted booking"}</strong>
                         <span className="sub">{n.booking?.customer?.email}</span>
-                      </td>
-                      <td data-label="Email">
+                      </TableCell>
+                      <TableCell>
                         <div>
                           {TYPES.find((t) => t.value === n.type)?.label}
                           <span className="sub">{n.booking?.ticket_type?.event?.title}</span>
                         </div>
-                      </td>
-                      <td data-label="Sent">{n.sent_at ? formatWhen(n.sent_at) : "Not yet"}</td>
-                      <td data-label="Delivery">
+                      </TableCell>
+                      <TableCell>{n.sent_at ? formatWhen(n.sent_at) : "Not yet"}</TableCell>
+                      <TableCell>
                         <div>
-                          <span className="tag" data-tone={d.tone}>
+                          <CarbonTag type={d.type} size="md">
                             {d.label}
-                          </span>
+                          </CarbonTag>
                           <details className="raw">
                             <summary>Raw response</summary>
                             <pre>{JSON.stringify(n.provider_response, null, 2)}</pre>
                           </details>
                         </div>
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   );
                 })}
-              </tbody>
-            </table>
-          </div>
+              </TableBody>
+            </Table>
         )
       )}
       {data && <Pager page={data.current_page} last={data.last_page} total={data.total} onPage={setPage} />}

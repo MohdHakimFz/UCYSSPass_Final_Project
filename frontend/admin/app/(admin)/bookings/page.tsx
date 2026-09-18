@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Button, Select, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@carbon/react";
 import { api, downloadFile, errorText, type Booking, type BookingStatus, type Paginated } from "@/lib/api";
 import { useFetch } from "@/lib/useFetch";
 import { Notice, Pager, Tag, formatWhen, Skeleton } from "@/components/ui";
@@ -50,21 +51,19 @@ export default function BookingsPage() {
     <>
       <div className="page-head">
         <h1>Bookings</h1>
-        <button
-          className="btn-quiet"
+        <Button
+          kind="tertiary" size="md"
           onClick={() => downloadFile("/admin/export/bookings", "sentrypass-bookings.csv").catch((e) => setNote({ tone: "error", text: errorText(e) }))}
         >
           Export CSV
-        </button>
+        </Button>
       </div>
 
       {note && <Notice tone={note.tone}>{note.text}</Notice>}
       {loadError && <Notice tone="error">{loadError}</Notice>}
 
       <div className="toolbar">
-        <label className="field" style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-          Show
-          <select
+        <Select id="s-1" labelText="Show"
             value={status}
             onChange={(e) => {
               setPage(1);
@@ -77,8 +76,7 @@ export default function BookingsPage() {
                 {s.label}
               </option>
             ))}
-          </select>
-        </label>
+          </Select>
       </div>
 
       {!rows ? (
@@ -86,49 +84,47 @@ export default function BookingsPage() {
       ) : rows.data.length === 0 ? (
         <p className="empty">No bookings with that status.</p>
       ) : (
-        <div className="ledger-wrap">
-          <table className="ledger">
-            <thead>
-              <tr>
-                <th>Attendee</th>
-                <th>Event</th>
-                <th>Booked</th>
-                <th>Status</th>
-                <th />
-              </tr>
-            </thead>
-            <tbody>
+        <Table>
+            <TableHead>
+              <TableRow>
+                <TableHeader>Attendee</TableHeader>
+                <TableHeader>Event</TableHeader>
+                <TableHeader>Booked</TableHeader>
+                <TableHeader>Status</TableHeader>
+                <TableHeader />
+              </TableRow>
+            </TableHead>
+            <TableBody>
               {rows.data.map((b) => (
-                <tr key={b.id}>
-                  <td>
+                <TableRow key={b.id}>
+                  <TableCell>
                     <strong>{b.customer?.name ?? "Unknown"}</strong>
                     <span className="sub">{b.customer?.email}</span>
-                  </td>
-                  <td data-label="Event">
+                  </TableCell>
+                  <TableCell>
                     <div>
                       {b.ticket_type?.event?.title ?? "Unknown event"}
                       <span className="sub">{b.ticket_type?.name}</span>
                     </div>
-                  </td>
-                  <td data-label="Booked">{formatWhen(b.booked_at)}</td>
-                  <td data-label="Status">
+                  </TableCell>
+                  <TableCell>{formatWhen(b.booked_at)}</TableCell>
+                  <TableCell>
                     <Tag status={b.status} />
-                  </td>
-                  <td className="actions">
+                  </TableCell>
+                  <TableCell>
                     {b.status !== "cancelled" && (
-                      <button className="btn-quiet" onClick={() => cancel(b)}>
+                      <Button kind="ghost" size="sm" onClick={() => cancel(b)}>
                         Cancel
-                      </button>
+                      </Button>
                     )}{" "}
-                    <button className="btn-danger" onClick={() => remove(b)}>
+                    <Button kind="danger--ghost" size="sm" onClick={() => remove(b)}>
                       Delete
-                    </button>
-                  </td>
-                </tr>
+                    </Button>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </TableBody>
+          </Table>
       )}
       {rows && <Pager page={rows.current_page} last={rows.last_page} total={rows.total} onPage={setPage} />}
     </>
