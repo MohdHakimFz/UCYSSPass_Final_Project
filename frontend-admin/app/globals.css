@@ -662,13 +662,183 @@ button:disabled {
   }
 
   .masthead-inner {
-    gap: 16px;
-    flex-wrap: wrap;
-    padding-bottom: 0;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0;
+    padding: 0 16px;
+    min-height: 0;
+  }
+
+  .wordmark {
+    min-height: 52px;
+  }
+
+  .who {
+    grid-column: 2;
+    grid-row: 1;
   }
 
   .who span {
     display: none;
+  }
+
+  .nav {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    margin: 0 -16px;
+    padding: 0 8px;
+    border-top: 1px solid #2a4258;
+    scrollbar-width: none;
+  }
+
+  .nav a {
+    min-height: 46px;
+  }
+}
+
+@media (max-width: 720px) {
+  .page {
+    padding: 28px 16px 72px;
+  }
+
+  .page-head {
+    margin-bottom: 20px;
+  }
+
+  .page-head h1 {
+    font-size: 26px;
+  }
+
+  .lede-sub {
+    font-size: 16px;
+  }
+
+  section + section {
+    margin-top: 44px;
+  }
+
+  /* Tables become stacked rows: title first, then label/value pairs, then actions. */
+  .ledger {
+    min-width: 0;
+    display: block;
+  }
+
+  .ledger thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+
+  .ledger tbody,
+  .ledger tr,
+  .ledger td {
+    display: block;
+  }
+
+  .ledger tr {
+    padding: 16px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .ledger tr:last-child {
+    border-bottom: 0;
+  }
+
+  .ledger td {
+    padding: 4px 0;
+    border: 0;
+  }
+
+  .ledger td[data-label] {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    min-height: 36px;
+  }
+
+  .ledger td[data-label]::before {
+    content: attr(data-label);
+    color: var(--ink-soft);
+    font-size: 14px;
+  }
+
+  .ledger td[data-label] > div {
+    text-align: right;
+  }
+
+  .ledger td.actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding-top: 12px;
+    text-align: left;
+  }
+
+  /* Comfortable touch targets, and 16px text so iOS doesn't zoom on focus. */
+  .btn,
+  .btn-quiet,
+  .btn-danger {
+    min-height: 44px;
+  }
+
+  .select,
+  .search,
+  .field input,
+  .field select {
+    min-height: 44px;
+    font-size: 16px;
+  }
+
+  .toolbar > * {
+    flex: 1 1 100%;
+  }
+
+  .toolbar .field {
+    width: 100%;
+  }
+
+  .toolbar .field select {
+    flex: 1;
+  }
+
+  .search {
+    min-width: 0;
+  }
+
+  .panel {
+    padding: 20px 16px;
+  }
+
+  .form-actions .btn,
+  .form-actions .btn-quiet {
+    flex: 1;
+  }
+
+  .pager {
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+
+  .pager span {
+    order: -1;
+    width: 100%;
+  }
+
+  .pager button {
+    flex: 1;
+  }
+
+  .manifest li {
+    padding: 14px 16px;
+    gap: 10px 16px;
+  }
+
+  .days-labels {
+    font-size: 12px;
   }
 }
 

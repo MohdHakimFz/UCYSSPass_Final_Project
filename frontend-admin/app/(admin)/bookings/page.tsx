@@ -98,12 +98,14 @@ export default function BookingsPage() {
                     <strong>{b.customer?.name ?? "Unknown"}</strong>
                     <span className="sub">{b.customer?.email}</span>
                   </td>
-                  <td>
-                    {b.ticket_type?.event?.title ?? "Unknown event"}
-                    <span className="sub">{b.ticket_type?.name}</span>
+                  <td data-label="Event">
+                    <div>
+                      {b.ticket_type?.event?.title ?? "Unknown event"}
+                      <span className="sub">{b.ticket_type?.name}</span>
+                    </div>
                   </td>
-                  <td>{formatWhen(b.booked_at)}</td>
-                  <td>
+                  <td data-label="Booked">{formatWhen(b.booked_at)}</td>
+                  <td data-label="Status">
                     <Tag status={b.status} />
                   </td>
                   <td className="actions">

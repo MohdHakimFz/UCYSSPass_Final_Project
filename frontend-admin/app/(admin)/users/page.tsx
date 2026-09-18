@@ -164,7 +164,7 @@ export default function PeoplePage() {
                     <strong>{u.name}</strong>
                     <span className="sub">{u.email}</span>
                   </td>
-                  <td>
+                  <td data-label="Role">
                     <select
                       className="select"
                       aria-label={`Role for ${u.name}`}
@@ -179,7 +179,7 @@ export default function PeoplePage() {
                       ))}
                     </select>
                   </td>
-                  <td>{new Date(u.created_at).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" })}</td>
+                  <td data-label="Joined">{new Date(u.created_at).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" })}</td>
                   <td className="actions">
                     {u.id !== me?.id && (
                       <button className="btn-danger" onClick={() => remove(u)}>

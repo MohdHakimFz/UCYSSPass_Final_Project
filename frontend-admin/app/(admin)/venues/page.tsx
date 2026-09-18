@@ -137,7 +137,7 @@ export default function VenuesPage() {
                     <strong>{v.name}</strong>
                     <span className="sub">{v.address}</span>
                   </td>
-                  <td>{v.capacity}</td>
+                  <td data-label="Capacity">{v.capacity}</td>
                   <td className="actions">
                     <button
                       className="btn-quiet"

@@ -115,8 +115,8 @@ export default function EventsPage() {
                     <strong>{ev.title}</strong>
                     <span className="sub">{CATEGORY[ev.category]}</span>
                   </td>
-                  <td>{formatWhen(ev.start_at)}</td>
-                  <td>
+                  <td data-label="Starts">{formatWhen(ev.start_at)}</td>
+                  <td data-label="Status">
                     <Tag status={ev.status} />
                   </td>
                   <td className="actions">
