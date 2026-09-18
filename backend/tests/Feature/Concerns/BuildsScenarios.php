@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Models\Event;
 use App\Models\TicketType;
 use App\Models\User;
+use App\Models\Venue;
 use Illuminate\Support\Facades\Http;
 
 /**
@@ -35,9 +36,17 @@ trait BuildsScenarios
         return User::factory()->admin()->create();
     }
 
+    protected function venue(): Venue
+    {
+        // Created directly: the venue factory draws names without repeats from a list of six.
+        return Venue::create(['name' => 'Venue '.uniqid(), 'address' => '1 Jalan Test', 'capacity' => 500]);
+    }
+
     protected function publishedEvent(?User $organiser = null): Event
     {
         return Event::factory()->create([
+            // The factory's venue names come from a short list, so give every venue its own unique name.
+            'venue_id' => $this->venue()->id,
             'organiser_id' => ($organiser ?? $this->organiser())->id,
             'status' => 'published',
         ]);

@@ -23,7 +23,7 @@ class RoleAccessTest extends TestCase
     private function eventPayload(): array
     {
         return [
-            'venue_id' => Venue::factory()->create()->id,
+            'venue_id' => $this->venue()->id,
             'title' => 'Web Security CTF Night',
             'category' => 'ctf',
             'start_at' => now()->addWeek()->toIso8601String(),
@@ -34,7 +34,7 @@ class RoleAccessTest extends TestCase
     public function test_events_and_venues_are_public_to_read(): void
     {
         $this->publishedEvent();
-        Venue::factory()->create();
+        $this->venue();
 
         $this->getJson('/api/events')->assertOk();
         $this->getJson('/api/venues')->assertOk();
