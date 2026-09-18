@@ -506,3 +506,12 @@ section.tile {
     }
   }
 }
+
+/* Wide tables scroll sideways on a phone instead of clipping their last columns. */
+.cds--data-table-content {
+  overflow-x: auto;
+}
+
+.cds--data-table {
+  min-width: 640px;
+}

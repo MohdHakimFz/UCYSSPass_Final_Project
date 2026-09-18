@@ -34,7 +34,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(fn (Request $request) => $request->is('api/*') || $request->expectsJson());
 
         // Consistent error shape for every API failure: {"message": "..."} (+ "errors" on 422).
-        $exceptions->render(fn (AuthenticationException $e) => response()->json(['message' => 'Unauthenticated.'], 401));
+        $exceptions->render(fn (AuthenticationException $e) => response()->json(['message' => $e->getMessage() ?: 'Unauthenticated.'], 401));
 
         $exceptions->render(fn (AuthorizationException|AccessDeniedHttpException $e) => response()->json(['message' => 'This action is unauthorized.'], 403));
 
