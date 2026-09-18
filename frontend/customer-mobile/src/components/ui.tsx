@@ -1,6 +1,6 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ActivityIndicator, Animated, Pressable, StyleSheet, Text, TextInput, View, type TextInputProps } from 'react-native'
-import { CheckCircle, Warning, WarningCircle } from 'phosphor-react-native'
+import { CheckCircle, Eye, EyeSlash, Warning, WarningCircle } from 'phosphor-react-native'
 import { colors, fonts } from '../theme'
 import type { BookingStatus } from '../lib/api'
 
@@ -13,7 +13,7 @@ export function Button({
 }: {
   title: string
   onPress: () => void
-  variant?: 'primary' | 'quiet' | 'danger'
+  variant?: 'primary' | 'quiet' | 'danger' | 'dark'
   disabled?: boolean
   busy?: boolean
 }) {
@@ -27,6 +27,7 @@ export function Button({
         variant === 'primary' && s.btnPrimary,
         variant === 'quiet' && s.btnQuiet,
         variant === 'danger' && s.btnDanger,
+        variant === 'dark' && s.btnDark,
         (disabled || busy) && { opacity: 0.5 },
         pressed && { opacity: 0.8, transform: [{ translateY: 1 }] },
       ]}
@@ -34,17 +35,42 @@ export function Button({
       {busy ? (
         <ActivityIndicator color={colors.ink} />
       ) : (
-        <Text style={[s.btnText, variant === 'danger' && { color: colors.revoked }]}>{title}</Text>
+        <Text style={[s.btnText, variant === 'danger' && { color: colors.revoked }, variant === 'dark' && { color: colors.paper }]}>{title}</Text>
       )}
     </Pressable>
   )
 }
 
-export function Field({ label, ...props }: { label: string } & TextInputProps) {
+export function Field({ label, hint, ...props }: { label: string; hint?: string } & TextInputProps) {
+  // Password fields get a show/hide toggle so people can check what they typed on a small keyboard.
+  const isPassword = !!props.secureTextEntry
+  const [hidden, setHidden] = useState(true)
+
   return (
     <View style={{ gap: 6 }}>
       <Text style={s.label}>{label}</Text>
-      <TextInput placeholderTextColor={colors.inkSoft} selectionColor={colors.badge} style={s.input} autoCapitalize="none" {...props} />
+      <View>
+        <TextInput
+          placeholderTextColor={colors.inkSoft}
+          selectionColor={colors.accent}
+          style={[s.input, isPassword && { paddingRight: 52 }]}
+          autoCapitalize="none"
+          {...props}
+          secureTextEntry={isPassword ? hidden : false}
+        />
+        {isPassword && (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={hidden ? 'Show password' : 'Hide password'}
+            onPress={() => setHidden((h) => !h)}
+            hitSlop={8}
+            style={s.eye}
+          >
+            {hidden ? <Eye size={22} color={colors.ink} /> : <EyeSlash size={22} color={colors.ink} />}
+          </Pressable>
+        )}
+      </View>
+      {hint ? <Text style={s.hint}>{hint}</Text> : null}
     </View>
   )
 }
@@ -125,9 +151,12 @@ const s = StyleSheet.create({
   btn: { minHeight: 48, paddingHorizontal: 18, alignItems: 'center', justifyContent: 'center', borderRadius: 0, borderWidth: 2, borderColor: colors.ink },
   btnPrimary: { backgroundColor: colors.badge },
   btnQuiet: { backgroundColor: 'transparent' },
+  btnDark: { backgroundColor: colors.ink },
   btnDanger: { backgroundColor: 'transparent', borderColor: 'transparent' },
   btnText: { fontFamily: fonts.semibold, fontSize: 16, color: colors.ink },
   label: { fontFamily: fonts.semibold, fontSize: 14, color: colors.ink },
+  hint: { fontFamily: fonts.regular, fontSize: 13, color: colors.inkSoft },
+  eye: { position: 'absolute', right: 0, top: 0, bottom: 0, width: 48, alignItems: 'center', justifyContent: 'center' },
   input: {
     minHeight: 48,
     borderWidth: 2,

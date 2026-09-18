@@ -1,67 +1,100 @@
-import { useEffect, useState } from 'react'
-import { ScrollView, StyleSheet, Text, View } from 'react-native'
+import { useState } from 'react'
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { CaretLeft } from 'phosphor-react-native'
 import { errorText } from '../lib/api'
 import { useAuth } from '../lib/auth'
+import { PosterArt } from '../components/PosterArt'
 import { Button, Field, Notice } from '../components/ui'
 import { colors, fonts } from '../theme'
 import type { RootParamList } from '../../App'
 
+// One screen for both, with a different poster, heading and fields. Signing in or up lands you in the app.
 export default function AuthScreen({ navigation, route }: NativeStackScreenProps<RootParamList, 'Login' | 'Register'>) {
   const isLogin = route.name === 'Login'
-  const { user, signIn, register } = useAuth()
+  const { signIn, register } = useAuth()
+  const insets = useSafeAreaInsets()
   const [f, setF] = useState({ name: '', email: '', password: '', password_confirmation: '' })
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
-  useEffect(() => {
-    if (user) navigation.goBack()
-  }, [user, navigation])
+  function problem(): string | null {
+    if (!isLogin && !f.name.trim()) return 'Enter your name.'
+    if (!/^\S+@\S+\.\S+$/.test(f.email.trim())) return 'Enter a valid email address.'
+    if (!isLogin && f.password.length < 8) return 'Choose a password of at least 8 characters.'
+    if (!isLogin && f.password !== f.password_confirmation) return 'The two passwords do not match.'
+    if (isLogin && !f.password) return 'Enter your password.'
+    return null
+  }
 
   async function submit() {
+    const bad = problem()
+    if (bad) return setError(bad)
     setBusy(true)
     setError(null)
     try {
-      if (isLogin) await signIn(f.email, f.password)
-      else await register(f)
+      if (isLogin) await signIn(f.email.trim(), f.password)
+      else await register({ ...f, name: f.name.trim(), email: f.email.trim() })
     } catch (err) {
       setError(errorText(err))
-    } finally {
       setBusy(false)
     }
   }
 
   return (
-    <ScrollView style={{ backgroundColor: colors.concrete }} contentContainerStyle={s.pad} keyboardShouldPersistTaps="handled">
-      <Text style={s.h1}>{isLogin ? 'Sign in' : 'Create your account'}</Text>
-      <Text style={s.sub}>{isLogin ? 'Your passes and bookings are waiting.' : 'Book seats at security events and keep your passes in one place.'}</Text>
-      {error && <Notice tone="error" text={error} />}
-      {!isLogin && <Field label="Full name" value={f.name} onChangeText={(name) => setF({ ...f, name })} autoCapitalize="words" autoComplete="name" />}
-      <Field label="Email" value={f.email} onChangeText={(email) => setF({ ...f, email })} keyboardType="email-address" autoComplete="email" />
-      <Field label="Password" value={f.password} onChangeText={(password) => setF({ ...f, password })} secureTextEntry autoComplete={isLogin ? 'current-password' : 'new-password'} />
-      {!isLogin && (
-        <Field
-          label="Confirm password"
-          value={f.password_confirmation}
-          onChangeText={(password_confirmation) => setF({ ...f, password_confirmation })}
-          secureTextEntry
-          autoComplete="new-password"
-        />
-      )}
-      <Button title={isLogin ? 'Sign in' : 'Create account'} onPress={submit} busy={busy} />
-      <View style={{ marginTop: 8 }}>
-        <Button
-          title={isLogin ? 'New here? Create an account' : 'Already registered? Sign in'}
-          variant="quiet"
-          onPress={() => navigation.replace(isLogin ? 'Register' : 'Login')}
-        />
-      </View>
-    </ScrollView>
+    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.concrete }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
+        <View style={[s.poster, { paddingTop: insets.top + 12 }]}>
+          <PosterArt category={isLogin ? 'bootcamp' : 'ctf'} />
+          <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={() => navigation.goBack()} hitSlop={12} style={s.back}>
+            <CaretLeft size={26} weight="bold" color={isLogin ? colors.paper : colors.ink} />
+          </Pressable>
+          <Text style={[s.title, { color: isLogin ? colors.paper : colors.ink }]}>{isLogin ? 'Welcome back.' : 'Create your account.'}</Text>
+        </View>
+
+        <View style={s.form}>
+          <Text style={s.sub}>{isLogin ? 'Sign in to see events and your passes.' : 'It takes a minute. Then you can book seats and keep your passes here.'}</Text>
+          {error && <Notice tone="error" text={error} />}
+          {!isLogin && <Field label="Full name" value={f.name} onChangeText={(name) => setF({ ...f, name })} autoCapitalize="words" autoComplete="name" textContentType="name" />}
+          <Field label="Email" value={f.email} onChangeText={(email) => setF({ ...f, email })} keyboardType="email-address" autoComplete="email" textContentType="emailAddress" />
+          <Field
+            label="Password"
+            hint={isLogin ? undefined : 'At least 8 characters.'}
+            value={f.password}
+            onChangeText={(password) => setF({ ...f, password })}
+            secureTextEntry
+            autoComplete={isLogin ? 'current-password' : 'new-password'}
+            textContentType={isLogin ? 'password' : 'newPassword'}
+            onSubmitEditing={isLogin ? submit : undefined}
+          />
+          {!isLogin && (
+            <Field
+              label="Confirm password"
+              value={f.password_confirmation}
+              onChangeText={(password_confirmation) => setF({ ...f, password_confirmation })}
+              secureTextEntry
+              autoComplete="new-password"
+              textContentType="newPassword"
+              onSubmitEditing={submit}
+            />
+          )}
+          <Button title={isLogin ? 'Sign in' : 'Create account'} variant="dark" onPress={submit} busy={busy} />
+          <Button
+            title={isLogin ? 'New here? Create an account' : 'Already registered? Sign in'}
+            variant="quiet"
+            onPress={() => navigation.replace(isLogin ? 'Register' : 'Login')}
+          />
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   )
 }
 
 const s = StyleSheet.create({
-  pad: { padding: 20, gap: 16 },
-  h1: { fontFamily: fonts.heavy, fontSize: 30, color: colors.ink },
-  sub: { fontFamily: fonts.regular, fontSize: 15, color: colors.inkSoft },
+  poster: { minHeight: 200, paddingHorizontal: 20, paddingBottom: 24, justifyContent: 'space-between', overflow: 'hidden' },
+  back: { alignSelf: 'flex-start', paddingVertical: 4 },
+  title: { fontFamily: fonts.heavy, fontSize: 36, lineHeight: 38, letterSpacing: -1 },
+  form: { padding: 20, gap: 16 },
+  sub: { fontFamily: fonts.regular, fontSize: 15, lineHeight: 21, color: colors.inkSoft },
 })

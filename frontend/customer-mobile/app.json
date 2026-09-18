@@ -7,7 +7,16 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "scheme": "sentrypass",
-    "plugins": [["expo-calendar", { "calendarPermission": "SentryPass adds your event passes to your calendar." }]],
+    "plugins": [
+      [
+        "expo-calendar",
+        {
+          "calendarPermission": "SentryPass adds your event passes to your calendar."
+        }
+      ],
+      "expo-secure-store",
+      "expo-font"
+    ],
     "ios": {
       "supportsTablet": true
     },
@@ -22,10 +31,6 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    },
-    "plugins": [
-      "expo-secure-store",
-      "expo-font"
-    ]
+    }
   }
 }

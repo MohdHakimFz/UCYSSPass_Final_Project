@@ -1,10 +1,34 @@
 import { Platform } from 'react-native'
+import Constants from 'expo-constants'
 import * as SecureStore from 'expo-secure-store'
 
-// Android emulators reach the host machine at 10.0.2.2. On a physical phone set EXPO_PUBLIC_API_URL
-// to your computer's LAN address, for example http://192.168.1.20/api.
-const DEFAULT_BASE = Platform.OS === 'android' ? 'http://10.0.2.2/api' : 'http://localhost/api'
-export const BASE = process.env.EXPO_PUBLIC_API_URL ?? DEFAULT_BASE
+// "localhost" on a phone is the phone itself, so the API address has to be worked out:
+//  1. EXPO_PUBLIC_API_URL wins if it is set (use it for a deployed API).
+//  2. Otherwise use the computer that is serving the app to Expo Go: it is the same machine that runs the API,
+//     and Expo already knows its LAN address (for example 192.168.1.20).
+//  3. Android emulators reach the host machine at 10.0.2.2; the web build and iOS simulator use localhost.
+function devMachine(): string | null {
+  const hostUri = Constants.expoConfig?.hostUri
+  const host = hostUri?.split(':')[0]
+  return host && /^\d{1,3}(\.\d{1,3}){3}$/.test(host) ? host : null
+}
+
+function defaultBase(): string {
+  if (Platform.OS === 'web') return 'http://localhost/api'
+  const host = devMachine()
+  if (host) return `http://${host}/api`
+  return Platform.OS === 'android' ? 'http://10.0.2.2/api' : 'http://localhost/api'
+}
+
+export const BASE = process.env.EXPO_PUBLIC_API_URL ?? defaultBase()
+
+// A dead connection should fail in seconds with a clear message, not hang.
+const TIMEOUT_MS = 10000
+function timeoutSignal(): AbortSignal {
+  const controller = new AbortController()
+  setTimeout(() => controller.abort(), TIMEOUT_MS)
+  return controller.signal
+}
 
 const TOKEN_KEY = 'sentrypass_customer_token'
 let cachedToken: string | null = null
@@ -51,6 +75,7 @@ export async function api<T = unknown>(path: string, options: { method?: string;
       ...(cachedToken ? { Authorization: `Bearer ${cachedToken}` } : {}),
     },
     body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
+    signal: timeoutSignal(),
   })
 
   if (res.status === 204) return undefined as T
@@ -69,13 +94,14 @@ export function errorText(err: unknown): string {
     const first = err.errors ? Object.values(err.errors)[0]?.[0] : undefined
     return first ?? err.message
   }
-  return "Can't reach the server. Check that the API is running and your phone is on the same network."
+  return `Can't reach the server at ${BASE}. Check that the API is running and that your phone is on the same Wi-Fi as your computer.`
 }
 
 // The QR image sits behind auth, so fetch it with the token and hand back a data URI.
 export async function fetchQrDataUri(bookingId: number): Promise<string> {
   const res = await fetch(`${BASE}/bookings/${bookingId}/qr-code`, {
     headers: cachedToken ? { Authorization: `Bearer ${cachedToken}` } : {},
+    signal: timeoutSignal(),
   })
   if (!res.ok) throw new ApiError('Could not load your pass.', res.status)
   const bytes = new Uint8Array(await res.arrayBuffer())

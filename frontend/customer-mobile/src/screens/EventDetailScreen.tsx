@@ -2,25 +2,19 @@ import { useState } from 'react'
 import { ScrollView, Share, StyleSheet, Text, View } from 'react-native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { api, ApiError, CATEGORY_LABEL, errorText, type Booking, type EventItem, type TicketType } from '../lib/api'
-import { useAuth } from '../lib/auth'
 import { useFetch } from '../lib/useFetch'
 import { Button, Empty, Notice, Skeleton, formatWhen } from '../components/ui'
 import { PosterArt, POSTER } from '../components/PosterArt'
 import { colors, fonts } from '../theme'
 import type { RootParamList } from '../../App'
 
-export default function EventDetailScreen({ route, navigation }: NativeStackScreenProps<RootParamList, 'EventDetail'>) {
+export default function EventDetailScreen({ route }: NativeStackScreenProps<RootParamList, 'EventDetail'>) {
   const { id } = route.params
-  const { user } = useAuth()
   const { data: event, error, reload } = useFetch<EventItem>(`/events/${id}`)
   const [busyId, setBusyId] = useState<number | null>(null)
   const [note, setNote] = useState<{ tone: 'ok' | 'error' | 'warn'; text: string } | null>(null)
 
   async function book(t: TicketType) {
-    if (!user) {
-      navigation.navigate('Login')
-      return
-    }
     setBusyId(t.id)
     setNote(null)
     try {

@@ -1,15 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Alert, FlatList, Image, Modal, RefreshControl, StyleSheet, Text, View } from 'react-native'
-import { useNavigation } from '@react-navigation/native'
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { api, CATEGORY_LABEL, errorText, fetchQrDataUri, type Booking, type Paginated } from '../lib/api'
 import { addToCalendar } from '../lib/calendar'
 import { loadCache, saveCache } from '../lib/offline'
-import { useAuth } from '../lib/auth'
 import { useFetch } from '../lib/useFetch'
 import { Button, Empty, Notice, Skeleton, StatusTag, formatWhen } from '../components/ui'
 import { colors, fonts } from '../theme'
-import type { RootParamList } from '../../App'
 
 const showable = (b: Booking) => !!b.qr_token && (b.status === 'confirmed' || b.status === 'attended')
 
@@ -69,14 +65,12 @@ function PassModal({ booking, onClose, onCalendar }: { booking: Booking; onClose
 }
 
 export default function PassesScreen() {
-  const { user } = useAuth()
-  const navigation = useNavigation<NativeStackNavigationProp<RootParamList>>()
-  const { data, error, reload, refresh, refreshing } = useFetch<Paginated<Booking>>(user ? '/bookings?per_page=50' : '/events?per_page=1')
+  const { data, error, reload, refresh, refreshing } = useFetch<Paginated<Booking>>('/bookings?per_page=50')
   const [cached, setCached] = useState<Booking[] | null>(null)
   const [shown, setShown] = useState<Booking | null>(null)
   const [note, setNote] = useState<{ tone: 'ok' | 'error'; text: string } | null>(null)
 
-  const live = user ? ((data as Paginated<Booking> | null)?.data ?? null) : null
+  const live = data?.data ?? null
 
   // Save the list and every QR code while online, so both are there when the signal isn't.
   useEffect(() => {
@@ -94,18 +88,8 @@ export default function PassesScreen() {
 
   // No connection: fall back to the last saved copy.
   useEffect(() => {
-    if (user && error && !live) void loadCache<Booking[]>('bookings').then(setCached)
-  }, [user, error, live])
-
-  if (!user) {
-    return (
-      <View style={s.center}>
-        <Text style={s.h1}>Sign in to see your passes.</Text>
-        <Text style={s.sub}>Your bookings and QR passes live here.</Text>
-        <Button title="Sign in" onPress={() => navigation.navigate('Login')} />
-      </View>
-    )
-  }
+    if (error && !live) void loadCache<Booking[]>('bookings').then(setCached)
+  }, [error, live])
 
   function cancel(b: Booking) {
     Alert.alert('Cancel booking?', `Cancel your ${b.ticket_type?.name} pass? This can't be undone.`, [
