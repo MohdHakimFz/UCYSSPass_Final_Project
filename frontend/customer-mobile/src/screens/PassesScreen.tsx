@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import * as Brightness from 'expo-brightness'
+import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake'
 import { Alert, FlatList, Image, Modal, RefreshControl, StyleSheet, Text, View } from 'react-native'
 import { api, CATEGORY_LABEL, errorText, fetchQrDataUri, type Booking, type Paginated } from '../lib/api'
 import { addToCalendar } from '../lib/calendar'
@@ -44,6 +46,18 @@ function QrImage({ bookingId }: { bookingId: number }) {
 // At the door the pass needs the whole screen and nothing else competing with it.
 function PassModal({ booking, onClose, onCalendar }: { booking: Booking; onClose: () => void; onCalendar: () => void }) {
   const ev = booking.ticket_type?.event
+
+  // While the pass is open: full brightness and no screen timeout, both put back on close.
+  useEffect(() => {
+    const tag = 'sentrypass-pass'
+    void Brightness.setBrightnessAsync(1).catch(() => undefined)
+    void activateKeepAwakeAsync(tag).catch(() => undefined)
+    return () => {
+      void Brightness.restoreSystemBrightnessAsync().catch(() => undefined)
+      void deactivateKeepAwake(tag).catch(() => undefined)
+    }
+  }, [])
+
   return (
     <Modal visible transparent animationType="fade" onRequestClose={onClose}>
       <View style={s.modalScrim}>
@@ -53,7 +67,7 @@ function PassModal({ booking, onClose, onCalendar }: { booking: Booking; onClose
             {booking.ticket_type?.name} pass{ev ? ` · ${formatWhen(ev.start_at)}` : ''}
           </Text>
           <QrImage bookingId={booking.id} />
-          <Text style={s.qrNote}>Turn your screen brightness up and hold it steady for the scanner.</Text>
+          <Text style={s.qrNote}>Brightness is turned up and the screen stays on while this pass is open. Hold it steady for the scanner.</Text>
           <View style={{ alignSelf: 'stretch', gap: 8 }}>
             <Button title="Done" onPress={onClose} />
             <Button title="Add to calendar" variant="quiet" onPress={onCalendar} />
