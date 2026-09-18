@@ -8,9 +8,7 @@ Event ticketing and venue booking API for the infosec community (CTFs, bootcamps
 SentryPass/
 ├── backend/                 Laravel 12 API (Sanctum, PostgreSQL via Sail)
 ├── frontend/
-│   ├── admin/               Admin Dashboard       Next.js
-│   ├── staff/               Organiser Portal      React + Vite
-│   ├── customer-web/        Customer Web App      React + Vite
+│   ├── web/                 One web app for every role   React + Vite
 │   └── customer-mobile/     Customer Mobile App   React Native + Expo
 ├── docs/                    API reference, ERD and database design, Postman collection, project spec
 └── README.md
@@ -19,9 +17,7 @@ SentryPass/
 | App | Folder | Stack | Dev URL |
 | --- | --- | --- | --- |
 | API | `backend/` | Laravel 12, Sanctum, PostgreSQL | http://localhost/api |
-| Admin Dashboard | `frontend/admin/` | Next.js | http://localhost:3000 |
-| Organiser Portal | `frontend/staff/` | React + Vite | http://localhost:5174 |
-| Customer Web | `frontend/customer-web/` | React + Vite | http://localhost:5175 |
+| Web app (customer, organiser, admin) | `frontend/web/` | React + Vite | http://localhost:5175 |
 | Customer Mobile | `frontend/customer-mobile/` | React Native + Expo | Expo Go / emulator |
 
 ## Documentation
@@ -54,12 +50,12 @@ Optional `.env` settings: `RESEND_API_KEY` (real confirmation emails; without it
 ## Run a frontend
 
 ```bash
-cd frontend/admin          # or frontend/staff / frontend/customer-web
+cd frontend/web
 npm install
 npm run dev
 ```
 
-Each web app reads the API address from `NEXT_PUBLIC_API_URL` (admin) or `VITE_API_URL` (staff, customer-web), defaulting to `http://localhost/api`.
+The web app is one application with one sign-in page. After signing in, the role decides where you land: customers in the public site (`/passes`), organisers in `/organiser`, admins in `/admin`. Each area has its own layout and route guard, and the API enforces the same roles on every request. The API address comes from `VITE_API_URL`, defaulting to `http://localhost/api`.
 
 Mobile:
 
