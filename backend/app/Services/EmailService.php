@@ -62,6 +62,30 @@ class EmailService
     }
 
     /**
+     * Send a one-off transactional email (for example a password reset code).
+     * With no Resend key nothing is sent and false is returned, so the caller can log it for local development.
+     */
+    public function sendPlain(string $to, string $subject, string $html): bool
+    {
+        $apiKey = config('services.resend.key');
+
+        if (! $apiKey) {
+            return false;
+        }
+
+        $response = Http::withToken($apiKey)->post('https://api.resend.com/emails', [
+            'from' => config('services.resend.from'),
+            'to' => [$to],
+            'subject' => $subject,
+            'html' => $html,
+        ]);
+
+        Log::info('Resend transactional email', ['status' => $response->status(), 'subject' => $subject]);
+
+        return $response->successful();
+    }
+
+    /**
      * @return array{0: string, 1: string}
      */
     private function content(Notification $notification): array

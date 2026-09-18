@@ -79,6 +79,11 @@ export default function AuthScreen({ navigation, route }: NativeStackScreenProps
               onSubmitEditing={submit}
             />
           )}
+          {isLogin && (
+            <Pressable accessibilityRole="button" onPress={() => navigation.navigate('ForgotPassword')} hitSlop={8} style={{ alignSelf: 'flex-start' }}>
+              <Text style={s.forgot}>Forgot your password?</Text>
+            </Pressable>
+          )}
           <Button title={isLogin ? 'Sign in' : 'Create account'} variant="dark" onPress={submit} busy={busy} />
           <Button
             title={isLogin ? 'New here? Create an account' : 'Already registered? Sign in'}
@@ -97,4 +102,5 @@ const s = StyleSheet.create({
   title: { fontFamily: fonts.heavy, fontSize: 36, lineHeight: 38, letterSpacing: -1 },
   form: { padding: 20, gap: 16 },
   sub: { fontFamily: fonts.regular, fontSize: 15, lineHeight: 21, color: colors.inkSoft },
+  forgot: { fontFamily: fonts.semibold, fontSize: 14, color: colors.ink, textDecorationLine: 'underline' },
 })

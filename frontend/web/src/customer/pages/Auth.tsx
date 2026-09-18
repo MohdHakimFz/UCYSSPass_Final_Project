@@ -55,6 +55,7 @@ export default function Auth({ mode }: { mode: 'login' | 'register' }) {
         {isLogin ? 'Your passes and bookings are waiting.' : 'Book seats at security events and keep your passes in one place.'}
       </p>
       <form onSubmit={onSubmit} className="stack">
+        {params.get('reset') && isLogin && <Notice tone="ok">Your password has been changed. Sign in with the new one.</Notice>}
         {error && <Notice tone="error">{error}</Notice>}
         {!isLogin && (
           <label className="field">
@@ -93,6 +94,11 @@ export default function Auth({ mode }: { mode: 'login' | 'register' }) {
           {busy ? 'One moment…' : isLogin ? 'Sign in' : 'Create account'}
         </button>
       </form>
+      {isLogin && (
+        <p className="switch">
+          <Link to="/forgot-password">Forgot your password?</Link>
+        </p>
+      )}
       <p className="switch">
         {isLogin ? (
           <>

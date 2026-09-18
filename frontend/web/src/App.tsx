@@ -5,6 +5,7 @@ import RequireRole from '@/lib/roles'
 import Layout from '@/customer/Layout'
 import Home from '@/customer/pages/Home'
 import Auth from '@/customer/pages/Auth'
+import ForgotPassword from '@/customer/pages/ForgotPassword'
 import Events from '@/customer/pages/Events'
 import EventDetail from '@/customer/pages/EventDetail'
 import Passes from '@/customer/pages/Passes'
@@ -34,6 +35,7 @@ export default function App() {
             <Route path="/events/:id" element={<EventDetail />} />
             <Route path="/login" element={<Auth mode="login" />} />
             <Route path="/register" element={<Auth mode="register" />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route element={<RequireRole roles={['customer']} />}>
               <Route path="/passes" element={<Passes />} />
               <Route path="/profile" element={<Profile />} />

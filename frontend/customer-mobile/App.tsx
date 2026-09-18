@@ -14,6 +14,7 @@ import PassesScreen from './src/screens/PassesScreen'
 import AccountScreen from './src/screens/AccountScreen'
 import AuthScreen from './src/screens/AuthScreen'
 import WelcomeScreen from './src/screens/WelcomeScreen'
+import ForgotPasswordScreen from './src/screens/ForgotPasswordScreen'
 import ProfileScreen from './src/screens/ProfileScreen'
 
 export type RootParamList = {
@@ -21,6 +22,7 @@ export type RootParamList = {
   Tabs: undefined
   EventDetail: { id: number }
   Login: undefined
+  ForgotPassword: undefined
   Register: undefined
   Profile: undefined
 }
@@ -81,6 +83,7 @@ function Screens() {
           <Stack.Screen name="Welcome" component={WelcomeScreen} options={{ headerShown: false }} />
           <Stack.Screen name="Login" component={AuthScreen} options={{ headerShown: false }} />
           <Stack.Screen name="Register" component={AuthScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} options={{ headerShown: false }} />
         </>
       )}
     </Stack.Navigator>
