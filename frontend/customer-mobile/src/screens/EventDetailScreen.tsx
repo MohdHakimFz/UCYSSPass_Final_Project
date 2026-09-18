@@ -4,7 +4,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { api, ApiError, CATEGORY_LABEL, errorText, type Booking, type EventItem, type TicketType } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { useFetch } from '../lib/useFetch'
-import { Button, Empty, Notice, formatWhen } from '../components/ui'
+import { Button, Empty, Notice, Skeleton, formatWhen } from '../components/ui'
 import { colors, fonts } from '../theme'
 import type { RootParamList } from '../../App'
 
@@ -42,16 +42,15 @@ export default function EventDetailScreen({ route, navigation }: NativeStackScre
   }
 
   if (error) return <View style={s.pad}><Notice tone="error" text={error} /></View>
-  if (!event) return <Text style={s.loading}>Loading event…</Text>
+  if (!event) return <View style={s.pad}><Skeleton rows={3} height={90} /></View>
 
   const bookable = event.status === 'published'
 
   return (
     <ScrollView style={{ backgroundColor: colors.concrete }} contentContainerStyle={s.pad}>
-      <Text style={s.kicker}>{CATEGORY_LABEL[event.category]}</Text>
       <Text style={s.h1}>{event.title}</Text>
       <Text style={s.sub}>
-        {formatWhen(event.start_at)} · {event.venue?.name ?? 'Venue to be announced'}
+        {CATEGORY_LABEL[event.category]} · {formatWhen(event.start_at)} · {event.venue?.name ?? 'Venue to be announced'}
       </Text>
       <View style={{ alignSelf: 'flex-start' }}>
         <Button
@@ -100,7 +99,6 @@ export default function EventDetailScreen({ route, navigation }: NativeStackScre
 const s = StyleSheet.create({
   pad: { padding: 16, gap: 12 },
   loading: { fontFamily: fonts.regular, color: colors.inkSoft, textAlign: 'center', padding: 32 },
-  kicker: { fontFamily: fonts.semibold, color: colors.inkSoft, fontSize: 14 },
   h1: { fontFamily: fonts.heavy, fontSize: 28, lineHeight: 32, color: colors.ink },
   h2: { fontFamily: fonts.heavy, fontSize: 20, color: colors.ink, marginTop: 12 },
   sub: { fontFamily: fonts.regular, fontSize: 14, color: colors.inkSoft },

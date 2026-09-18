@@ -21,6 +21,15 @@ function parsePass(raw: string): { id: number; token: string } | null {
   return m ? { id: Number(m[1]), token: m[2] } : null
 }
 
+function ResultIcon({ ok }: { ok: boolean }) {
+  return (
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="10" />
+      {ok ? <path d="M7.5 12.5l3 3 6-7" /> : <path d="M8.5 8.5l7 7M15.5 8.5l-7 7" />}
+    </svg>
+  )
+}
+
 export default function CheckIn() {
   const [scanning, setScanning] = useState(false)
   const [camError, setCamError] = useState<string | null>(null)
@@ -28,6 +37,7 @@ export default function CheckIn() {
   const [outcome, setOutcome] = useState<Outcome | null>(null)
   const [busy, setBusy] = useState(false)
   const handling = useRef(false)
+  const resultRef = useRef<HTMLDivElement>(null)
 
   const { user } = useAuth()
   const mine = user?.role === 'organiser' ? `&organiser_id=${user.id}` : ''
@@ -46,6 +56,11 @@ export default function CheckIn() {
     return () => clearInterval(t)
   }, [])
 
+  // The verdict is the whole point of a scan, so bring it into view the moment it lands.
+  useEffect(() => {
+    if (outcome) resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [outcome])
+
   async function submit(raw: string) {
     if (handling.current) return
     handling.current = true
@@ -60,6 +75,7 @@ export default function CheckIn() {
         const booking = await api<Booking>(`/bookings/${pass.id}/checkin`, { method: 'POST', body: { qr_token: pass.token } })
         setOutcome({ kind: 'ok', booking })
         reloadRef.current()
+        setManual('')
       } catch (err) {
         const status = err instanceof ApiError ? err.status : 0
         setOutcome({
@@ -94,7 +110,7 @@ export default function CheckIn() {
         () => undefined,
       )
       .catch(() => {
-        setCamError("Couldn't open the camera. Allow camera access, or paste the ticket below.")
+        setCamError("Couldn't open the camera. Allow camera access, or enter the ticket by hand below.")
         setScanning(false)
       })
     return () => {
@@ -102,15 +118,20 @@ export default function CheckIn() {
     }
   }, [scanning])
 
+  function scanNext() {
+    setCamError(null)
+    setOutcome(null)
+    setScanning(true)
+  }
+
+  const held = stats?.held ?? 0
+
   return (
     <>
       <div className="page-head">
         <h1>Check-in</h1>
-      </div>
-
-      <section style={{ marginBottom: 40 }}>
-        <label className="field" style={{ maxWidth: 420, marginBottom: 20 }}>
-          Checking in guests for
+        <label className="field event-pick">
+          Event
           <select value={eventId} onChange={(e) => setChosen(e.target.value)}>
             {events?.data.length === 0 && <option value="">No published events</option>}
             {events?.data.map((ev) => (
@@ -120,102 +141,119 @@ export default function CheckIn() {
             ))}
           </select>
         </label>
-        {stats && (
-          <>
-            <h2 className="wide" style={{ fontSize: 'clamp(28px, 5vw, 44px)' }}>
-              {stats.attended} / {stats.held} checked in
-            </h2>
-            <p className="section-note" style={{ marginTop: 8 }}>
-              {stats.held - stats.attended} guests still to arrive
-              {stats.waitlisted > 0 ? `, ${stats.waitlisted} on the waitlist` : ''}.
-            </p>
-            <div className="bar" role="img" aria-label={`${stats.attended} of ${stats.held} checked in`}>
-              <i className="b-attended" style={{ width: `${stats.held ? (stats.attended / stats.held) * 100 : 0}%` }} />
-            </div>
-            {stats.recent_checkins.length > 0 && (
-              <ul className="tally" style={{ marginTop: 20 }}>
-                {stats.recent_checkins.slice(0, 5).map((c) => (
-                  <li key={c.booking_id}>
-                    <span>
-                      {c.name} <span className="sub" style={{ display: 'inline' }}>· {c.tier}</span>
-                    </span>
-                    <span className="sub" style={{ display: 'inline' }}>
-                      {formatWhen(c.checked_in_at)}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </>
-        )}
-      </section>
-
-      <div className="split">
-        <section>
-          <h2 className="section-title">Scan a pass</h2>
-          <p className="section-note">Point the camera at the QR code on the attendee&apos;s ticket.</p>
-          <div id="reader" className="reader" hidden={!scanning} />
-          {!scanning && (
-            <button
-              className="btn"
-              onClick={() => {
-                setCamError(null)
-                setOutcome(null)
-                setScanning(true)
-              }}
-            >
-              Start scanning
-            </button>
-          )}
-          {scanning && (
-            <button className="btn-quiet" style={{ marginTop: 12 }} onClick={() => setScanning(false)}>
-              Stop
-            </button>
-          )}
-          {camError && <p className="notice" data-tone="warn" style={{ marginTop: 16 }}>{camError}</p>}
-        </section>
-
-        <section>
-          <h2 className="section-title">Enter a ticket</h2>
-          <p className="section-note">No camera? Paste the ticket text: the booking number and signature.</p>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault()
-              void submit(manual)
-            }}
-          >
-            <label className="field" style={{ marginBottom: 12 }}>
-              Ticket
-              <textarea rows={3} value={manual} onChange={(e) => setManual(e.target.value)} placeholder="31 7f14877428db33fd…" />
-            </label>
-            <button className="btn-quiet" disabled={busy || !manual.trim()}>
-              Check in
-            </button>
-          </form>
-        </section>
       </div>
 
       {outcome && (
-        <div className="result" data-ok={outcome.kind === 'ok'} role="status" aria-live="polite">
-          {outcome.kind === 'ok' ? (
+        <div ref={resultRef} className="result" data-ok={outcome.kind === 'ok'} role="status" aria-live="polite">
+          <ResultIcon ok={outcome.kind === 'ok'} />
+          <div className="result-text">
+            {outcome.kind === 'ok' ? (
+              <>
+                <h2>Cleared to enter</h2>
+                <p>
+                  Booking #{outcome.booking.id}
+                  {outcome.booking.ticket_type?.event ? ` for ${outcome.booking.ticket_type.event.title}` : ''} is checked in.
+                </p>
+                {eventId && outcome.booking.ticket_type?.event && String(outcome.booking.ticket_type.event.id) !== eventId && (
+                  <p className="result-warn">This ticket is for a different event from the one selected above.</p>
+                )}
+              </>
+            ) : (
+              <>
+                <h2>{outcome.title}</h2>
+                <p>{outcome.detail}</p>
+              </>
+            )}
+          </div>
+          <button className="btn" onClick={scanNext}>
+            Scan next guest
+          </button>
+        </div>
+      )}
+
+      <div className="door">
+        <div className="pane">
+          <h2 className="section-title">Scan a pass</h2>
+          <p className="section-note">Point the camera at the QR code on the guest&apos;s ticket.</p>
+          <div id="reader" className="reader" hidden={!scanning} />
+          {scanning ? (
+            <button className="btn-quiet" onClick={() => setScanning(false)}>
+              Stop scanning
+            </button>
+          ) : (
+            <button className="btn scan-btn" onClick={scanNext}>
+              Start scanning
+            </button>
+          )}
+          {camError && (
+            <p className="notice" data-tone="warn" style={{ marginTop: 16 }}>
+              {camError}
+            </p>
+          )}
+
+          <details className="manual">
+            <summary>Can&apos;t scan? Enter the ticket instead</summary>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                void submit(manual)
+              }}
+            >
+              <label className="field">
+                Ticket text (booking number, then signature)
+                <textarea rows={3} value={manual} onChange={(e) => setManual(e.target.value)} placeholder="31 7f14877428db33fd…" />
+              </label>
+              <button className="btn-quiet" disabled={busy || !manual.trim()}>
+                Check in
+              </button>
+            </form>
+          </details>
+        </div>
+
+        <aside className="pane count" aria-label="Door count">
+          {!stats ? (
+            <p className="loading" style={{ textAlign: 'left', padding: 0 }}>
+              Loading the door count…
+            </p>
+          ) : held === 0 ? (
             <>
-              <h2>Cleared to enter</h2>
-              <p>
-                Booking #{outcome.booking.id}
-                {outcome.booking.ticket_type?.event ? ` for ${outcome.booking.ticket_type.event.title}` : ''} is now checked in.
+              <h2 className="section-title">No confirmed guests yet</h2>
+              <p className="section-note">
+                Guests appear here once they book{stats.waitlisted > 0 ? `. ${stats.waitlisted} on the waitlist` : ''}.
               </p>
-              {eventId && outcome.booking.ticket_type?.event && String(outcome.booking.ticket_type.event.id) !== eventId && (
-                <p style={{ marginTop: 8, fontWeight: 600 }}>Heads up: this ticket is for a different event from the one selected above.</p>
-              )}
             </>
           ) : (
             <>
-              <h2>{outcome.title}</h2>
-              <p>{outcome.detail}</p>
+              <h2 className="wide count-figure">
+                {stats.attended} <span>of {held} arrived</span>
+              </h2>
+              <div className="bar" role="img" aria-label={`${stats.attended} of ${held} checked in`}>
+                <i className="b-attended" style={{ width: `${(stats.attended / held) * 100}%` }} />
+              </div>
+              <p className="section-note" style={{ marginTop: 10 }}>
+                {held - stats.attended} still to arrive
+                {stats.waitlisted > 0 ? `, ${stats.waitlisted} on the waitlist` : ''}.
+              </p>
             </>
           )}
-        </div>
-      )}
+
+          {stats && stats.recent_checkins.length > 0 && (
+            <>
+              <h3 className="recent-title">Just checked in</h3>
+              <ul className="tally">
+                {stats.recent_checkins.slice(0, 5).map((c) => (
+                  <li key={c.booking_id}>
+                    <span>
+                      {c.name} <span className="sub-inline">· {c.tier}</span>
+                    </span>
+                    <span className="sub-inline">{formatWhen(c.checked_in_at)}</span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </aside>
+      </div>
     </>
   )
 }

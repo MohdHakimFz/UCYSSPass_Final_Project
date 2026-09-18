@@ -1,4 +1,6 @@
-import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View, type TextInputProps } from 'react-native'
+import { useEffect, useRef } from 'react'
+import { ActivityIndicator, Animated, Pressable, StyleSheet, Text, TextInput, View, type TextInputProps } from 'react-native'
+import Svg, { Circle, Path } from 'react-native-svg'
 import { colors, fonts } from '../theme'
 import type { BookingStatus } from '../lib/api'
 
@@ -26,7 +28,7 @@ export function Button({
         variant === 'quiet' && s.btnQuiet,
         variant === 'danger' && s.btnDanger,
         (disabled || busy) && { opacity: 0.5 },
-        pressed && { opacity: 0.8 },
+        pressed && { opacity: 0.8, transform: [{ translateY: 1 }] },
       ]}
     >
       {busy ? (
@@ -42,12 +44,7 @@ export function Field({ label, ...props }: { label: string } & TextInputProps) {
   return (
     <View style={{ gap: 6 }}>
       <Text style={s.label}>{label}</Text>
-      <TextInput
-        placeholderTextColor={colors.inkSoft}
-        style={s.input}
-        autoCapitalize="none"
-        {...props}
-      />
+      <TextInput placeholderTextColor={colors.inkSoft} selectionColor={colors.badge} style={s.input} autoCapitalize="none" {...props} />
     </View>
   )
 }
@@ -70,12 +67,40 @@ export function StatusTag({ status }: { status: BookingStatus }) {
   )
 }
 
+function NoticeIcon({ tone }: { tone: 'ok' | 'error' | 'warn' }) {
+  const color = tone === 'ok' ? colors.cleared : tone === 'error' ? colors.revoked : colors.held
+  return (
+    <Svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      {tone === 'ok' && (
+        <>
+          <Circle cx={12} cy={12} r={9} />
+          <Path d="M8 12.5l3 3 5-6" />
+        </>
+      )}
+      {tone === 'error' && (
+        <>
+          <Circle cx={12} cy={12} r={9} />
+          <Path d="M12 7.5V13M12 16.5v.01" />
+        </>
+      )}
+      {tone === 'warn' && (
+        <>
+          <Path d="M12 3.5l9.5 16.5h-19z" />
+          <Path d="M12 10v4.5M12 17.5v.01" />
+        </>
+      )}
+    </Svg>
+  )
+}
+
 export function Notice({ tone, text }: { tone: 'ok' | 'error' | 'warn'; text: string }) {
-  const bar = tone === 'ok' ? colors.cleared : tone === 'error' ? colors.revoked : colors.held
   const bg = tone === 'ok' ? '#DCEFE8' : tone === 'error' ? '#F3DCDA' : '#F3ECD7'
   return (
-    <View accessibilityRole="alert" style={{ borderLeftWidth: 4, borderLeftColor: bar, backgroundColor: bg, padding: 12 }}>
-      <Text style={{ fontFamily: fonts.regular, color: colors.ink, fontSize: 15 }}>{text}</Text>
+    <View accessibilityRole="alert" style={{ flexDirection: 'row', gap: 12, backgroundColor: bg, padding: 12, borderRadius: 3, alignItems: 'flex-start' }}>
+      <View style={{ marginTop: 1 }}>
+        <NoticeIcon tone={tone} />
+      </View>
+      <Text style={{ flex: 1, fontFamily: fonts.regular, color: colors.ink, fontSize: 15, lineHeight: 21 }}>{text}</Text>
     </View>
   )
 }
@@ -84,6 +109,30 @@ export function Empty({ text }: { text: string }) {
   return (
     <View style={{ padding: 24, backgroundColor: colors.paper, borderTopWidth: 3, borderTopColor: colors.ink }}>
       <Text style={{ fontFamily: fonts.regular, color: colors.inkSoft, fontSize: 16 }}>{text}</Text>
+    </View>
+  )
+}
+
+// Placeholder rows while a list loads, so the screen keeps its shape instead of jumping.
+export function Skeleton({ rows = 3, height = 84 }: { rows?: number; height?: number }) {
+  const pulse = useRef(new Animated.Value(0.55)).current
+
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulse, { toValue: 1, duration: 700, useNativeDriver: true }),
+        Animated.timing(pulse, { toValue: 0.55, duration: 700, useNativeDriver: true }),
+      ]),
+    )
+    loop.start()
+    return () => loop.stop()
+  }, [pulse])
+
+  return (
+    <View accessibilityLabel="Loading" style={{ gap: 12 }}>
+      {Array.from({ length: rows }, (_, i) => (
+        <Animated.View key={i} style={{ height, borderRadius: 3, backgroundColor: '#D5DCE2', opacity: pulse }} />
+      ))}
     </View>
   )
 }

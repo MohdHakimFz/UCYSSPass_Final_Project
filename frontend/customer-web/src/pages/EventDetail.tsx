@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { api, ApiError, errorText, type Booking, type EventItem, type TicketType } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { useFetch } from '../lib/useFetch'
-import { CATEGORY_LABEL, Notice, formatWhen } from '../components/ui'
+import { CATEGORY_LABEL, Notice, formatWhen, Skeleton } from '../components/ui'
 
 export default function EventDetail() {
   const { id } = useParams()
@@ -58,20 +58,24 @@ export default function EventDetail() {
   }
 
   if (error) return <Notice tone="error">{error}</Notice>
-  if (!event) return <p className="loading">Loading event…</p>
+  if (!event) return <Skeleton rows={3} />
 
   const bookable = event.status === 'published'
 
   return (
     <>
       <p className="crumb">
-        <Link to="/">← All events</Link>
+        <Link to="/" className="crumb-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M15 5l-7 7 7 7" />
+          </svg>
+          All events
+        </Link>
       </p>
       <section className="detail-head">
-        <p className="kicker">{CATEGORY_LABEL[event.category]}</p>
         <h1>{event.title}</h1>
         <p className="lede-sub">
-          {formatWhen(event.start_at)} · {event.venue?.name ?? 'Venue to be announced'}
+          {CATEGORY_LABEL[event.category]} · {formatWhen(event.start_at)} · {event.venue?.name ?? 'Venue to be announced'}
         </p>
         <p style={{ marginTop: 16 }}>
           <button className="btn-quiet" onClick={share}>

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { api, downloadFile, errorText, type Booking, type BookingStatus, type Paginated } from "@/lib/api";
 import { useFetch } from "@/lib/useFetch";
-import { Notice, Pager, Tag, formatWhen } from "@/components/ui";
+import { Notice, Pager, Tag, formatWhen, Skeleton } from "@/components/ui";
 
 const STATUSES: { value: BookingStatus; label: string }[] = [
   { value: "confirmed", label: "Confirmed" },
@@ -82,7 +82,7 @@ export default function BookingsPage() {
       </div>
 
       {!rows ? (
-        <p className="loading">Loading bookings…</p>
+        <Skeleton rows={5} />
       ) : rows.data.length === 0 ? (
         <p className="empty">No bookings with that status.</p>
       ) : (

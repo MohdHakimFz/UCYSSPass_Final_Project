@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../lib/auth'
 import { useFetch } from '../lib/useFetch'
 import type { EventItem, Paginated } from '../lib/api'
-import { CATEGORY_LABEL, Notice, SeatBar, Tag, formatWhen } from '../components/ui'
+import { CATEGORY_LABEL, Notice, SeatBar, Tag, formatWhen, Skeleton } from '../components/ui'
 
 export default function MyEvents() {
   const { user } = useAuth()
@@ -23,7 +23,7 @@ export default function MyEvents() {
       {error && <Notice tone="error">{error}</Notice>}
 
       {!data && !error ? (
-        <p className="loading">Loading your events…</p>
+        <Skeleton rows={5} />
       ) : data && data.data.length === 0 ? (
         <p className="empty">You haven&apos;t created an event yet. Create one, then add ticket tiers so people can book.</p>
       ) : (

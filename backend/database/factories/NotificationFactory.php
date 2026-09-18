@@ -25,15 +25,10 @@ class NotificationFactory extends Factory
             'type' => $type,
             'channel' => 'email',
             'sent_at' => fake()->dateTimeBetween('-2 months', 'now'),
+            // Same shape EmailService stores for a real Resend call: HTTP status plus the provider's body.
             'provider_response' => [
-                'id' => fake()->uuid(),
-                'status' => 'delivered',
-                'to' => fake()->safeEmail(),
-                'subject' => match ($type) {
-                    'confirmation' => 'Your SentryPass ticket is confirmed',
-                    'waitlist_promoted' => 'You have been promoted from the waitlist',
-                    'cancelled' => 'Your SentryPass booking was cancelled',
-                },
+                'status' => 200,
+                'body' => ['id' => fake()->uuid()],
             ],
         ];
     }

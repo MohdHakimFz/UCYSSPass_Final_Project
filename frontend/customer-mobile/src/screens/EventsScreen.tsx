@@ -1,45 +1,14 @@
 import { useMemo, useState } from 'react'
-import { FlatList, Pressable, RefreshControl, StyleSheet, Text, TextInput, View } from 'react-native'
+import { FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { CATEGORY_LABEL, type Category, type EventItem, type Paginated } from '../lib/api'
 import { useFetch } from '../lib/useFetch'
-import { Empty, Notice } from '../components/ui'
+import { Empty, Notice, Skeleton } from '../components/ui'
 import { colors, fonts } from '../theme'
 import type { RootParamList } from '../../App'
 
 const CATEGORIES = Object.keys(CATEGORY_LABEL) as Category[]
-
-function ChipRow<T extends string>({
-  label,
-  value,
-  onChange,
-  options,
-}: {
-  label: string
-  value: T
-  onChange: (v: T) => void
-  options: [T, string][]
-}) {
-  return (
-    <View style={{ gap: 6 }}>
-      <Text style={{ fontFamily: fonts.semibold, fontSize: 14, color: colors.ink }}>{label}</Text>
-      <View style={s.chips}>
-        {options.map(([v, text]) => (
-          <Pressable
-            key={v || 'any'}
-            onPress={() => onChange(v)}
-            accessibilityRole="button"
-            accessibilityState={{ selected: value === v }}
-            style={[s.chip, value === v && s.chipOn]}
-          >
-            <Text style={[s.chipText, value === v && { color: colors.paper }]}>{text}</Text>
-          </Pressable>
-        ))}
-      </View>
-    </View>
-  )
-}
 
 function seatState(ev: EventItem) {
   if (!ev.capacity) return { text: 'Not on sale yet', color: colors.inkSoft }
@@ -47,6 +16,28 @@ function seatState(ev: EventItem) {
   if (left === 0) return { text: 'Sold out · waitlist', color: colors.held }
   if (left <= Math.max(5, ev.capacity * 0.1)) return { text: `Only ${left} left`, color: colors.held }
   return { text: `${left} seats left`, color: colors.cleared }
+}
+
+function Chip({ label, on, onPress }: { label: string; on: boolean; onPress: () => void }) {
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityState={{ selected: on }}
+      style={({ pressed }) => [s.chip, on && s.chipOn, pressed && { opacity: 0.8 }]}
+    >
+      <Text style={[s.chipText, on && { color: colors.paper }]}>{label}</Text>
+    </Pressable>
+  )
+}
+
+// One line of chips that scrolls sideways, so filters don't push the results off the screen.
+function ChipStrip({ children }: { children: React.ReactNode }) {
+  return (
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingRight: 16 }}>
+      {children}
+    </ScrollView>
+  )
 }
 
 export default function EventsScreen() {
@@ -67,6 +58,15 @@ export default function EventsScreen() {
   }, [query, category, when, price])
 
   const { data, error, refresh, refreshing } = useFetch<Paginated<EventItem>>(path)
+  const hasFilters = !!(query || category || when || price)
+
+  function clearFilters() {
+    setSearch('')
+    setQuery('')
+    setCategory('')
+    setWhen('')
+    setPrice('')
+  }
 
   return (
     <FlatList
@@ -77,51 +77,47 @@ export default function EventsScreen() {
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}
       keyboardShouldPersistTaps="handled"
       ListHeaderComponent={
-        <View style={{ gap: 14, marginBottom: 8 }}>
+        <View style={{ gap: 12, marginBottom: 4 }}>
           <Text style={s.h1}>Find your next CTF, bootcamp or conference.</Text>
           <TextInput
             style={s.search}
             placeholder="Search events"
             placeholderTextColor={colors.inkSoft}
+            selectionColor={colors.badge}
             value={search}
             onChangeText={setSearch}
             onSubmitEditing={() => setQuery(search)}
             returnKeyType="search"
             accessibilityLabel="Search events"
           />
-          <View style={s.chips}>
-            {(['', ...CATEGORIES] as const).map((c) => (
-              <Pressable
-                key={c || 'all'}
-                onPress={() => setCategory(c)}
-                accessibilityRole="button"
-                accessibilityState={{ selected: category === c }}
-                style={[s.chip, category === c && s.chipOn]}
-              >
-                <Text style={[s.chipText, category === c && { color: colors.paper }]}>{c ? CATEGORY_LABEL[c] : 'All'}</Text>
-              </Pressable>
+          <ChipStrip>
+            <Chip label="All" on={category === ''} onPress={() => setCategory('')} />
+            {CATEGORIES.map((c) => (
+              <Chip key={c} label={CATEGORY_LABEL[c]} on={category === c} onPress={() => setCategory(c)} />
             ))}
-          </View>
-          <ChipRow
-            label="When"
-            value={when}
-            onChange={setWhen}
-            options={[['', 'Any date'], ['7', 'Next 7 days'], ['30', 'Next 30 days']]}
-          />
-          <ChipRow
-            label="Price"
-            value={price}
-            onChange={setPrice}
-            options={[['', 'Any'], ['0', 'Free'], ['50', 'Up to RM 50'], ['100', 'Up to RM 100']]}
-          />
+          </ChipStrip>
+          <ChipStrip>
+            <Chip label="Any date" on={when === ''} onPress={() => setWhen('')} />
+            <Chip label="Next 7 days" on={when === '7'} onPress={() => setWhen('7')} />
+            <Chip label="Next 30 days" on={when === '30'} onPress={() => setWhen('30')} />
+            <View style={s.divider} />
+            <Chip label="Free" on={price === '0'} onPress={() => setPrice(price === '0' ? '' : '0')} />
+            <Chip label="Up to RM 50" on={price === '50'} onPress={() => setPrice(price === '50' ? '' : '50')} />
+            <Chip label="Up to RM 100" on={price === '100'} onPress={() => setPrice(price === '100' ? '' : '100')} />
+          </ChipStrip>
+          {hasFilters && (
+            <Pressable onPress={clearFilters} accessibilityRole="button" style={{ alignSelf: 'flex-start', paddingVertical: 4 }}>
+              <Text style={{ fontFamily: fonts.semibold, color: colors.ink, textDecorationLine: 'underline' }}>Clear filters</Text>
+            </Pressable>
+          )}
           {error && <Notice tone="error" text={error} />}
         </View>
       }
       ListEmptyComponent={
         !data && !error ? (
-          <Text style={{ fontFamily: fonts.regular, color: colors.inkSoft, textAlign: 'center', padding: 24 }}>Loading events…</Text>
+          <Skeleton rows={4} height={92} />
         ) : data ? (
-          <Empty text="Nothing matches yet. Try a different category or clear the search." />
+          <Empty text="Nothing matches yet. Try a different category, or widen the date and price." />
         ) : null
       }
       renderItem={({ item: ev }) => {
@@ -169,10 +165,10 @@ const s = StyleSheet.create({
     fontSize: 16,
     color: colors.ink,
   },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: { paddingHorizontal: 16, minHeight: 40, justifyContent: 'center', borderRadius: 999, borderWidth: 2, borderColor: colors.ink },
   chipOn: { backgroundColor: colors.ink },
   chipText: { fontFamily: fonts.semibold, fontSize: 14, color: colors.ink },
+  divider: { width: 2, marginVertical: 8, backgroundColor: colors.line },
   pass: { flexDirection: 'row', backgroundColor: colors.paper, borderRadius: 3, overflow: 'hidden' },
   stub: {
     width: 70,

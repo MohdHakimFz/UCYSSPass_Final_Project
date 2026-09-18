@@ -14,7 +14,7 @@ import {
   type Venue,
 } from '../lib/api'
 import { useFetch } from '../lib/useFetch'
-import { CATEGORY_LABEL, Notice, Tag, formatWhen } from '../components/ui'
+import { CATEGORY_LABEL, Notice, Tag, formatWhen, Skeleton } from '../components/ui'
 
 const CATEGORIES = Object.keys(CATEGORY_LABEL) as Category[]
 const STATUSES: EventStatus[] = ['draft', 'published', 'cancelled', 'completed']
@@ -334,7 +334,7 @@ function Attendees({ eventId }: { eventId: number }) {
   const { data, error } = useFetch<Paginated<Booking>>(`/bookings?event_id=${eventId}&per_page=50`)
 
   if (error) return <Notice tone="error">{error}</Notice>
-  if (!data) return <p className="loading">Loading attendees…</p>
+  if (!data) return <Skeleton rows={5} />
   if (data.data.length === 0) return <p className="empty">Nobody has booked yet.</p>
 
   return (

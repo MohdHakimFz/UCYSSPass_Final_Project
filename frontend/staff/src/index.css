@@ -557,17 +557,14 @@ button:disabled {
 .notice {
   padding: 12px 16px;
   margin-bottom: 20px;
-  border-left: 4px solid var(--held);
   background: #f3ecd7;
 }
 
 .notice[data-tone="ok"] {
-  border-left-color: var(--cleared);
   background: #dcefe8;
 }
 
 .notice[data-tone="error"] {
-  border-left-color: var(--revoked);
   background: #f3dcda;
 }
 
@@ -878,12 +875,10 @@ button:disabled {
 .result {
   margin-top: 32px;
   padding: 24px;
-  border-left: 8px solid var(--revoked);
   background: #f3dcda;
 }
 
 .result[data-ok="true"] {
-  border-left-color: var(--cleared);
   background: #dcefe8;
 }
 
@@ -896,5 +891,250 @@ button:disabled {
   .split {
     grid-template-columns: 1fr;
     gap: 40px;
+  }
+}
+
+
+/* ---------- Refinements shared across the web apps ---------- */
+
+::selection {
+  background: var(--badge);
+  color: var(--ink);
+}
+
+html {
+  scrollbar-color: #8f9eab var(--concrete);
+}
+
+input,
+textarea,
+select {
+  caret-color: var(--ink);
+  accent-color: var(--ink);
+}
+
+h1,
+h2,
+h3,
+.lede {
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+.ledger td,
+.m-count,
+.tally li,
+.pass-side strong,
+.price {
+  font-variant-numeric: tabular-nums;
+}
+
+.ledger tbody tr {
+  transition: background-color 120ms ease;
+}
+
+.ledger tbody tr:hover {
+  background: #ebeff2;
+}
+
+.btn,
+.btn-quiet,
+.chip {
+  transition: background-color 120ms ease, transform 120ms ease;
+}
+
+.btn:active,
+.btn-quiet:active {
+  transform: translateY(1px);
+}
+
+/* Notices are a tinted panel with a drawn icon, not a coloured side stripe. */
+.notice {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  border-left: 0;
+  border-radius: var(--radius);
+  padding: 12px 14px;
+}
+
+.notice svg {
+  flex: none;
+  margin-top: 1px;
+  color: var(--held);
+}
+
+.notice[data-tone="ok"] svg {
+  color: var(--cleared);
+}
+
+.notice[data-tone="error"] svg {
+  color: var(--revoked);
+}
+
+/* Action results stay in view even when the row you clicked is far down the page. */
+.page > .notice {
+  position: sticky;
+  top: 10px;
+  z-index: 5;
+  box-shadow: 0 8px 20px rgba(18, 38, 58, 0.16);
+}
+
+.skeleton {
+  background: var(--paper);
+  border-top: 3px solid var(--ink);
+}
+
+.skeleton i {
+  display: block;
+  height: 72px;
+  border-bottom: 1px solid var(--line);
+  background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.85) 50%, transparent 70%) 0 0 / 200% 100% #eef1f4;
+  animation: shimmer 1.4s linear infinite;
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton i {
+    animation: none;
+  }
+}
+
+/* ---------- Check-in ---------- */
+
+.event-pick {
+  min-width: 260px;
+}
+
+.door {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 56px;
+  align-items: start;
+}
+
+.scan-btn {
+  min-height: 56px;
+  padding: 0 32px;
+  font-size: 18px;
+}
+
+.reader {
+  max-width: 420px;
+  margin-bottom: 16px;
+  border: 3px solid var(--ink);
+}
+
+.manual {
+  margin-top: 32px;
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+}
+
+.manual summary {
+  cursor: pointer;
+  font-weight: 600;
+  padding: 6px 0;
+}
+
+.manual form {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+  max-width: 460px;
+}
+
+.count-figure {
+  font-size: clamp(34px, 5vw, 56px);
+  margin-bottom: 16px;
+}
+
+.count-figure span {
+  font-size: 0.42em;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.recent-title {
+  font-size: 16px;
+  margin: 28px 0 4px;
+}
+
+.sub-inline {
+  color: var(--ink-soft);
+  font-size: 14px;
+}
+
+/* The verdict of a scan: full-width, tinted, impossible to miss at arm's length. */
+.result {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin: 0 0 40px;
+  padding: 20px 24px;
+  border-left: 0;
+  border-radius: var(--radius);
+  background: #f3dcda;
+  color: var(--ink);
+  scroll-margin-top: 16px;
+}
+
+.result[data-ok="true"] {
+  background: #d3ecdf;
+}
+
+.result > svg {
+  flex: none;
+  color: var(--revoked);
+}
+
+.result[data-ok="true"] > svg {
+  color: var(--cleared);
+}
+
+.result-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.result h2 {
+  font-size: clamp(22px, 3.4vw, 32px);
+  margin-bottom: 4px;
+}
+
+.result-warn {
+  margin-top: 8px;
+  font-weight: 600;
+}
+
+@media (max-width: 860px) {
+  .door {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .result {
+    flex-wrap: wrap;
+    padding: 16px;
+  }
+
+  .result .btn {
+    width: 100%;
+  }
+
+  .event-pick {
+    width: 100%;
+  }
+
+  .scan-btn {
+    width: 100%;
   }
 }

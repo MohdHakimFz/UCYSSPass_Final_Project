@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { api, errorText, type Paginated, type Venue } from "@/lib/api";
 import { useFetch } from "@/lib/useFetch";
-import { Notice, Pager } from "@/components/ui";
+import { Notice, Pager, Skeleton } from "@/components/ui";
 
 type Draft = { id?: number; name: string; address: string; capacity: string };
 const BLANK: Draft = { name: "", address: "", capacity: "" };
@@ -117,7 +117,7 @@ export default function VenuesPage() {
       </form>
 
       {!rows ? (
-        <p className="loading">Loading venues…</p>
+        <Skeleton rows={5} />
       ) : rows.data.length === 0 ? (
         <p className="empty">{query ? `No venues match “${query}”.` : "No venues yet. Add the first one to start scheduling events."}</p>
       ) : (

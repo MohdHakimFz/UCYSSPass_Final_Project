@@ -12,7 +12,7 @@ import {
   type Paginated,
 } from "@/lib/api";
 import { useFetch } from "@/lib/useFetch";
-import { Notice, Pager, Tag, formatWhen } from "@/components/ui";
+import { Notice, Pager, Tag, formatWhen, Skeleton } from "@/components/ui";
 
 const CATEGORY = { ctf: "CTF", bootcamp: "Bootcamp", conference: "Conference", workshop: "Workshop" } as const;
 
@@ -121,7 +121,7 @@ export default function EventDetailPage() {
           </button>
         </div>
         {!bookings ? (
-          <p className="loading">Loading bookings…</p>
+          <Skeleton rows={5} />
         ) : bookings.data.length === 0 ? (
           <p className="empty">Nobody has booked this event yet.</p>
         ) : (

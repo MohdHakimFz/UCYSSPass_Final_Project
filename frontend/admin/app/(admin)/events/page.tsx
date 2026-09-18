@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { api, errorText, type EventItem, type EventStatus, type Paginated } from "@/lib/api";
 import { useFetch } from "@/lib/useFetch";
-import { Notice, Pager, Tag, formatWhen } from "@/components/ui";
+import { Notice, Pager, Tag, formatWhen, Skeleton } from "@/components/ui";
 
 const STATUSES: EventStatus[] = ["draft", "published", "cancelled", "completed"];
 const CATEGORY: Record<EventItem["category"], string> = {
@@ -101,7 +101,7 @@ export default function EventsPage() {
       </form>
 
       {!rows ? (
-        <p className="loading">Loading events…</p>
+        <Skeleton rows={5} />
       ) : rows.data.length === 0 ? (
         <p className="empty">No events match. Organisers create events from their own portal.</p>
       ) : (

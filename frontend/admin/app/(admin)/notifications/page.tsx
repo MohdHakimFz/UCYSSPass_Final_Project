@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { NotificationRow, Paginated } from "@/lib/api";
 import { useFetch } from "@/lib/useFetch";
-import { Notice, Pager, formatWhen } from "@/components/ui";
+import { Notice, Pager, formatWhen, Skeleton } from "@/components/ui";
 
 const TYPES = [
   { value: "confirmation", label: "Booking confirmed" },
@@ -15,7 +15,8 @@ function delivery(n: NotificationRow) {
   const r = n.provider_response;
   if (!r) return { tone: "held", label: "Pending" };
   if (r.status === "skipped") return { tone: "held", label: "Not sent (no API key)" };
-  if (typeof r.status === "number" && r.status >= 200 && r.status < 300) return { tone: "cleared", label: "Delivered to provider" };
+  const accepted = typeof r.status === "number" ? r.status >= 200 && r.status < 300 : ["delivered", "sent"].includes(String(r.status));
+  if (accepted) return { tone: "cleared", label: "Delivered to provider" };
   return { tone: "revoked", label: "Provider rejected it" };
 }
 
@@ -59,7 +60,7 @@ export default function NotificationsPage() {
       </div>
 
       {!data && !error ? (
-        <p className="loading">Loading emails…</p>
+        <Skeleton rows={5} />
       ) : data && data.data.length === 0 ? (
         <p className="empty">No emails yet. They appear when someone books, cancels or is promoted from a waitlist.</p>
       ) : (

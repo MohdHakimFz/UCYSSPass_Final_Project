@@ -4,7 +4,7 @@ import { useState } from "react";
 import { api, downloadFile, errorText, type Paginated, type Role, type User } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { useFetch } from "@/lib/useFetch";
-import { Notice, Pager } from "@/components/ui";
+import { Notice, Pager, Skeleton } from "@/components/ui";
 
 const ROLES: { value: Role; label: string }[] = [
   { value: "admin", label: "Administrator" },
@@ -151,7 +151,7 @@ export default function PeoplePage() {
       </div>
 
       {!rows ? (
-        <p className="loading">Loading people…</p>
+        <Skeleton rows={5} />
       ) : rows.data.length === 0 ? (
         <p className="empty">No accounts with that role yet.</p>
       ) : (

@@ -556,17 +556,14 @@ button:disabled {
 .notice {
   padding: 12px 16px;
   margin-bottom: 20px;
-  border-left: 4px solid var(--held);
   background: #f3ecd7;
 }
 
 .notice[data-tone="ok"] {
-  border-left-color: var(--cleared);
   background: #dcefe8;
 }
 
 .notice[data-tone="error"] {
-  border-left-color: var(--revoked);
   background: #f3dcda;
 }
 
@@ -905,4 +902,118 @@ button:disabled {
 
 .ledger .tag {
   display: inline-flex;
+}
+
+
+/* ---------- Refinements shared across the web apps ---------- */
+
+::selection {
+  background: var(--badge);
+  color: var(--ink);
+}
+
+html {
+  scrollbar-color: #8f9eab var(--concrete);
+}
+
+input,
+textarea,
+select {
+  caret-color: var(--ink);
+  accent-color: var(--ink);
+}
+
+h1,
+h2,
+h3,
+.lede {
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+.ledger td,
+.m-count,
+.tally li,
+.pass-side strong,
+.price {
+  font-variant-numeric: tabular-nums;
+}
+
+.ledger tbody tr {
+  transition: background-color 120ms ease;
+}
+
+.ledger tbody tr:hover {
+  background: #ebeff2;
+}
+
+.btn,
+.btn-quiet,
+.chip {
+  transition: background-color 120ms ease, transform 120ms ease;
+}
+
+.btn:active,
+.btn-quiet:active {
+  transform: translateY(1px);
+}
+
+/* Notices are a tinted panel with a drawn icon, not a coloured side stripe. */
+.notice {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  border-left: 0;
+  border-radius: var(--radius);
+  padding: 12px 14px;
+}
+
+.notice svg {
+  flex: none;
+  margin-top: 1px;
+  color: var(--held);
+}
+
+.notice[data-tone="ok"] svg {
+  color: var(--cleared);
+}
+
+.notice[data-tone="error"] svg {
+  color: var(--revoked);
+}
+
+/* Action results stay in view even when the row you clicked is far down the page. */
+.page > .notice {
+  position: sticky;
+  top: 10px;
+  z-index: 5;
+  box-shadow: 0 8px 20px rgba(18, 38, 58, 0.16);
+}
+
+.skeleton {
+  background: var(--paper);
+  border-top: 3px solid var(--ink);
+}
+
+.skeleton i {
+  display: block;
+  height: 72px;
+  border-bottom: 1px solid var(--line);
+  background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.85) 50%, transparent 70%) 0 0 / 200% 100% #eef1f4;
+  animation: shimmer 1.4s linear infinite;
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton i {
+    animation: none;
+  }
 }
