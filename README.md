@@ -2,13 +2,27 @@
 
 Event ticketing and venue booking API for the infosec community (CTFs, bootcamps, conferences), with four frontends.
 
+## Project layout
+
+```
+SentryPass/
+├── backend/                 Laravel 12 API (Sanctum, PostgreSQL via Sail)
+├── frontend/
+│   ├── admin/               Admin Dashboard       Next.js
+│   ├── staff/               Organiser Portal      React + Vite
+│   ├── customer-web/        Customer Web App      React + Vite
+│   └── customer-mobile/     Customer Mobile App   React Native + Expo
+├── docs/                    Project spec (and later: ERD, Postman collection, API docs)
+└── README.md
+```
+
 | App | Folder | Stack | Dev URL |
 | --- | --- | --- | --- |
-| API | `backend/` | Laravel 12, Sanctum, PostgreSQL (Sail) | http://localhost/api |
-| Admin Dashboard | `frontend-admin/` | Next.js | http://localhost:3000 |
-| Organiser Portal | `frontend-staff/` | React + Vite | http://localhost:5174 |
-| Customer Web | `frontend-customer-web/` | React + Vite | http://localhost:5175 |
-| Customer Mobile | `frontend-customer-mobile/` | React Native + Expo | Expo Go / emulator |
+| API | `backend/` | Laravel 12, Sanctum, PostgreSQL | http://localhost/api |
+| Admin Dashboard | `frontend/admin/` | Next.js | http://localhost:3000 |
+| Organiser Portal | `frontend/staff/` | React + Vite | http://localhost:5174 |
+| Customer Web | `frontend/customer-web/` | React + Vite | http://localhost:5175 |
+| Customer Mobile | `frontend/customer-mobile/` | React Native + Expo | Expo Go / emulator |
 
 ## Run the API
 
@@ -32,17 +46,17 @@ Optional `.env` settings: `RESEND_API_KEY` (real confirmation emails; without it
 ## Run a frontend
 
 ```bash
-cd frontend-admin          # or frontend-staff / frontend-customer-web
+cd frontend/admin          # or frontend/staff / frontend/customer-web
 npm install
 npm run dev
 ```
 
-Each web app reads the API address from `NEXT_PUBLIC_API_URL` (admin) or `VITE_API_URL` (staff, customer), defaulting to `http://localhost/api`.
+Each web app reads the API address from `NEXT_PUBLIC_API_URL` (admin) or `VITE_API_URL` (staff, customer-web), defaulting to `http://localhost/api`.
 
 Mobile:
 
 ```bash
-cd frontend-customer-mobile
+cd frontend/customer-mobile
 npm install
 npx expo start
 ```

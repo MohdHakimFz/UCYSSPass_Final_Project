@@ -5,7 +5,7 @@ Thumbs.db
 .vscode/
 *.log
 
-# Node (frontend-admin, frontend-staff, frontend-customer-web, frontend-customer-mobile)
+# Node (everything under frontend/)
 node_modules/
 dist/
 .next/

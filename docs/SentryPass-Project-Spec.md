@@ -247,10 +247,11 @@ sentrypass/
 │   ├── docker-compose.yml
 │   ├── routes/api.php
 │   └── .env.example
-├── frontend-admin/                # Next.js
-├── frontend-staff/                # React + Vite
-├── frontend-customer-web/         # Next.js or React + Vite
-├── frontend-customer-mobile/      # React Native + Expo
+├── frontend/
+│   ├── admin/                     # Next.js
+│   ├── staff/                     # React + Vite
+│   ├── customer-web/              # React + Vite
+│   └── customer-mobile/           # React Native + Expo
 ├── docs/
 │   ├── ERD.png
 │   ├── postman-collection.json
