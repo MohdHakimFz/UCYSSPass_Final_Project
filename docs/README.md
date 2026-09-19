@@ -7,6 +7,7 @@
 | [`ERD.png`](ERD.png) / [`ERD.svg`](ERD.svg) | Entity relationship diagram |
 | [`database/schema.sql`](database/schema.sql) | Exact PostgreSQL DDL for the six domain tables |
 | [`PLAN-AND-POSTMAN-GUIDE.md`](PLAN-AND-POSTMAN-GUIDE.md) | Remaining work, every API endpoint with Postman test steps and screenshots to capture, and the deployment plan (in Malay) |
+| [`MANUAL-TEST-WORKFLOW.md`](MANUAL-TEST-WORKFLOW.md) | A checklist (in Malay) to test every function by hand, role by role, with what should happen at each step |
 | [`REPORT-NOTES.md`](REPORT-NOTES.md) | Text for the report (why Sanctum, advanced features) and a map from each project requirement to its evidence |
 | [`performance/`](performance/PERFORMANCE.md) | Measured before-and-after evidence for the performance and debugging section |
 | [`postman/`](postman/) | Postman collection and environment (198 requests, 309 assertions) and how to run them |
