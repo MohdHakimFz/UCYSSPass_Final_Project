@@ -82,7 +82,7 @@ Log masuk sebagai **customer**. Guna event percuma yang baru dipublish.
 - [ ] **Add to calendar.** Butang memuat turun fail `.ics`; buka dalam kalendar.
 - [ ] **Waitlist.** Guna dua akaun customer (A dan B, dua browser atau satu biasa satu incognito). Organiser: buat tier baru dengan **Seats = 1** pada event yang dipublish. (1) A buka event, **Book this pass** pada tier itu: Confirmed. (2) B buka event yang sama: tier itu kini **Sold out** dan butangnya jadi **Join waitlist**; tekan: B nampak "You're number 1 in the queue" dalam **My passes**. (3) A ke **My passes**, **Cancel booking**, sahkan. (4) Dalam 5 saat B refresh/tunggu: tempahan B jadi **Confirmed** sendiri, dan emel "You're in" sampai ke B.
 - [ ] **Batal.** **Cancel booking** meminta pengesahan; selepas itu status **Cancelled**.
-- [ ] **Event ditutup.** Tiga keadaan, semuanya mesti gagal ditempah oleh customer: (a) **Draft**: organiser simpan event tanpa tekan Publish; customer tak nampak event itu langsung dalam senarai. (b) **Cancelled**: organiser/admin batalkan event yang sudah dipublish; event hilang dari senarai customer, dan buka pautan terus ke event itu tak boleh ditempah. (c) **Sudah tamat**: event yang masa tamatnya sudah lepas hilang dari senarai; tempahan melalui API/Postman ditolak dengan mesej event telah tamat. Cara paling mudah: buat satu event, publish, sahkan customer nampak; kemudian **Cancel event** dan refresh halaman customer: event itu hilang.
+- [ ] **Event ditutup.** Tiga keadaan, semuanya mesti gagal ditempah oleh customer: (a) **Draft**: organiser simpan event tanpa tekan Publish; customer tak nampak event itu langsung dalam senarai. (b) **Cancelled**: organiser/admin batalkan event yang sudah dipublish; event hilang dari senarai customer, dan buka pautan terus ke event itu tak boleh ditempah. (c) **Sudah tamat**: event yang masa tamatnya sudah lepas hilang dari senarai; tempahan melalui API/Postman ditolak dengan mesej "This event is not open for booking." Cara paling mudah: buat satu event, publish, sahkan customer nampak; kemudian **Cancel event** dan refresh halaman customer: event itu hilang.
 - [ ] **Had tempahan.** Cuba 6 tempahan dalam seminit oleh satu customer: yang ke-6 dapat mesej terlalu banyak permintaan (429).
 
 ## 4. Bayaran, tahan seat dan refund
@@ -123,13 +123,13 @@ Organiser: **Create event**, pilih **Online meeting**.
 - [ ] **Link tersembunyi.** Sebagai customer (atau tanpa log masuk), buka halaman event: **tiada link** di mana-mana. Klik kanan, View Source, cari `meet.google.com`: tiada. 📸
 - [ ] **Tempah.** Customer tempah tier percuma: tiada seat, tiket tunjuk butang kelabu "Opens ...".
 - [ ] **Join awal.** Butang tak boleh ditekan sebelum 15 minit sebelum mula.
-- [ ] **Join sebenar.** Buat event online yang bermula **10 minit dari sekarang**, tempah: butang jadi **Join on Google Meet**. Tekan: tab baru buka link, dan tempahan jadi **Attended**. 📸
+- [ ] **Join sebenar.** Buat event online yang bermula **10 minit dari sekarang**, tempah: butang jadi **Join on Google Meet**. Tekan: tab baru buka link, dan tempahan jadi **Checked in** (label untuk status "attended"; maksudnya hadir). 📸
 - [ ] **Organiser nampak.** Organiser lihat tetamu itu sebagai hadir (Checked in).
 - [ ] **Senarai event.** Kad event online ada tag **Online**; admin boleh tapis **Online** dalam senarai event.
 
 ## 8. Peringatan email
 
-- [ ] **Sediakan.** Emel dihantar melalui **Brevo** ke emel customer sebenar (`mh29209501@gmail.com`). Peraturan layak: tempahan **Confirmed**, event **published** dan bermula dalam **24 jam akan datang**, tempahan dibuat **lebih sejam lalu**, dan belum pernah diingatkan. Tempahan lama yang event-nya jauh (contoh 3 hari lagi) atau sudah **Attended** tidak layak, sebab itu keputusan `Sent 0` tadi. Langkah: (1) Organiser buat event percuma, **bermula lebih kurang 20 jam dari sekarang**, publish. (2) Customer `mh29209501@gmail.com` tempah tier percuma itu. (3) Cari nombor tempahan itu (paling atas):
+- [ ] **Sediakan.** Emel dihantar melalui **Brevo** ke emel customer sebenar (`mh29209501@gmail.com`). Peraturan layak: tempahan **Confirmed**, event **published** dan bermula dalam **24 jam akan datang**, tempahan dibuat **lebih sejam lalu**, dan belum pernah diingatkan. Tempahan lama yang event-nya jauh (contoh 3 hari lagi) atau sudah **Checked in** tidak layak, sebab itu keputusan `Sent 0` tadi. Langkah: (1) Organiser buat event percuma, **bermula lebih kurang 20 jam dari sekarang**, publish. (2) Customer `mh29209501@gmail.com` tempah tier percuma itu. (3) Cari nombor tempahan itu (paling atas):
 
   ```powershell
   docker compose exec laravel.test php artisan tinker --execute="echo App\Models\Booking::latest('id')->first()->id;"
