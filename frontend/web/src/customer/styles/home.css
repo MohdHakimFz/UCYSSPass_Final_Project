@@ -630,3 +630,10 @@
   margin-top: 8px;
   color: var(--ink-soft);
 }
+
+.org-note {
+  padding: 14px 16px;
+  border: 2px solid #3a4658;
+  color: #c6cdd6;
+  max-width: 44ch;
+}

@@ -79,6 +79,28 @@ test.describe('one sign-in, three areas', () => {
     await expect(page.getByRole('heading', { name: 'My events' })).toBeVisible()
   })
 
+  test('an admin who signs in from an organiser link still lands in the admin area', async ({ page }) => {
+    // The home page used to send everyone who clicked "organiser portal" to /login?next=/organiser.
+    await page.goto('/organiser')
+    await expect(page).toHaveURL(/\/login\?next=%2Forganiser/)
+
+    await page.getByLabel('Email').fill(ADMIN.email)
+    await page.getByLabel('Password').fill(ADMIN.password)
+    await page.getByRole('button', { name: 'Sign in' }).click()
+
+    await expectPath(page, '/admin')
+    await expect(page.getByRole('banner')).toContainText('Admin')
+    await expect(page.getByRole('banner')).not.toContainText('Organiser')
+  })
+
+  test('an admin who opens the organiser area can get back to admin', async ({ page }) => {
+    await signIn(page, ADMIN)
+    await expectPath(page, '/admin')
+    await page.goto('/organiser')
+    await page.getByRole('link', { name: 'Back to admin' }).click()
+    await expectPath(page, '/admin')
+  })
+
   test('signing out from a dashboard ends the session everywhere', async ({ page }) => {
     await signIn(page, ADMIN)
     await expectPath(page, '/admin')

@@ -13,6 +13,7 @@ import {
   Ticket,
 } from '@phosphor-icons/react'
 import { type Category, type EventItem, type Paginated } from '@/lib/api'
+import { useAuth } from '@/lib/auth'
 import { useFetch } from '@/lib/useFetch'
 import { CATEGORY_LABEL } from '@/customer/ui'
 import Tilt from '@/shared/Tilt'
@@ -92,6 +93,7 @@ function HeroPoster({ cat, ev, size }: { cat: Category; ev?: EventItem; size: st
 }
 
 export default function Home() {
+  const { user } = useAuth()
   const { data } = useFetch<Paginated<EventItem>>(`/events?status=published&per_page=4&sort=start_at`)
 
   // Real upcoming events when the API has them, one poster per category otherwise.
@@ -283,9 +285,13 @@ export default function Home() {
               <ShieldCheck size={22} weight="bold" aria-hidden="true" /> Every pass verified before entry
             </li>
           </ul>
-          <Link className="btn btn-inverse" to="/organiser">
-            Open the organiser portal <ArrowRight weight="bold" aria-hidden="true" />
-          </Link>
+          {user?.role === 'customer' ? (
+            <p className="org-note">Organiser tools need an organiser account. Ask an administrator to set one up for you.</p>
+          ) : (
+            <Link className="btn btn-inverse" to={user?.role === 'admin' ? '/admin' : '/organiser'}>
+              {user?.role === 'admin' ? 'Open the admin dashboard' : 'Open the organiser dashboard'} <ArrowRight weight="bold" aria-hidden="true" />
+            </Link>
+          )}
         </div>
         <div className="org-art" aria-hidden="true">
           <div className="door-card">

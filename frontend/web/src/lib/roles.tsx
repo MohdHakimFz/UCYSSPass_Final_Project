@@ -9,10 +9,12 @@ export const HOME: Record<Role, string> = {
   admin: '/admin',
 }
 
+// Where each role may be sent straight after signing in. Admins may also open /organiser, but only by choosing to:
+// arriving from an "organiser" link must not drop them into the organiser dashboard.
 const AREAS: Record<Role, string[]> = {
   customer: [],
   organiser: ['/organiser'],
-  admin: ['/admin', '/organiser'],
+  admin: ['/admin'],
 }
 
 /**

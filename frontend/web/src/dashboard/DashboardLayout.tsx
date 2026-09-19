@@ -22,6 +22,11 @@ export default function DashboardLayout({ area, base, links }: { area: string; b
           {area}
         </HeaderName>
         <HeaderNavigation aria-label="Main">
+          {user?.role === 'admin' && base === '/organiser' && (
+            <HeaderMenuItem as={Link} to="/admin">
+              Back to admin
+            </HeaderMenuItem>
+          )}
           {links.map((l) => (
             <HeaderMenuItem key={l.to} as={Link} to={l.to} isCurrentPage={isCurrent(l)}>
               {l.label}
