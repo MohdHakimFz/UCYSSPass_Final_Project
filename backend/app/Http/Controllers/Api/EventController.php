@@ -46,6 +46,8 @@ class EventController extends Controller
             ))
             ->when($request->filled('from'), fn ($query) => $query->where('start_at', '>=', $request->string('from')))
             ->when($request->filled('to'), fn ($query) => $query->where('end_at', '<=', $request->string('to')))
+            // Events that have not ended yet: the ones still to come and the ones running right now.
+            ->when($request->filled('ends_after'), fn ($query) => $query->where('end_at', '>=', $request->string('ends_after')))
             ->when($request->filled('search'), fn ($query) => $query->where('title', 'ilike', '%'.$request->string('search').'%'))
             ->orderBy($sort, $direction)
             ->paginate($request->integer('per_page', 15));

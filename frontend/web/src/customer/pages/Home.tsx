@@ -95,7 +95,8 @@ function HeroPoster({ cat, ev, size }: { cat: Category; ev?: EventItem; size: st
 
 export default function Home() {
   const { user } = useAuth()
-  const { data } = useFetch<Paginated<EventItem>>(`/events?status=published&per_page=4&sort=start_at`)
+  const minute = new Date(Math.floor(Date.now() / 60000) * 60000).toISOString()
+  const { data } = useFetch<Paginated<EventItem>>(`/events?status=published&per_page=4&sort=start_at&ends_after=${encodeURIComponent(minute)}`)
 
   // Real upcoming events when the API has them, one poster per category otherwise.
   const picks: { cat: Category; ev?: EventItem }[] = CATEGORIES.map((cat, i) => {

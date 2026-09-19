@@ -28,6 +28,15 @@ class EmailService
         $booking = $notification->booking;
         $customer = $booking->customer;
 
+        if ($this->isReserved($customer->email)) {
+            $notification->update([
+                'sent_at' => now(),
+                'provider_response' => ['status' => 'skipped', 'reason' => 'Reserved test address: no email was sent'],
+            ]);
+
+            return $notification;
+        }
+
         if (! $this->configured()) {
             $notification->update([
                 'sent_at' => now(),
@@ -66,7 +75,7 @@ class EmailService
      */
     public function sendPlain(string $to, string $subject, string $html): bool
     {
-        if (! $this->configured()) {
+        if (! $this->configured() || $this->isReserved($to)) {
             return false;
         }
 
@@ -75,6 +84,18 @@ class EmailService
         Log::info('Transactional email', ['driver' => $this->driver(), 'status' => $response->status(), 'subject' => $subject]);
 
         return $response->successful();
+    }
+
+    /** True for an address on a domain kept for tests and examples, which can never receive mail. */
+    public function isReserved(string $email): bool
+    {
+        if (! config('sentrypass.mail_skip_reserved')) {
+            return false;
+        }
+
+        $domain = strtolower(substr(strrchr($email, '@') ?: '', 1));
+
+        return (bool) preg_match('/(^|\.)(example\.(com|net|org)|[^.]+\.(test|example|invalid|localhost)|test|example|invalid|localhost)$/', $domain);
     }
 
     /** The email service in use: "resend" or "brevo". Anything else means Resend. */

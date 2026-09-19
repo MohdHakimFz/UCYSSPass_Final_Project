@@ -1430,3 +1430,9 @@ button:disabled {
   border-left-width: 10px;
   border-left-color: var(--bad);
 }
+
+/* An event that has started but not finished */
+.on-now {
+  font-weight: 800;
+  color: var(--accent-press);
+}

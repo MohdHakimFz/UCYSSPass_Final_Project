@@ -38,15 +38,15 @@ class PasswordResetService
         );
         Cache::forget($this->guessKey($user->email));
 
-        $sent = $this->emails->sendPlain(
+        $this->emails->sendPlain(
             $user->email,
             'Your '.config('sentrypass.brand').' password reset code',
             "<p>Your ".config('sentrypass.brand')." password reset code is <strong style=\"font-size:20px;letter-spacing:2px\">{$code}</strong>.</p>"
             .'<p>It works for '.self::LIFETIME_MINUTES.' minutes. If you did not ask for it, you can ignore this email.</p>',
         );
 
-        // No email key configured: in development, write the code to the log so the flow can still be tried.
-        if (! $sent && app()->environment('local', 'testing')) {
+        // In development the code is also written to the log, so the flow can be tried without opening a mailbox. Never in production.
+        if (app()->environment('local', 'testing')) {
             Log::info("Password reset code for {$user->email}: {$code}");
         }
     }

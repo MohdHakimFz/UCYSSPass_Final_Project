@@ -47,26 +47,27 @@ docker compose exec laravel.test php artisan bookings:send-reminders    # hantar
 
 ## 1. Akaun dan log masuk
 
-- [ ] **Daftar.** `/register`: isi nama, emel baru, kata laluan (min 8) dan pengesahan. Lepas daftar terus masuk ke **My passes**.
-- [ ] **Kata laluan tak sepadan.** Isi pengesahan yang berbeza: mesej ralat jelas, tidak berdaftar.
-- [ ] **Emel dah wujud.** Daftar dengan emel yang sama sekali lagi: ditolak dengan mesej.
-- [ ] **Log masuk salah.** Kata laluan salah: mesej "The provided credentials are incorrect", kekal di halaman log masuk.
-- [ ] **Satu log masuk, tiga kawasan.** Log masuk sebagai customer: masuk **My passes**. Sebagai organiser: **My events**. Sebagai admin: dashboard **Admin** (bukan Organiser).
-- [ ] **Kawalan peranan.** Log masuk sebagai customer, taip `/admin` dan `/organiser` pada alamat: dibawa balik ke **My passes**. Sebagai organiser, taip `/admin/users`: dibawa balik ke `/organiser`.
-- [ ] **Log keluar.** Selepas log keluar, `/passes` menghantar ke log masuk. 📸
-- [ ] **Lupa kata laluan.** `/forgot-password`, masukkan emel: mesej umum "If that email has an account...". Emel yang tak wujud dapat mesej yang **sama**. (Kod 6 digit hanya sampai jika emel itu emel pemilik akaun Resend.)
+- [Works] **Daftar.** `/register`: isi nama, emel baru, kata laluan (min 8) dan pengesahan. Lepas daftar terus masuk ke **My passes**.
+- [works] **Kata laluan tak sepadan.** Isi pengesahan yang berbeza: mesej ralat jelas, tidak berdaftar.
+- [works] **Emel dah wujud.** Daftar dengan emel yang sama sekali lagi: ditolak dengan mesej.
+- [works] **Log masuk salah.** Kata laluan salah: mesej "The provided credentials are incorrect", kekal di halaman log masuk.
+- [works] **Satu log masuk, tiga kawasan.** Log masuk sebagai customer: masuk **My passes**. Sebagai organiser: **My events**. Sebagai admin: dashboard **Admin** (bukan Organiser).
+- [works] **Kawalan peranan.** Log masuk sebagai customer, taip `/admin` dan `/organiser` pada alamat: dibawa balik ke **My passes**. Sebagai organiser, taip `/admin/users`: dibawa balik ke `/organiser`.
+- [works] **Log keluar.** Selepas log keluar, `/passes` menghantar ke log masuk. 📸
+- [works] **Lupa kata laluan.** `/forgot-password`, masukkan emel: mesej umum "If that email has an account...". Emel yang tak wujud dapat mesej yang **sama**. (Kod 6 digit hanya sampai jika emel itu emel pemilik akaun Resend.)
 
 ## 2. Organiser: buat dan urus event
 
 Log masuk sebagai **Organiser A**.
 
-- [ ] **Buat event fizikal.** My events, **Create event**. Pilih **In person**, isi tajuk, kategori, venue, mula dan tamat, tekan **Create event**. Mesej: dibuat sebagai **draft**.
-- [ ] **Amaran draft.** Pada halaman event nampak amaran kuning "This event is a draft...".
-- [ ] **Tambah tier.** **Add tier**, contohnya `Standard`, harga `0`, seat `10`. Tier muncul dalam jadual.
-- [ ] **Publish sendiri.** Tekan **Publish event**. Status jadi **Published**, mesej "Event is live". Tiada admin terlibat. 📸
-- [ ] **Customer nampak.** Dalam tetingkap lain (customer), event muncul dalam senarai **dalam masa lebih kurang 5 saat tanpa refresh**.
-- [ ] **Unpublish.** Tekan **Move back to draft**: dalam 5 saat event hilang daripada senarai customer.
-- [ ] **Sunting.** Tukar tajuk, **Save event**: mesej "Event saved."
+- [works] **Buat event fizikal.** My events, **Create event**. Pilih **In person**, isi tajuk, kategori, venue, mula dan tamat, tekan **Create event**. Mesej: dibuat sebagai **draft**.
+- [works] **Amaran draft.** Pada halaman event nampak amaran kuning "This event is a draft...".
+- [works] **Tambah tier.** **Add tier**, contohnya `Standard`, harga `0`, seat `10`. Tier muncul dalam jadual.
+- [works cumanya dah published tak muncul dekat events customer view] **Publish sendiri.** Tekan **Publish event**. Status jadi **Published**, mesej "Event is live". Tiada admin terlibat. 📸
+- [kurang faham] **Customer nampak.** Dalam tetingkap lain (customer), event muncul dalam senarai **dalam masa lebih kurang 5 saat tanpa refresh**.
+- [good] **Unpublish.** Tekan **Move back to draft**: dalam 5 saat event hilang daripada senarai customer.
+- [ ] **Sedang berlangsung.** Event yang masa mulanya sudah berlalu tetapi belum tamat **kekal dalam senarai** dengan tanda "Happening now", dan masih boleh ditempah. Event yang sudah tamat tidak ditunjukkan.
+- [good]  **Sunting.** Tukar tajuk, **Save event**: mesej "Event saved."
 - [ ] **Salin event.** **Duplicate event**: dapat salinan draft dengan tier yang sama.
 - [ ] **Breadcrumb.** Klik **My events** di atas halaman event: kembali ke senarai (tidak kosong). Sidebar **My events** juga.
 - [ ] **Eksport.** **Export attendees (CSV)** memuat turun fail.
@@ -209,8 +210,8 @@ Pastikan `EXPO_PUBLIC_API_URL` betul (atau telefon dan komputer pada rangkaian y
 
 | Apa | Arahan | Jangkaan |
 | --- | --- | --- |
-| Backend | `docker compose exec laravel.test php artisan test` (folder `backend`) | 220 lulus |
-| Browser | `npx playwright test` (folder `frontend/web`, API dan web hidup) | 41 lulus |
+| Backend | `docker compose exec laravel.test php artisan test` (folder `backend`) | 226 lulus |
+| Browser | `npx playwright test` (folder `frontend/web`, API dan web hidup) | 43 lulus |
 | API (Postman) | lihat `docs/postman/README.md` | 198 permintaan, 309 semakan, 0 gagal |
 | Web | `npx tsc -b`, `npm run lint`, `npm run build` (folder `frontend/web`) | tiada ralat |
 | Mobile | `npx tsc --noEmit` (folder `frontend/customer-mobile`) | tiada ralat |

@@ -63,6 +63,7 @@ function Poster({ ev, i, size }: { ev: EventItem; i: number; size: string }) {
         <h2>{ev.title}</h2>
         <p>
           {CATEGORY_LABEL[ev.category]}, {ev.mode === 'online' ? 'online meeting' : (ev.venue?.name ?? 'venue to be announced')}
+          {new Date(ev.start_at).getTime() <= Date.now() && <strong className="on-now"> · Happening now</strong>}
         </p>
       </div>
       <div className="poster-foot">
@@ -92,11 +93,12 @@ export default function Events() {
   const [page, setPage] = useState(1)
   const [when, setWhen] = useState<'' | '7' | '30'>('')
   const [price, setPrice] = useState<'' | '0' | '50' | '100'>('')
-  const [now] = useState(() => Date.now())
+  // To the minute, so the address only changes once a minute and an event that ends drops off the list.
+  const now = Math.floor(Date.now() / 60000) * 60000
 
   const qs = new URLSearchParams({
     status: 'published',
-    from: new Date(now).toISOString(),
+    ends_after: new Date(now).toISOString(),
     per_page: '8',
     page: String(page),
   })

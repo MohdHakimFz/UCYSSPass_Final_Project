@@ -74,4 +74,4 @@ Everything is in [`performance/PERFORMANCE.md`](performance/PERFORMANCE.md): mis
 | Debugging and performance report | `performance/PERFORMANCE.md` |
 | Postman collection, success and error screenshots, API documentation | `postman/` (198 requests, 309 assertions), `PLAN-AND-POSTMAN-GUIDE.md` (screenshot list), `api-documentation.md` |
 | README with setup and run instructions | `README.md` |
-| Automated tests | 220 backend tests, 41 browser tests (Playwright), the Postman run in CI |
+| Automated tests | 226 backend tests, 43 browser tests (Playwright), the Postman run in CI |

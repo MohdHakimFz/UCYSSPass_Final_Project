@@ -50,14 +50,16 @@ export default function EventsScreen() {
   const [when, setWhen] = useState<'' | '7' | '30'>('')
   const [price, setPrice] = useState<'' | '0' | '50' | '100'>('')
 
+  // To the minute, so an event that has ended drops off the list.
+  const minute = Math.floor(Date.now() / 60000)
   const path = useMemo(() => {
-    const qs = new URLSearchParams({ status: 'published', from: new Date().toISOString(), per_page: '30' })
+    const qs = new URLSearchParams({ status: 'published', ends_after: new Date(minute * 60000).toISOString(), per_page: '30' })
     if (query) qs.set('search', query)
     if (category) qs.set('category', category)
     if (when) qs.set('to', new Date(Date.now() + Number(when) * 86400000).toISOString())
     if (price) qs.set('max_price', price)
     return `/events?${qs}`
-  }, [query, category, when, price])
+  }, [minute, query, category, when, price])
 
   const { data, error, refresh, refreshing } = useFetch<Paginated<EventItem>>(path)
   const hasFilters = !!(query || category || when || price)
@@ -145,7 +147,7 @@ export default function EventsScreen() {
             </View>
             <View style={s.posterBody}>
               <Text style={[s.title, { color: tone.ink, fontSize: featured ? 26 : 20 }]}>{ev.title}</Text>
-              <Text style={[s.sub, { color: tone.ink }]}>{ev.mode === 'online' ? 'Online meeting' : (ev.venue?.name ?? 'Venue to be announced')}</Text>
+              <Text style={[s.sub, { color: tone.ink }]}>{ev.mode === 'online' ? 'Online meeting' : (ev.venue?.name ?? 'Venue to be announced')}{new Date(ev.start_at).getTime() <= Date.now() ? ' · Happening now' : ''}</Text>
               <View style={s.posterFoot}>
                 <Text style={[s.price, { color: tone.ink }]}>
                   {ev.from_price != null ? (Number(ev.from_price) === 0 ? 'Free' : `From RM ${Number(ev.from_price).toFixed(0)}`) : 'Not on sale'}

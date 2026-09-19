@@ -20,6 +20,10 @@ return [
     // Requests one person (or one address) may make to the API each minute.
     'api_rate_limit' => (int) env('API_RATE_LIMIT', 240),
 
+    // Addresses reserved for tests and examples (.test, example.com and so on) can never receive mail. Sending to them
+    // only wastes the daily allowance and earns bounces, so they are recorded as skipped instead.
+    'mail_skip_reserved' => (bool) env('MAIL_SKIP_RESERVED', true),
+
     // Guests are reminded by email when their event is this many hours away.
     'reminder_hours_before' => (int) env('REMINDER_HOURS_BEFORE', 24),
 
