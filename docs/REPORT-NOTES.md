@@ -65,8 +65,8 @@ Everything is in [`performance/PERFORMANCE.md`](performance/PERFORMANCE.md): mis
 
 | Requirement in the description | Evidence |
 | --- | --- |
-| At least 4 related tables, keys, integrity constraints | `database/schema.sql` (9 tables, 12 foreign keys, check and unique constraints), `ERD.png`, `database.md` |
-| ERD, DDL and DML with at least 5 records per table | `ERD.png`, `database/schema.sql`, `database/sample-data.sql` (checked by loading it into an empty database) |
+| At least 4 related tables, keys, integrity constraints | `database/schema.sql` (9 tables, 12 foreign keys, check and unique constraints), `erd/ERD.png`, `database.md` |
+| ERD, DDL and DML with at least 5 records per table | `erd/ERD.png`, `database/schema.sql`, `database/sample-data.sql` (checked by loading it into an empty database) |
 | `/users`, `/events`, `/venues`, `/bookings` with GET, POST, PUT, DELETE, JSON, status codes, validation | `api-documentation.md` |
 | Authentication, role-based access, validation, centralised error handling | `api-documentation.md` (Security and middleware), `backend/bootstrap/app.php`, the policies and form requests |
 | At least one genuine third-party API | Resend or Brevo, and the QR Code API (above) |

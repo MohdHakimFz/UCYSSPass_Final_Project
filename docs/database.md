@@ -4,11 +4,11 @@ UCYSS (the code is still called SentryPass) uses **PostgreSQL 18**. The schema i
 
 | File | What it is |
 | --- | --- |
-| [`ERD.png`](ERD.png) / [`ERD.svg`](ERD.svg) | Entity relationship diagram of the nine domain tables |
+| [`erd/`](erd/ERD.md): [`ERD.png`](erd/ERD.png), [`ERD.svg`](erd/ERD.svg), [Mermaid code](erd/ERD.mmd) | Entity relationship diagram of the nine domain tables |
 | [`database/schema.sql`](database/schema.sql) | **DDL**: the exact `CREATE TABLE`, constraints, indexes and foreign keys, exported with `pg_dump` |
 | [`database/sample-data.sql`](database/sample-data.sql) | **DML**: sample rows, at least five in every table |
 
-![Entity relationship diagram](ERD.png)
+![Entity relationship diagram](erd/ERD.png)
 
 ## Tables
 
