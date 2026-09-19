@@ -74,7 +74,7 @@ export default function EventEditor() {
   return (
     <>
       <PageHeader
-        crumbs={[{ label: 'My events', to: '/organiser/events' }, { label: isNew ? 'New event' : event!.title }]}
+        crumbs={[{ label: 'My events', to: '/organiser' }, { label: isNew ? 'New event' : event!.title }]}
         title={isNew ? 'Create event' : event!.title}
         status={!isNew && <StatusTag status={event!.status} />}
         description={isNew ? 'Fill in the details, save, then add ticket tiers so people can book.' : undefined}

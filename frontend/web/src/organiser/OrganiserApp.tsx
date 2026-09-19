@@ -1,4 +1,4 @@
-import { Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import { Calendar, QrCode } from '@carbon/icons-react'
 import DashboardLayout from '@/dashboard/DashboardLayout'
 import { useAuth } from '@/lib/auth'
@@ -21,6 +21,7 @@ export default function OrganiserApp() {
         element={<DashboardLayout area="Organiser" base="/organiser" links={LINKS} crossLink={user?.role === 'admin' ? { to: '/admin', label: 'Back to admin' } : undefined} />}
       >
         <Route index element={<MyEvents />} />
+        <Route path="events" element={<Navigate to="/organiser" replace />} />
         <Route path="events/:id" element={<EventEditor />} />
         <Route path="checkin" element={<CheckIn />} />
       </Route>
