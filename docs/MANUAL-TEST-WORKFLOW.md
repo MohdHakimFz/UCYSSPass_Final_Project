@@ -219,6 +219,7 @@ Pastikan `EXPO_PUBLIC_API_URL` betul (atau telefon dan komputer pada rangkaian y
 - [works] Bayar tiket berbayar (tahan seat dengan kiraan detik).
 - [works] Tiket online: butang **Join on ...** (kelabu sebelum masa, aktif 15 minit sebelum).
 - [works] Tier "Members only" tak boleh ditempah oleh bukan ahli.
+- [ ] **Tema.** Tab **Account**, bahagian **Appearance**: **Auto / Light / Dark**. **Dark**: semua skrin (senarai event, butiran, My passes, tetingkap bayaran, log masuk, header dan tab bawah) bertukar gelap dan teks kekal boleh dibaca. **Light**: cerah walaupun telefon dalam mod gelap. **Auto**: ikut tetapan telefon (tukar mod gelap pada telefon, app ikut tanpa dibuka semula). Tutup dan buka app: pilihan kekal. Kod QR tetap latar putih supaya boleh diimbas.
 - [works] Tiket tiada isyarat: QR masih dibuka (disimpan dalam telefon).
 
 ## 16. Ujian automatik (jalankan sekali untuk bukti)
