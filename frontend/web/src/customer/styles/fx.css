@@ -60,11 +60,11 @@
 }
 
 .tilt[data-tilting="on"]::after {
-  opacity: 1;
+  opacity: var(--lit, 1);
 }
 
 .tilt[data-tilting="on"]::before {
-  opacity: 0.85;
+  opacity: calc(var(--lit, 1) * 0.85);
 }
 
 .poster.tilt:hover {

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { enableMotion, subscribeTilt } from '@/shared/motion'
 
 export type SeatBlock = { id: number | string; name: string; capacity: number; remaining: number }
 
@@ -72,12 +73,25 @@ export default function SeatMap({
       delete el.dataset.lit
       el.style.removeProperty('--turn')
     }
+    const lean = (x: number, y: number) => {
+      if (el.matches(':hover')) return
+      const r = el.getBoundingClientRect()
+      el.style.setProperty('--px', `${r.width * (0.5 + y * 0.45)}px`)
+      el.style.setProperty('--py', `${r.height * (0.45 + x * 0.35)}px`)
+      el.style.setProperty('--turn', `${(y * 8).toFixed(2)}deg`)
+      el.dataset.lit = 'on'
+    }
+    const down = () => void enableMotion()
     el.addEventListener('pointermove', move)
     el.addEventListener('pointerleave', off)
+    el.addEventListener('pointerdown', down)
+    const unsubscribe = subscribeTilt(lean)
     return () => {
       cancelAnimationFrame(frame)
+      unsubscribe()
       el.removeEventListener('pointermove', move)
       el.removeEventListener('pointerleave', off)
+      el.removeEventListener('pointerdown', down)
     }
   }, [])
 
