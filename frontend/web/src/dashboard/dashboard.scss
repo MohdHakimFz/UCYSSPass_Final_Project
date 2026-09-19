@@ -512,6 +512,10 @@ section.tile {
   .b-confirmed {
     background: #24a148;
   }
+
+  .b-noshow {
+    background: #da1e28;
+  }
 }
 
 @keyframes fill {
@@ -1255,12 +1259,13 @@ body {
     grid-template-columns: minmax(0, 2fr) minmax(60px, 1fr) minmax(130px, auto);
     align-items: center;
     gap: 16px;
-    padding: 10px 0;
+    padding: 14px 16px;
     border-top: 1px solid var(--cds-border-subtle-01, #e0e0e0);
   }
 
   .attendance-title .sub {
     display: block;
+    margin-top: 4px;
   }
 
   .attendance-figures {

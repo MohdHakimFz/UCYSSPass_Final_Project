@@ -49,19 +49,19 @@ export default function EventDetailPage() {
             {stats.held} of {stats.capacity} seats are held ({stats.fill_rate}%).{" "}
             {stats.attended} of {stats.held} guests have checked in ({stats.check_in_rate}%).{" "}
             {stats.waitlisted > 0 ? `${stats.waitlisted} ${stats.waitlisted === 1 ? "person is" : "people are"} waiting for a seat. ` : ""}
-            {stats.event_ended ? `${stats.no_show} confirmed guests never showed up.` : ""}
+            {stats.event_ended && stats.no_show > 0 ? `${stats.no_show} confirmed ${stats.no_show === 1 ? "guest" : "guests"} did not attend.` : ""}
           </p>
           <div
             className="bar"
             role="img"
-            aria-label={`${stats.attended} checked in, ${stats.confirmed} confirmed, ${stats.seats_remaining} open`}
+            aria-label={`${stats.attended} checked in, ${stats.confirmed} ${stats.event_ended ? "did not attend" : "confirmed"}, ${stats.seats_remaining} open`}
           >
             <i className="b-attended" style={{ width: `${stats.capacity ? (stats.attended / stats.capacity) * 100 : 0}%` }} />
-            <i className="b-confirmed" style={{ width: `${stats.capacity ? (stats.confirmed / stats.capacity) * 100 : 0}%` }} />
+            <i className={stats.event_ended ? "b-noshow" : "b-confirmed"} style={{ width: `${stats.capacity ? (stats.confirmed / stats.capacity) * 100 : 0}%` }} />
           </div>
           <div className="key">
             <span style={{ ["--sw" as string]: "#0043ce" }}>Checked in</span>
-            <span style={{ ["--sw" as string]: "#24a148" }}>Confirmed, not yet arrived</span>
+            <span style={{ ["--sw" as string]: stats.event_ended ? "#da1e28" : "#24a148" }}>{stats.event_ended ? "Did not attend" : "Confirmed, not yet arrived"}</span>
             <span style={{ ["--sw" as string]: "#e0e0e0" }}>Open seat</span>
           </div>
         </section>
@@ -142,7 +142,7 @@ export default function EventDetailPage() {
                     <TableCell>{b.ticket_type?.name}</TableCell>
                     <TableCell>{formatWhen(b.booked_at)}</TableCell>
                     <TableCell>
-                      <Tag status={b.status} />
+                      <Tag status={b.status} endedAt={event.end_at} />
                     </TableCell>
                   </TableRow>
                 ))}
