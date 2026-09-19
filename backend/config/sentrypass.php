@@ -13,6 +13,9 @@ return [
     // Cancelling at least this many hours before the event starts is refunded in full; later is not.
     'refund_hours_before' => (int) env('REFUND_HOURS_BEFORE', 24),
 
+    // Requests one person (or one address) may make to the API each minute.
+    'api_rate_limit' => (int) env('API_RATE_LIMIT', 240),
+
     // Guests are reminded by email when their event is this many hours away.
     'reminder_hours_before' => (int) env('REMINDER_HOURS_BEFORE', 24),
 

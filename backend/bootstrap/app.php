@@ -26,6 +26,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // API-only app: never redirect unauthenticated requests to a "login" route.
         $middleware->redirectGuestsTo(fn () => null);
 
+        // A general ceiling for the whole API (the 'api' limiter in AppServiceProvider); a few routes have tighter limits of their own.
+        $middleware->throttleApi();
+
         $middleware->api(append: [LogApiRequests::class]);
 
         $middleware->alias(['checkin.auth' => CheckinApiKey::class]);
