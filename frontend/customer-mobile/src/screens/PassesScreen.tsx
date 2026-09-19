@@ -7,6 +7,7 @@ import { addToCalendar } from '../lib/calendar'
 import { loadCache, saveCache } from '../lib/offline'
 import { useFetch } from '../lib/useFetch'
 import Tilt3D from '../components/fx/Tilt3D'
+import Checkout from '../components/Checkout'
 import { Button, Empty, Notice, Skeleton, StatusTag, formatWhen } from '../components/ui'
 import { colors, fonts } from '../theme'
 
@@ -84,6 +85,7 @@ export default function PassesScreen() {
   const { data, error, reload, refresh, refreshing } = useFetch<Paginated<Booking>>('/bookings?per_page=50')
   const [cached, setCached] = useState<Booking[] | null>(null)
   const [shown, setShown] = useState<Booking | null>(null)
+  const [paying, setPaying] = useState<Booking | null>(null)
   const [note, setNote] = useState<{ tone: 'ok' | 'error'; text: string } | null>(null)
 
   const live = data?.data ?? null
@@ -108,7 +110,11 @@ export default function PassesScreen() {
   }, [error, live])
 
   function cancel(b: Booking) {
-    Alert.alert('Cancel booking?', `Cancel your ${b.ticket_type?.name} pass? This can't be undone.`, [
+    const ev = b.ticket_type?.event
+    const paidAmount = b.payment?.status === 'paid' ? Number(b.payment.amount) : 0
+    const early = ev ? new Date(ev.start_at).getTime() - Date.now() > 24 * 3600 * 1000 : false
+    const money = paidAmount ? (early ? ` You will be refunded RM ${paidAmount.toFixed(2)}.` : ' It is less than 24 hours away, so it will not be refunded.') : ''
+    Alert.alert('Cancel booking?', `Cancel your ${b.ticket_type?.name} pass?${money} This can't be undone.`, [
       { text: 'Keep it', style: 'cancel' },
       {
         text: 'Cancel booking',
@@ -116,8 +122,8 @@ export default function PassesScreen() {
         onPress: async () => {
           setNote(null)
           try {
-            await api(`/bookings/${b.id}/cancel`, { method: 'PUT' })
-            setNote({ tone: 'ok', text: 'Booking cancelled.' })
+            const res = await api<Booking>(`/bookings/${b.id}/cancel`, { method: 'PUT' })
+            setNote({ tone: 'ok', text: res.refund?.refunded ? `Booking cancelled. RM ${Number(res.refund.amount).toFixed(2)} has been refunded.` : 'Booking cancelled.' })
             reload()
           } catch (err) {
             setNote({ tone: 'error', text: errorText(err) })
@@ -163,6 +169,7 @@ export default function PassesScreen() {
           const ev = b.ticket_type?.event
           const start = ev ? new Date(ev.start_at) : null
           const canShow = showable(b)
+          const holding = b.status === 'pending' && !!b.hold_expires_at
           const canCancel = !offline && (b.status === 'pending' || b.status === 'confirmed' || b.status === 'waitlisted')
           return (
             <Tilt3D max={7} style={[s.ticket, b.status === 'cancelled' && { opacity: 0.7 }]}>
@@ -175,6 +182,9 @@ export default function PassesScreen() {
                 )}
                 {ev && <Text style={s.sub}>{formatWhen(ev.start_at)}</Text>}
                 {b.seat && <Text style={s.seatBadge}>Seat {b.seat.label}</Text>}
+                {holding && <Text style={s.note}>Awaiting payment. Your seat is held for a few minutes.</Text>}
+                {b.payment?.status === 'paid' && <Text style={s.sub}>Paid RM {Number(b.payment.amount).toFixed(2)}</Text>}
+                {b.payment?.status === 'refunded' && <Text style={s.sub}>Refunded RM {Number(b.payment.refunded_amount).toFixed(2)}</Text>}
                 {b.status === 'waitlisted' && (
                   <Text style={s.note}>
                     {b.waitlist_position ? `You're number ${b.waitlist_position} in the queue. ` : "You're on the waitlist. "}
@@ -183,6 +193,7 @@ export default function PassesScreen() {
                 )}
                 {(canShow || canCancel) && (
                   <View style={{ flexDirection: 'row', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
+                    {holding && <Button title="Pay now" onPress={() => setPaying(b)} />}
                     {canShow && <Button title="Show pass" onPress={() => setShown(b)} />}
                     {canCancel && <Button title="Cancel booking" variant="danger" onPress={() => cancel(b)} />}
                   </View>
@@ -209,6 +220,15 @@ export default function PassesScreen() {
         }}
       />
       {shown && <PassModal booking={shown} onClose={() => setShown(null)} onCalendar={() => calendar(shown)} />}
+      {paying && (
+        <Checkout
+          key={paying.id}
+          booking={paying}
+          info={{ title: paying.ticket_type?.event?.title ?? 'Your booking', tier: paying.ticket_type?.name ?? '', price: paying.ticket_type?.price ?? '0' }}
+          onClose={() => setPaying(null)}
+          onFinished={reload}
+        />
+      )}
     </>
   )
 }

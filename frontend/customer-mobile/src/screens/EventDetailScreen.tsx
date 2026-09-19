@@ -4,6 +4,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { api, ApiError, CATEGORY_LABEL, errorText, type Booking, type EventItem, type SeatInfo, type TicketType } from '../lib/api'
 import { useFetch } from '../lib/useFetch'
 import SeatMap3D from '../components/fx/SeatMap3D'
+import Checkout from '../components/Checkout'
 import { Button, Empty, Notice, Skeleton, formatWhen } from '../components/ui'
 import { PosterArt, POSTER } from '../components/PosterArt'
 import { colors, fonts } from '../theme'
@@ -17,6 +18,7 @@ export default function EventDetailScreen({ route }: NativeStackScreenProps<Root
   const [seats, setSeats] = useState<Record<string, SeatInfo[]>>({})
   const [seatPick, setSeatPick] = useState<{ tierId: number; seat: SeatInfo } | null>(null)
   const [seatsKey, setSeatsKey] = useState(0)
+  const [checkout, setCheckout] = useState<{ booking: Booking; tier: TicketType } | null>(null)
 
   // Numbered seats: load every tier's seats so the room shows the real thing.
   const seated = !!event?.seated
@@ -41,6 +43,11 @@ export default function EventDetailScreen({ route }: NativeStackScreenProps<Root
       const b = await api<Booking>('/bookings', { method: 'POST', body: { ticket_type_id: t.id, ...(wantsSeat ? { seat_id: seatPick!.seat.id } : {}) } })
       setSeatPick(null)
       setSeatsKey((k) => k + 1)
+      if (b.status === 'pending') {
+        setCheckout({ booking: b, tier: t })
+        reload()
+        return
+      }
       setNote(
         b.status === 'confirmed'
           ? { tone: 'ok', text: b.seat ? `You're in. Seat ${b.seat.label} is yours, and the pass is waiting in My passes.` : `You're in. Your ${t.name} pass is confirmed and waiting in My passes.` }
@@ -93,7 +100,7 @@ export default function EventDetailScreen({ route }: NativeStackScreenProps<Root
       {event.description ? <Text style={s.body}>{event.description}</Text> : null}
 
       <Text style={s.h2}>Choose your pass</Text>
-      <Text style={s.sub}>Sold-out tiers open a waitlist. You&apos;re confirmed automatically if a seat frees up.</Text>
+      <Text style={s.sub}>Sold-out tiers open a waitlist. You&apos;re confirmed automatically if a seat frees up. Free cancellation until 24 hours before the event; after that tickets are not refundable.</Text>
 
       {note && <Notice tone={note.tone} text={note.text} />}
       {!bookable && <Notice tone="warn" text={`This event is ${event.status}, so booking is closed.`} />}
@@ -147,6 +154,18 @@ export default function EventDetailScreen({ route }: NativeStackScreenProps<Root
           ))}
         </View>
         </>
+      )}
+      {checkout && (
+        <Checkout
+          key={checkout.booking.id}
+          booking={checkout.booking}
+          info={{ title: event.title, tier: checkout.tier.name, price: checkout.tier.price }}
+          onClose={() => setCheckout(null)}
+          onFinished={() => {
+            setSeatsKey((k) => k + 1)
+            reload()
+          }}
+        />
       )}
     </ScrollView>
   )
