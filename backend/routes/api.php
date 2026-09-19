@@ -74,6 +74,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Organiser tools for an event they own.
     Route::get('/events/{event}/stats', [EventController::class, 'stats']);
+    Route::get('/events/{event}/seat-map', [EventController::class, 'seatMap']);
     Route::get('/events/{event}/export', [ExportController::class, 'attendees']);
     Route::post('/events/{event}/duplicate', [EventController::class, 'duplicate']);
 });

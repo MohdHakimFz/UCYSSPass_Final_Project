@@ -98,4 +98,23 @@ test.describe('numbered seats, end to end', () => {
     await expect(page.locator('.result')).toContainText('Cleared to enter')
     await expect(page.locator('.result')).toContainText('Seat B3')
   })
+
+  test('the organiser sees the room on the event page: who holds a seat, and who has checked in', async ({ page }) => {
+    await signIn(page, organiser)
+    await expectPath(page, '/organiser')
+    await page.goto(`/organiser/events/${eventId}`)
+
+    const room = page.locator('.seatmap')
+    await expect(room).toBeVisible()
+    await expect(room.getByRole('button', { name: /^Seat B4, free/ })).toBeVisible()
+
+    // B3 was booked and then checked in at the door in the last test.
+    await room.getByRole('button', { name: /^Seat B3, checked in/ }).click()
+    await expect(page.locator('.seatmap-detail')).toContainText(first.email)
+    await expect(page.locator('.seatmap-detail')).toContainText('Checked in')
+
+    // Choosing a free seat says so.
+    await room.getByRole('button', { name: /^Seat B4, free/ }).click()
+    await expect(page.locator('.seatmap-detail')).toContainText('Nobody has this seat.')
+  })
 })

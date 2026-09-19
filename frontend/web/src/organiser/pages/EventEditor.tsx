@@ -19,6 +19,7 @@ import {
 import { useFetch } from '@/lib/useFetch'
 import { detectPlatform, platformName } from '@/lib/meeting'
 import { useFeedback } from '@/dashboard/feedback'
+import SeatMapPanel from '@/dashboard/SeatMapPanel'
 import { PageHeader } from '@/dashboard/parts'
 import { CATEGORY_LABEL, Notice, StatusTag, formatWhen, Skeleton } from '@/dashboard/ui'
 
@@ -124,6 +125,13 @@ export default function EventEditor() {
             <p className="note">Each tier has its own price and seat count. When a tier sells out, new bookings join its waitlist.</p>
             <Tiers event={event} stats={stats} onChange={reloadAll} />
           </section>
+          {event.mode !== 'online' && (
+            <section className="section">
+              <h2>Seat map</h2>
+              <p className="note">Every numbered seat and who holds it. It updates by itself as people book.</p>
+              <SeatMapPanel eventId={event.id} />
+            </section>
+          )}
           <section className="section">
             <h2>Attendees</h2>
             <p className="note">Everyone booked on this event. People are checked in from the Check-in tab.</p>

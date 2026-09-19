@@ -11,6 +11,7 @@ import {
 } from "@/lib/api";
 import { useFetch } from "@/lib/useFetch";
 import { PageHeader } from "@/dashboard/parts";
+import SeatMapPanel from "@/dashboard/SeatMapPanel";
 import { Notice, Pager, Tag, formatWhen, Skeleton } from "@/dashboard/ui";
 
 const CATEGORY = { ctf: "CTF", bootcamp: "Bootcamp", conference: "Conference", workshop: "Workshop" } as const;
@@ -97,6 +98,13 @@ export default function EventDetailPage() {
             </Table>
         )}
       </section>
+
+      {event.mode !== 'online' && event.seated && (
+        <section>
+          <h2 className="section-title">Seat map</h2>
+          <SeatMapPanel eventId={event.id} />
+        </section>
+      )}
 
       <section>
         <div className="page-head" style={{ marginBottom: 16 }}>

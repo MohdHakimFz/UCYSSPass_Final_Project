@@ -1062,3 +1062,158 @@ body {
   background: var(--cds-background);
   color: var(--cds-text-primary);
 }
+
+/* The organiser's seat map: a flat plan of the room, one colour per state, and who sits where. */
+.seatmap-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 24px;
+  margin: 0 0 16px;
+  padding: 0;
+  list-style: none;
+  font-size: 0.875rem;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+.seat-dot,
+.seat {
+  --seat-bg: var(--cds-layer-02, #e0e0e0);
+  --seat-fg: var(--cds-text-primary);
+  --seat-border: var(--cds-border-strong-01, #8d8d8d);
+
+  &[data-state='held'] {
+    --seat-bg: #f1c21b;
+    --seat-fg: #161616;
+    --seat-border: #b28600;
+  }
+
+  &[data-state='booked'] {
+    --seat-bg: #0f62fe;
+    --seat-fg: #ffffff;
+    --seat-border: #0043ce;
+  }
+
+  &[data-state='attended'] {
+    --seat-bg: #198038;
+    --seat-fg: #ffffff;
+    --seat-border: #0e6027;
+  }
+}
+
+.seat-dot {
+  width: 14px;
+  height: 14px;
+  background: var(--seat-bg);
+  border: 1px solid var(--seat-border);
+  border-radius: 3px;
+}
+
+.seatmap-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: 24px;
+  align-items: start;
+}
+
+.seatmap-tiers {
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.seatmap-stage {
+  margin: 0 auto 20px;
+  max-width: 420px;
+  padding: 6px 0;
+  text-align: center;
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--cds-text-secondary);
+  border-bottom: 3px solid var(--cds-border-strong-01, #8d8d8d);
+}
+
+.seatmap-tier {
+  margin-bottom: 24px;
+
+  h3 {
+    margin: 0 0 8px;
+    font-size: 1rem;
+    font-weight: 600;
+
+    .sub {
+      margin-left: 8px;
+      font-weight: 400;
+    }
+  }
+}
+
+.seat-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.seat-row-label {
+  width: 20px;
+  flex: none;
+  font-size: 0.75rem;
+  color: var(--cds-text-secondary);
+}
+
+.seat {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  font: inherit;
+  font-size: 0.75rem;
+  color: var(--seat-fg);
+  background: var(--seat-bg);
+  border: 1px solid var(--seat-border);
+  border-radius: 6px 6px 3px 3px;
+  cursor: pointer;
+
+  &:focus-visible,
+  &[data-picked='true'] {
+    outline: 2px solid var(--cds-focus, #0f62fe);
+    outline-offset: 2px;
+  }
+}
+
+.seatmap-detail {
+  padding: 16px;
+  background: var(--cds-layer-01);
+  border-top: 3px solid var(--cds-border-strong-01, #8d8d8d);
+
+  h3 {
+    margin: 0 0 8px;
+    font-size: 1.125rem;
+  }
+
+  dl {
+    margin: 12px 0 0;
+  }
+
+  dt {
+    margin-top: 8px;
+    font-size: 0.75rem;
+    color: var(--cds-text-secondary);
+  }
+
+  dd {
+    margin: 2px 0 0;
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (max-width: 800px) {
+  .seatmap-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

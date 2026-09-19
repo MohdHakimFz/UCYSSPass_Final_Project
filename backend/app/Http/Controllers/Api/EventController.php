@@ -156,6 +156,51 @@ class EventController extends Controller
     }
 
     /**
+     * The room as the organiser sees it: every numbered seat of every tier with who holds it.
+     * Owning organiser or admin only. The public seat list never says who is sitting where.
+     */
+    public function seatMap(Event $event): JsonResponse
+    {
+        $this->authorize('update', $event);
+
+        // Seats whose payment hold has run out show as free again.
+        foreach ($event->ticketTypes as $tier) {
+            $this->bookings->releaseExpired($tier->id);
+        }
+
+        $tiers = $event->ticketTypes()
+            ->with(['seats' => fn ($query) => $query->orderBy('id'), 'seats.booking:id,seat_id,customer_id,status,hold_expires_at,checked_in_at', 'seats.booking.customer:id,name,email'])
+            ->orderBy('id')
+            ->get()
+            ->map(fn ($tier) => [
+                'id' => $tier->id,
+                'name' => $tier->name,
+                'capacity' => $tier->capacity,
+                'seats' => $tier->seats->map(fn ($seat) => [
+                    'id' => $seat->id,
+                    'row' => $seat->row_label,
+                    'number' => $seat->number,
+                    'label' => $seat->label,
+                    // free, held (chosen but not paid yet), booked (paid or free ticket) or attended (checked in)
+                    'state' => match ($seat->booking?->status) {
+                        'pending' => 'held',
+                        'confirmed' => 'booked',
+                        'attended' => 'attended',
+                        default => 'free',
+                    },
+                    'guest' => $seat->booking ? [
+                        'booking_id' => $seat->booking->id,
+                        'name' => $seat->booking->customer?->name,
+                        'email' => $seat->booking->customer?->email,
+                        'checked_in_at' => $seat->booking->checked_in_at,
+                    ] : null,
+                ])->values(),
+            ]);
+
+        return response()->json(['seated' => (bool) $event->seated, 'tiers' => $tiers]);
+    }
+
+    /**
      * Fill, check-in and waitlist numbers for one event. Owning organiser or admin.
      */
     public function stats(Event $event): JsonResponse

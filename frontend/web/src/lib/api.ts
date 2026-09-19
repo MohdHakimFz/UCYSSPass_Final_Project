@@ -160,6 +160,18 @@ export type NotificationRow = {
   }
 }
 
+export type SeatMapSeat = {
+  id: number
+  row: string
+  number: number
+  label: string
+  state: 'free' | 'held' | 'booked' | 'attended'
+  guest: { booking_id: number; name: string | null; email: string | null; checked_in_at: string | null } | null
+}
+
+/** The room as an organiser sees it, with who holds each seat. */
+export type SeatMap = { seated: boolean; tiers: { id: number; name: string; capacity: number; seats: SeatMapSeat[] }[] }
+
 export type EventStats = {
   revenue: Money
   pending_holds: number
