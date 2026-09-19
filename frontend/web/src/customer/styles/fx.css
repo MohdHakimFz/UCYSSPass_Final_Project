@@ -655,10 +655,10 @@
   }
 }
 
+/* Transform only: animating opacity would flatten the chair's 3D backrest. */
 @keyframes seat-in {
   from {
     transform: translateZ(-40px);
-    opacity: 0;
   }
 }
 
@@ -745,4 +745,169 @@
     width: 80vw;
     height: 80vw;
   }
+}
+
+/* ---------- Chairs: every seat has a backrest ---------- */
+
+span.seat {
+  cursor: pointer;
+}
+
+.seat[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+.seat:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+}
+
+.seat::after {
+  content: "";
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  top: 0;
+  height: 16px;
+  background: linear-gradient(#232c39, #151a22);
+  transform-origin: top;
+  transform: rotateX(90deg);
+}
+
+.seat[data-free]::after {
+  height: 20px;
+  background: linear-gradient(#ffb59a, #c94c2c 70%, #8f3018);
+}
+
+.seat[data-free]:hover::after {
+  height: 24px;
+}
+
+.seat[data-picked] {
+  --h: 34px;
+  background: linear-gradient(140deg, #ffffff, #ffe0d2 55%, #ff9c78);
+  box-shadow: 0 0 34px 8px rgb(255 214 190 / 0.85);
+}
+
+.seat[data-picked]::before {
+  background: #ff9c78;
+}
+
+.seat[data-picked]::after {
+  height: 26px;
+  background: linear-gradient(#ffffff, #ffcdb8);
+}
+
+.seatmap-rows {
+  display: grid;
+  gap: 9px;
+  transform-style: preserve-3d;
+}
+
+.seatmap-row {
+  display: grid;
+  grid-template-columns: 22px repeat(var(--cols), 1fr);
+  gap: 7px;
+  align-items: center;
+  transform-style: preserve-3d;
+}
+
+.row-label {
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+  color: #a3adba;
+}
+
+.seatmap[data-pick] .seatmap-block {
+  cursor: default;
+}
+
+.seat-badge {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 4px 10px;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--on-accent);
+  background: var(--accent);
+}
+
+.pass-seat {
+  margin: 4px 0 10px;
+  font-size: 2rem;
+  font-weight: 900;
+  font-variation-settings: "wdth" 70;
+  letter-spacing: -0.02em;
+}
+
+/* Picking a seat: the room holds still so small chairs do not move under the cursor, and tiers stack for bigger chairs. */
+.seatmap[data-pick] .seatmap-scene {
+  max-width: 640px;
+  transform: rotateX(54deg);
+  margin-bottom: -16%;
+}
+
+.seatmap[data-pick] .seatmap-rows {
+  gap: 16px;
+}
+
+.seatmap[data-pick] .seat[data-free]::after {
+  height: 28px;
+}
+
+.seatmap[data-pick] .seat[data-picked]::after {
+  height: 34px;
+}
+
+.seatmap[data-pick] .seatmap-blocks {
+  grid-template-columns: 1fr;
+}
+
+.seatmap[data-pick] .seat[data-free]:hover {
+  --h: 22px;
+}
+
+/* Make the chair read as a chair: darker backrest with a lit top edge, and armrests along the cushion. */
+.seat {
+  background:
+    linear-gradient(90deg, #1b222c 0 13%, transparent 13% 87%, #1b222c 87% 100%),
+    #2c3644;
+}
+
+.seat::after {
+  left: 4%;
+  right: 4%;
+  background: linear-gradient(#171d26, #10151c);
+  border-top: 3px solid #3a4658;
+}
+
+.seat[data-free] {
+  background:
+    linear-gradient(90deg, #7a2a14 0 13%, transparent 13% 87%, #7a2a14 87% 100%),
+    linear-gradient(140deg, #ff9a78, var(--accent) 55%, #c94c2c);
+}
+
+.seat[data-free]::after {
+  background: linear-gradient(#b8401f, #6e2410 65%, #4a1808);
+  border-top: 3px solid #ffb59a;
+}
+
+.seat[data-picked] {
+  background:
+    linear-gradient(90deg, #ff9c78 0 13%, transparent 13% 87%, #ff9c78 87% 100%),
+    linear-gradient(140deg, #ffffff, #ffe0d2 60%, #ffc2a8);
+}
+
+.seat[data-picked]::after {
+  background: linear-gradient(#ffcdb8, #ff9c78);
+  border-top: 3px solid #ffffff;
+}
+
+.seatmap[data-pick] .seatmap-rows {
+  gap: 24px;
+}
+
+.seatmap[data-pick] .seatmap-name {
+  margin-bottom: 26px;
 }

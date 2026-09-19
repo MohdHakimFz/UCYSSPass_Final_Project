@@ -64,8 +64,11 @@ export type TicketType = {
   name: string
   price: string
   capacity: number
+  seats_per_row?: number
   seats_remaining: number
 }
+
+export type SeatInfo = { id: number; row: string; number: number; label: string; taken: boolean }
 
 export type EventItem = {
   id: number
@@ -77,6 +80,7 @@ export type EventItem = {
   start_at: string
   end_at: string
   status: EventStatus
+  seated?: boolean
   venue?: { id: number; name: string; address?: string }
   from_price?: string | null
   seats_remaining?: number | null
@@ -92,6 +96,7 @@ export type Booking = {
   booked_at: string
   checked_in_at: string | null
   qr_token: string | null
+  seat?: { id: number; row_label: string; number: number; label: string } | null
   customer?: { id: number; name: string; email: string }
   waitlist_position?: number
   ticket_type?: {

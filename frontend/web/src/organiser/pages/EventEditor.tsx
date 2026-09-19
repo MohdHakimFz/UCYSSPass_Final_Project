@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Button, ProgressBar, Select, SelectItem, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TextArea, TextInput } from '@carbon/react'
+import { Button, ProgressBar, Select, Toggle, SelectItem, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TextArea, TextInput } from '@carbon/react'
 import { Add, Copy, Download } from '@carbon/icons-react'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
@@ -123,6 +123,7 @@ function EventForm({
     start_at: event ? toLocalInput(event.start_at) : '',
     end_at: event ? toLocalInput(event.end_at) : '',
     status: (event?.status ?? 'draft') as EventStatus,
+    seated: event?.seated ?? false,
   })
   const [note, setNote] = useState<{ tone: 'ok' | 'error'; text: string } | null>(null)
   const [busy, setBusy] = useState(false)
@@ -180,6 +181,14 @@ function EventForm({
           ))}
         </Select>
         <TextInput id="start" labelText="Starts" required type="datetime-local" value={f.start_at} onChange={(e) => setF({ ...f, start_at: e.target.value })} />
+        <Toggle
+          id="seated"
+          labelText="Numbered seats"
+          labelA="Off: guests pick a ticket tier only"
+          labelB="On: guests choose their exact seat"
+          toggled={f.seated}
+          onToggle={(on: boolean) => setF({ ...f, seated: on })}
+        />
         <TextInput id="end" labelText="Ends" required type="datetime-local" value={f.end_at} onChange={(e) => setF({ ...f, end_at: e.target.value })} />
       </div>
       <TextArea id="description" labelText="Description" rows={4} value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} style={{ marginBottom: 24 }} />
@@ -194,7 +203,7 @@ function EventForm({
   )
 }
 
-type Tier = { id?: number; name: string; price: string; capacity: string }
+type Tier = { id?: number; name: string; price: string; capacity: string; seats_per_row: string }
 
 function Tiers({ event, stats, onChange }: { event: EventItem; stats: EventStats | null; onChange: () => void }) {
   const waitByTier = new Map(stats?.tiers.map((t) => [t.id, t.waitlisted]))
@@ -206,7 +215,12 @@ function Tiers({ event, stats, onChange }: { event: EventItem; stats: EventStats
     e.preventDefault()
     if (!draft) return
     setNote(null)
-    const body = { name: draft.name, price: Number(draft.price), capacity: Number(draft.capacity) }
+    const body = {
+      name: draft.name,
+      price: Number(draft.price),
+      capacity: Number(draft.capacity),
+      ...(event.seated ? { seats_per_row: Number(draft.seats_per_row) } : {}),
+    }
     try {
       if (draft.id) await api(`/ticket-types/${draft.id}`, { method: 'PUT', body })
       else await api(`/events/${event.id}/ticket-types`, { method: 'POST', body })
@@ -257,7 +271,7 @@ function Tiers({ event, stats, onChange }: { event: EventItem; stats: EventStats
                 <TableCell>{waitByTier.get(t.id) ?? 0}</TableCell>
                 <TableCell>
                   <div className="form-actions">
-                    <Button kind="ghost" size="sm" onClick={() => setDraft({ id: t.id, name: t.name, price: String(Number(t.price)), capacity: String(t.capacity) })}>
+                    <Button kind="ghost" size="sm" onClick={() => setDraft({ id: t.id, name: t.name, price: String(Number(t.price)), capacity: String(t.capacity), seats_per_row: String(t.seats_per_row ?? 10) })}>
                       Edit
                     </Button>
                     <Button kind="danger--ghost" size="sm" onClick={() => remove(t)}>
@@ -278,6 +292,9 @@ function Tiers({ event, stats, onChange }: { event: EventItem; stats: EventStats
             <TextInput id="tier-name" labelText="Name" required value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
             <TextInput id="tier-price" labelText="Price (RM)" required type="number" min={0} step="0.01" value={draft.price} onChange={(e) => setDraft({ ...draft, price: e.target.value })} />
             <TextInput id="tier-seats" labelText="Seats" required type="number" min={0} value={draft.capacity} onChange={(e) => setDraft({ ...draft, capacity: e.target.value })} />
+            {event.seated && (
+              <TextInput id="tier-row" labelText="Seats per row" required type="number" min={1} max={40} value={draft.seats_per_row} onChange={(e) => setDraft({ ...draft, seats_per_row: e.target.value })} helperText="Rows are lettered A, B, C and so on." />
+            )}
           </div>
           <div className="form-actions">
             <Button type="submit">Save tier</Button>
@@ -288,7 +305,7 @@ function Tiers({ event, stats, onChange }: { event: EventItem; stats: EventStats
         </form>
       ) : (
         <div style={{ marginTop: 16 }}>
-          <Button kind="tertiary" renderIcon={Add} onClick={() => setDraft({ name: '', price: '0', capacity: '50' })}>
+          <Button kind="tertiary" renderIcon={Add} onClick={() => setDraft({ name: '', price: '0', capacity: '50', seats_per_row: '10' })}>
             Add tier
           </Button>
         </div>
@@ -310,6 +327,7 @@ function Attendees({ eventId }: { eventId: number }) {
         <TableRow>
           <TableHeader>Attendee</TableHeader>
           <TableHeader>Tier</TableHeader>
+          <TableHeader>Seat</TableHeader>
           <TableHeader>Booked</TableHeader>
           <TableHeader>Status</TableHeader>
         </TableRow>
@@ -322,6 +340,7 @@ function Attendees({ eventId }: { eventId: number }) {
               <span className="sub">{b.customer?.email}</span>
             </TableCell>
             <TableCell>{b.ticket_type?.name}</TableCell>
+            <TableCell>{b.seat?.label ?? 'None'}</TableCell>
             <TableCell>{formatWhen(b.booked_at)}</TableCell>
             <TableCell>
               <StatusTag status={b.status} />

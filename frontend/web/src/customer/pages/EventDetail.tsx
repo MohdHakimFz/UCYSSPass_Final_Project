@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { CaretLeft } from '@phosphor-icons/react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { api, ApiError, errorText, type Booking, type EventItem, type TicketType } from '@/lib/api'
+import { api, ApiError, errorText, type Booking, type EventItem, type SeatInfo, type TicketType } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
 import SeatMap from '@/customer/fx/SeatMap'
 import { useFetch } from '@/lib/useFetch'
@@ -14,6 +14,23 @@ export default function EventDetail() {
   const { data: event, error, reload } = useFetch<EventItem>(`/events/${id}`)
   const [busyId, setBusyId] = useState<number | null>(null)
   const [picked, setPicked] = useState<number | null>(null)
+  const [seats, setSeats] = useState<Record<string, SeatInfo[]>>({})
+  const [seatPick, setSeatPick] = useState<{ tierId: number; seat: SeatInfo } | null>(null)
+  const [seatsKey, setSeatsKey] = useState(0)
+
+  // Numbered seats: load every tier's seats (free or taken) so the room shows the real thing.
+  const seated = !!event?.seated
+  const tierIds = (event?.ticket_types ?? []).map((t) => t.id).join(',')
+  useEffect(() => {
+    if (!seated || !tierIds) return
+    let live = true
+    Promise.all(tierIds.split(',').map((id) => api<SeatInfo[]>(`/ticket-types/${id}/seats`).then((rows) => [id, rows] as const)))
+      .then((pairs) => live && setSeats(Object.fromEntries(pairs)))
+      .catch(() => undefined)
+    return () => {
+      live = false
+    }
+  }, [seated, tierIds, seatsKey])
   const [note, setNote] = useState<{ tone: 'ok' | 'error' | 'warn'; text: string } | null>(null)
 
   async function book(t: TicketType) {
@@ -24,15 +41,23 @@ export default function EventDetail() {
     setBusyId(t.id)
     setNote(null)
     try {
-      const b = await api<Booking>('/bookings', { method: 'POST', body: { ticket_type_id: t.id } })
+      const wantsSeat = seated && seatPick?.tierId === t.id && t.seats_remaining > 0
+      const b = await api<Booking>('/bookings', { method: 'POST', body: { ticket_type_id: t.id, ...(wantsSeat ? { seat_id: seatPick!.seat.id } : {}) } })
+      setSeatPick(null)
+      setSeatsKey((k) => k + 1)
       setNote(
         b.status === 'confirmed'
-          ? { tone: 'ok', text: `You're in. Your ${t.name} pass is confirmed and waiting in My passes.` }
+          ? { tone: 'ok', text: b.seat ? `You're in. Seat ${b.seat.label} is yours, and the pass is waiting in My passes.` : `You're in. Your ${t.name} pass is confirmed and waiting in My passes.` }
           : { tone: 'warn', text: `${t.name} is sold out, so you're on the waitlist. If a seat opens you'll be confirmed automatically and emailed.` },
       )
       reload()
     } catch (err) {
       const status = err instanceof ApiError ? err.status : 0
+      if (status === 409 || status === 422) {
+        // Someone else may have taken the seat: show the room as it is now and let the person choose again.
+        setSeatPick(null)
+        setSeatsKey((k) => k + 1)
+      }
       setNote({
         tone: 'error',
         text:
@@ -114,6 +139,18 @@ export default function EventDetail() {
                 blocks={event.ticket_types!.map((t) => ({ id: t.id, name: t.name, capacity: t.capacity, remaining: t.seats_remaining }))}
                 selectedId={picked ?? event.ticket_types![0].id}
                 onSelect={(id) => setPicked(Number(id))}
+                pick={
+                  seated && Object.keys(seats).length
+                    ? {
+                        seats,
+                        value: seatPick ? { tierId: seatPick.tierId, seatId: seatPick.seat.id } : null,
+                        onPick: (tierId, seat) => {
+                          setSeatPick(seat ? { tierId: Number(tierId), seat } : null)
+                          if (seat) setPicked(Number(tierId))
+                        },
+                      }
+                    : undefined
+                }
               />
             </div>
           <ul className="tiers">
@@ -126,8 +163,20 @@ export default function EventDetail() {
                   </p>
                 </div>
                 <strong className="price">{Number(t.price) === 0 ? 'Free' : `RM ${Number(t.price).toFixed(2)}`}</strong>
-                <button className="btn" disabled={!bookable || sessionLoading || busyId === t.id} onClick={() => book(t)}>
-                  {busyId === t.id ? 'Booking…' : t.seats_remaining > 0 ? 'Book this pass' : 'Join waitlist'}
+                <button
+                  className="btn"
+                  disabled={!bookable || sessionLoading || busyId === t.id || (seated && t.seats_remaining > 0 && seatPick?.tierId !== t.id)}
+                  onClick={() => book(t)}
+                >
+                  {busyId === t.id
+                    ? 'Booking…'
+                    : t.seats_remaining === 0
+                      ? 'Join waitlist'
+                      : seated
+                        ? seatPick?.tierId === t.id
+                          ? `Book seat ${seatPick.seat.label}`
+                          : 'Choose a seat above'
+                        : 'Book this pass'}
                 </button>
               </li>
             ))}

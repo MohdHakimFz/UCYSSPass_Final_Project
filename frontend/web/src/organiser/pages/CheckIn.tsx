@@ -144,6 +144,7 @@ export default function CheckIn() {
             {outcome.kind === 'ok' ? (
               <>
                 <h2>Cleared to enter</h2>
+                {outcome.booking.seat && <p className="result-seat">Seat {outcome.booking.seat.label}</p>}
                 <p>
                   Booking #{outcome.booking.id}
                   {outcome.booking.ticket_type?.event ? ` for ${outcome.booking.ticket_type.event.title}` : ''} is checked in.

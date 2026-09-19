@@ -54,6 +54,7 @@ function PassDialog({ booking, onClose }: { booking: Booking; onClose: () => voi
         <p className="sub">
           {booking.ticket_type?.name} pass{ev ? ` · ${formatWhen(ev.start_at)}` : ''}
         </p>
+        {booking.seat && <p className="pass-seat">Seat {booking.seat.label}</p>}
         <QrImage bookingId={booking.id} />
         <p className="sub">Turn your screen brightness up and hold it steady for the scanner.</p>
         <div className="ticket-actions">
@@ -118,6 +119,7 @@ export default function Passes() {
                     <h2>{ev?.title ?? 'Event'}</h2>
                     <p className="sub">{ev ? `${CATEGORY_LABEL[ev.category]} · ${ev.venue?.name ?? 'Venue to be announced'}` : ''}</p>
                     {ev && <p className="sub">{formatWhen(ev.start_at)}</p>}
+                    {b.seat && <p className="seat-badge">Seat {b.seat.label}</p>}
 
                     {b.status === 'waitlisted' && (
                       <p className="ticket-note">

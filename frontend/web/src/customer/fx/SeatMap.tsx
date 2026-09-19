@@ -1,7 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 import { enableMotion, subscribeTilt } from '@/shared/motion'
+import type { SeatInfo } from '@/lib/api'
 
 export type SeatBlock = { id: number | string; name: string; capacity: number; remaining: number }
+
+/** Present when the event has numbered seats: real seats to choose from, instead of a picture of availability. */
+export type SeatPick = {
+  seats: Record<string, SeatInfo[]>
+  value: { tierId: number | string; seatId: number } | null
+  onPick: (tierId: number | string, seat: SeatInfo | null) => void
+}
 
 const MAX_SEATS = 84
 const COLS = 10
@@ -26,20 +34,30 @@ function seatsFor(block: SeatBlock, index: number) {
   return Array.from({ length: shown }, (_, i) => !takenIdx.has(i))
 }
 
+function rowsOf(seats: SeatInfo[]) {
+  const rows = new Map<string, SeatInfo[]>()
+  for (const s of seats) rows.set(s.row, [...(rows.get(s.row) ?? []), s])
+  return [...rows.entries()]
+}
+
 /**
- * A room in 3D. Every seat is a small raised block: free seats stand up and glow, taken ones sit low and dark.
- * A pool of light follows the pointer across the room. It shows live availability per ticket tier;
- * booking still happens on the tier, and the seat itself is assigned by the organiser.
+ * A room in 3D. Every seat is a small chair: a cushion with a backrest. Free chairs stand up and glow, taken ones
+ * sit low and dark, and a pool of light follows the pointer, or the lean of a phone.
+ *
+ * Without `pick` it is a picture of live availability per ticket tier (used on the home page and for events without
+ * numbered seats). With `pick` every chair is a real seat you can choose.
  */
 export default function SeatMap({
   blocks,
   selectedId,
   onSelect,
+  pick,
   caption,
 }: {
   blocks: SeatBlock[]
   selectedId?: number | string | null
   onSelect?: (id: number | string) => void
+  pick?: SeatPick
   caption?: string
 }) {
   const room = useRef<HTMLDivElement>(null)
@@ -95,37 +113,95 @@ export default function SeatMap({
     }
   }, [])
 
+  const chosen = pick?.value ? pick.seats[String(pick.value.tierId)]?.find((s) => s.id === pick.value!.seatId) : null
+
   return (
-    <figure className="seatmap" ref={room} data-seen={seen || undefined}>
-      <div className="seatmap-scene" aria-hidden="true">
-        <div className="seatmap-stage">Stage</div>
+    <figure className="seatmap" ref={room} data-seen={seen || undefined} data-pick={pick ? '' : undefined}>
+      <div className="seatmap-scene" aria-hidden={pick ? undefined : true}>
+        <div className="seatmap-stage" aria-hidden="true">
+          Stage
+        </div>
         <div className="seatmap-blocks">
-          {blocks.map((b, bi) => (
-            <button
-              key={b.id}
-              type="button"
-              className="seatmap-block"
-              data-active={selectedId === b.id || undefined}
-              data-soldout={b.remaining === 0 || undefined}
-              onClick={() => onSelect?.(b.id)}
-              tabIndex={-1}
-            >
-              <span className="seatmap-name">
-                {b.name}
-                <em>{b.remaining > 0 ? `${b.remaining} left` : 'Sold out'}</em>
-              </span>
-              <span className="seatmap-seats" style={{ ['--cols' as string]: COLS }}>
-                {seatsFor(b, bi).map((free, i) => (
-                  <i key={i} className="seat" data-free={free || undefined} style={{ ['--i' as string]: i }} />
-                ))}
-              </span>
-            </button>
-          ))}
+          {blocks.map((b, bi) => {
+            const real = pick?.seats[String(b.id)]
+            const inner = (
+              <>
+                <span className="seatmap-name">
+                  {b.name}
+                  <em>{b.remaining > 0 ? `${b.remaining} left` : 'Sold out'}</em>
+                </span>
+                {real ? (
+                  <span className="seatmap-rows">
+                    {rowsOf(real).map(([row, seats]) => (
+                      <span className="seatmap-row" key={row} style={{ ['--cols' as string]: seats.length }}>
+                        <span className="row-label" aria-hidden="true">
+                          {row}
+                        </span>
+                        {seats.map((s, i) => {
+                          const picked = pick!.value?.tierId === b.id && pick!.value.seatId === s.id
+                          return (
+                            <span
+                              key={s.id}
+                              role="button"
+                              tabIndex={s.taken ? -1 : 0}
+                              className="seat"
+                              data-free={!s.taken || undefined}
+                              data-picked={picked || undefined}
+                              aria-disabled={s.taken}
+                              aria-label={`Seat ${s.label}, ${s.taken ? 'taken' : picked ? 'your choice' : 'free'}`}
+                              aria-pressed={picked}
+                              title={`Seat ${s.label}`}
+                              style={{ ['--i' as string]: i }}
+                              onClick={() => !s.taken && pick!.onPick(b.id, picked ? null : s)}
+                              onKeyDown={(e) => {
+                                if ((e.key === 'Enter' || e.key === ' ') && !s.taken) {
+                                  e.preventDefault()
+                                  pick!.onPick(b.id, picked ? null : s)
+                                }
+                              }}
+                            />
+                          )
+                        })}
+                      </span>
+                    ))}
+                  </span>
+                ) : (
+                  <span className="seatmap-seats" style={{ ['--cols' as string]: COLS }}>
+                    {seatsFor(b, bi).map((free, i) => (
+                      <i key={i} className="seat" data-free={free || undefined} style={{ ['--i' as string]: i }} />
+                    ))}
+                  </span>
+                )}
+              </>
+            )
+
+            return pick ? (
+              <div key={b.id} className="seatmap-block" data-active={pick.value?.tierId === b.id || undefined} data-soldout={b.remaining === 0 || undefined}>
+                {inner}
+              </div>
+            ) : (
+              <button
+                key={b.id}
+                type="button"
+                className="seatmap-block"
+                data-active={selectedId === b.id || undefined}
+                data-soldout={b.remaining === 0 || undefined}
+                onClick={() => onSelect?.(b.id)}
+                tabIndex={-1}
+              >
+                {inner}
+              </button>
+            )
+          })}
         </div>
       </div>
       <div className="seatmap-light" aria-hidden="true" />
       <figcaption>
-        {caption ?? 'Live availability. Free seats glow; the organiser assigns your exact seat.'}
+        {pick
+          ? chosen
+            ? `Seat ${chosen.label} is yours to book. Tap it again to change your mind.`
+            : 'Pick any glowing seat. Dark seats are taken.'
+          : (caption ?? 'Live availability. Free seats glow; the organiser assigns your exact seat.')}
       </figcaption>
     </figure>
   )
