@@ -26,7 +26,7 @@ Everything is in [`docs/`](docs/README.md):
 
 - [API reference](docs/api-documentation.md): every endpoint with examples
 - [Database design](docs/database.md): ERD, tables, constraints, sample data
-- [Postman collection](docs/postman/README.md): 105 requests, 156 assertions, runnable with Newman
+- [Postman collection](docs/postman/README.md): 166 requests, 257 assertions, runnable with Newman
 
 ## Run the API
 

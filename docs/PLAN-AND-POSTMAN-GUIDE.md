@@ -49,7 +49,7 @@ Susunan ikut keutamaan. `[ ]` = belum, tanda kalau dah siap.
 - [ ] **ERD** dikemas kini: jadual `seats`, `payments`, lajur baru `events.mode`, `meeting_url`, `meeting_platform`, `events.seated`, `bookings.seat_id`, `bookings.hold_expires_at`.
 - [ ] **Skrip DDL dan DML** (`docs/database/schema.sql`) ikut skema terkini, dengan **sekurang-kurangnya 5 rekod setiap jadual**.
 - [ ] **`docs/api-documentation.md`** ditambah: seat, bayaran, hold, refund, reset password, `/organiser/summary`, `/events/{id}/seat-map`, `/bookings/{id}/join`, mod online, peraturan draft.
-- [ ] **Koleksi Postman dikemas kini.** Aku jalankan `newman` hari ni: 105 permintaan, **11 semakan gagal**. Punca: tier berbayar kini `pending` sehingga dibayar (bukan `confirmed`), dan tetamu lain berubah. Penyelesaian: guna tier RM 0 dalam kes tempahan, dan tambah langkah bayar untuk kes berbayar. Lihat [3.9](#39-keadaan-koleksi-sedia-ada).
+- [x] **Koleksi Postman dikemas kini:** 166 permintaan, 257 semakan, 0 kegagalan. Lihat [3.9](#39-keadaan-koleksi-sedia-ada).
 - [ ] **README** dengan langkah pasang dan jalankan (sudah ada, semak selepas rebrand).
 - [ ] **Laporan PDF** ikut struktur PDF: System Overview, Database Design, API Documentation, API Testing, System Implementation, System Demonstration, Repository, Advanced Features, Debugging, Reflection.
 - [ ] **Tangkapan skrin Postman** (senarai di [3.8](#38-senarai-tangkapan-skrin-untuk-laporan)).
@@ -381,10 +381,14 @@ Sekurang-kurangnya satu **berjaya** dan satu **ralat** untuk setiap kumpulan:
 
 ### 3.9 Keadaan koleksi sedia ada
 
-`newman` menunjukkan **11 semakan gagal** daripada 156. Semuanya kerana peraturan baru, bukan pepijat baru:
+Koleksi sudah dikemas kini: **166 permintaan, 257 semakan, 0 kegagalan** (dijalankan dengan `newman`, sekitar 41 saat). Ia meliputi juga bayaran, seat bernombor, event online dan Join, draf yang tersembunyi, ringkasan organiser, dan reset kata laluan (folder 12 hingga 16). Butiran ada dalam `docs/postman/README.md`.
 
-| Permintaan | Sebab | Pembetulan |
-| --- | --- | --- |
+Dua perkara yang perlu diingat semasa menjalankannya:
+
+- **Tunggu seminit antara dua larian.** `forgot-password` dihadkan 3 kali seminit, jadi larian kedua serta-merta boleh dapat 429.
+- **Kunci check-in.** Nilai `checkin_api_key` dalam environment mesti sama dengan `CHECKIN_API_KEY` dalam `backend/.env`. Kalau kau dah menukar kunci (patut), permintaan 7.17 akan dapat 401 sehingga environment dikemas kini.
+
+--- | --- | --- |
 | 7.1, 7.19, 7.22 | Tier berbayar kini `pending` sehingga dibayar | Guna tier `price: 0`, atau tambah langkah `pay` |
 | 7.12 QR (2 semakan) | Tempahan masih `pending`, jadi belum ada QR | Sama seperti di atas |
 | 7.14, 7.17 (4 semakan) | Tiket tak `confirmed` lagi, jadi mesej dan kod status lain | Sama seperti di atas |
