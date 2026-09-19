@@ -39,6 +39,9 @@ class AttendanceController extends Controller
             'start_at' => $event->start_at,
             'registered' => (int) $event->registered,
             'attended' => (int) $event->attended,
+            // Confirmed guests who never came. Only known once the event is over; while it runs, they may still arrive.
+            'finished' => $event->end_at->isPast(),
+            'no_show' => $event->end_at->isPast() ? (int) ($event->registered - $event->attended) : null,
             'rate' => $event->registered > 0 ? (int) round($event->attended / $event->registered * 100) : null,
         ])->values();
 
@@ -49,6 +52,7 @@ class AttendanceController extends Controller
             'events' => $rows,
             'registered' => $registered,
             'attended' => $attended,
+            'no_show' => $rows->where('finished', true)->sum('no_show'),
             'rate' => $registered > 0 ? (int) round($attended / $registered * 100) : null,
         ]);
     }

@@ -1252,7 +1252,7 @@ body {
 
   li {
     display: grid;
-    grid-template-columns: minmax(0, 2fr) minmax(80px, 1fr) minmax(110px, auto);
+    grid-template-columns: minmax(0, 2fr) minmax(60px, 1fr) minmax(130px, auto);
     align-items: center;
     gap: 16px;
     padding: 10px 0;
@@ -1268,9 +1268,31 @@ body {
     flex-direction: column;
     align-items: flex-end;
     font-size: 0.875rem;
+    white-space: nowrap;
 
     strong {
-      font-size: 1rem;
+      font-size: 1.125rem;
+    }
+
+    .no-show {
+      color: var(--cds-support-error, #da1e28);
+      font-weight: 600;
+    }
+
+    .live {
+      color: var(--cds-support-info, #0043ce);
+      font-weight: 600;
+    }
+  }
+
+  .attendance-title {
+    min-width: 0;
+
+    .cell-link {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
   }
 }

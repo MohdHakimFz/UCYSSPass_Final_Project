@@ -172,9 +172,10 @@ export type NotificationRow = {
 
 /** Who registered and who came, for finished events. */
 export type Attendance = {
-  events: { id: number; title: string; mode?: EventMode; category: Category; start_at: string; registered: number; attended: number; rate: number | null }[]
+  events: { id: number; title: string; mode?: EventMode; category: Category; start_at: string; registered: number; attended: number; finished: boolean; no_show: number | null; rate: number | null }[]
   registered: number
   attended: number
+  no_show: number
   rate: number | null
 }
 

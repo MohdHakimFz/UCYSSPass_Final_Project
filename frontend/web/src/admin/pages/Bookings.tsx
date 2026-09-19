@@ -152,7 +152,7 @@ export default function BookingsPage() {
                   </TableCell>
                   <TableCell>{formatWhen(b.booked_at)}</TableCell>
                   <TableCell>
-                    <StatusTag status={b.status} />
+                    <StatusTag status={b.status} endedAt={b.ticket_type?.event?.end_at} />
                   </TableCell>
                   <TableCell>
                     <div className="row-actions">

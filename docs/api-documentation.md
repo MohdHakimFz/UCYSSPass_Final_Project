@@ -519,7 +519,7 @@ Authenticate with a Bearer token (organiser who owns the event, or admin) **or**
 }
 ```
 
-`GET /organiser/attendance` `200` lists up to the 8 latest events that have started (finished or running now) (published or completed, not drafts), with the people who **registered** (confirmed or checked in) and the ones who **attended** (checked in, or joined an online meeting):
+`GET /organiser/attendance` `200` lists up to the 8 latest events that have started (finished or running now) (published or completed, not drafts), with the people who **registered** (confirmed or checked in) and the ones who **attended** (checked in, or joined an online meeting): `no_show` is the number of registered guests who never came, and is `null` while the event is still running.
 
 ```json
 {

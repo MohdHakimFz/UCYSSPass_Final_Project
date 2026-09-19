@@ -12,7 +12,15 @@ const TONES: Record<string, { type: 'green' | 'blue' | 'red' | 'gray' | 'warm-gr
   completed: { type: 'blue', label: 'Completed' },
 }
 
-export function StatusTag({ status }: { status: BookingStatus | EventStatus }) {
+/** `endedAt` is the end of the booking's event: a confirmed guest whose event is over never came. */
+export function StatusTag({ status, endedAt }: { status: BookingStatus | EventStatus; endedAt?: string }) {
+  if (status === 'confirmed' && endedAt && new Date(endedAt).getTime() < Date.now()) {
+    return (
+      <CarbonTag type="magenta" size="md">
+        Did not attend
+      </CarbonTag>
+    )
+  }
   const t = TONES[status]
   return (
     <CarbonTag type={t.type} size="md">

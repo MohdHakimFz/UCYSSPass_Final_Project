@@ -115,4 +115,21 @@ class AttendanceTest extends TestCase
         $this->actingAs($organiser)->getJson('/api/organiser/attendance')
             ->assertOk()->assertJsonPath('events.0.id', $event->id)->assertJsonPath('events.0.attended', 2)->assertJsonPath('events.0.registered', 3);
     }
+
+    public function test_guests_who_never_came_are_counted_as_no_shows_only_once_the_event_is_over(): void
+    {
+        $organiser = $this->organiser();
+        $over = $this->finished($organiser, confirmed: 2, attended: 3);
+        $running = $this->finished($organiser, confirmed: 1, attended: 1);
+        $running->update(['start_at' => now()->subHour(), 'end_at' => now()->addHour()]);
+
+        $res = $this->actingAs($organiser)->getJson('/api/organiser/attendance')->assertOk();
+
+        $byId = collect($res->json('events'))->keyBy('id');
+        $this->assertTrue($byId[$over->id]['finished']);
+        $this->assertSame(2, $byId[$over->id]['no_show']);
+        $this->assertFalse($byId[$running->id]['finished']);
+        $this->assertNull($byId[$running->id]['no_show'], 'a guest may still arrive while the event runs');
+        $res->assertJsonPath('no_show', 2);
+    }
 }

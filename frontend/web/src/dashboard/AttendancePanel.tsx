@@ -16,6 +16,7 @@ export default function AttendancePanel({ base }: { base: '/organiser' | '/admin
         {data?.rate != null && (
           <span className="sub">
             {data.attended} of {data.registered} who registered came ({data.rate}%)
+            {data.no_show > 0 && `, ${data.no_show} did not attend`}
           </span>
         )}
       </div>
@@ -40,8 +41,15 @@ export default function AttendancePanel({ base }: { base: '/organiser' | '/admin
                 <i style={{ width: `${e.rate ?? 0}%` }} />
               </span>
               <span className="attendance-figures">
-                {e.attended} of {e.registered}
                 <strong>{e.rate == null ? 'No bookings' : `${e.rate}%`}</strong>
+                <span>
+                  {e.attended} of {e.registered} came
+                </span>
+                {e.finished ? (
+                  e.no_show ? <span className="no-show">{e.no_show} did not attend</span> : null
+                ) : (
+                  <span className="live">Happening now</span>
+                )}
               </span>
             </li>
           ))}
