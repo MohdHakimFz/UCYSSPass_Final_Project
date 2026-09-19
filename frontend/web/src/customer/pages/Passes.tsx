@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { api, apiBlobUrl, errorText, type Booking, type Paginated } from '@/lib/api'
 import { useFetch } from '@/lib/useFetch'
 import Tilt from '@/shared/Tilt'
+import Checkout from '@/customer/Checkout'
 import { CATEGORY_LABEL, Notice, Skeleton, Tag, formatWhen } from '@/customer/ui'
 import { downloadIcs } from '@/lib/ics'
 
@@ -73,14 +74,22 @@ function PassDialog({ booking, onClose }: { booking: Booking; onClose: () => voi
 export default function Passes() {
   const { data, error, reload } = useFetch<Paginated<Booking>>('/bookings?per_page=50')
   const [shown, setShown] = useState<Booking | null>(null)
+  const [paying, setPaying] = useState<Booking | null>(null)
   const [note, setNote] = useState<{ tone: 'ok' | 'error'; text: string } | null>(null)
 
   async function cancel(b: Booking) {
-    if (!window.confirm(`Cancel your ${b.ticket_type?.name} pass? This can't be undone.`)) return
+    const ev = b.ticket_type?.event
+    const paidAmount = b.payment?.status === 'paid' ? Number(b.payment.amount) : 0
+    const early = ev ? new Date(ev.start_at).getTime() - Date.now() > 24 * 3600 * 1000 : false
+    const money = paidAmount ? (early ? ` You will be refunded RM ${paidAmount.toFixed(2)}.` : ' It is less than 24 hours away, so it will not be refunded.') : ''
+    if (!window.confirm(`Cancel your ${b.ticket_type?.name} pass?${money} This can't be undone.`)) return
     setNote(null)
     try {
-      await api(`/bookings/${b.id}/cancel`, { method: 'PUT' })
-      setNote({ tone: 'ok', text: 'Booking cancelled.' })
+      const res = await api<Booking>(`/bookings/${b.id}/cancel`, { method: 'PUT' })
+      setNote({
+        tone: 'ok',
+        text: res.refund?.refunded ? `Booking cancelled. RM ${Number(res.refund.amount).toFixed(2)} has been refunded.` : 'Booking cancelled.',
+      })
       reload()
     } catch (err) {
       setNote({ tone: 'error', text: errorText(err) })
@@ -113,6 +122,7 @@ export default function Passes() {
               const start = ev ? new Date(ev.start_at) : null
               const canShow = !!b.qr_token && (b.status === 'confirmed' || b.status === 'attended')
               const canCancel = b.status === 'pending' || b.status === 'confirmed' || b.status === 'waitlisted'
+              const holding = b.status === 'pending' && !!b.hold_expires_at
               return (
                 <Tilt as="li" key={b.id} className="ticket" data-status={b.status} max={7}>
                   <div className="ticket-main">
@@ -127,10 +137,18 @@ export default function Passes() {
                         You&apos;ll be confirmed and emailed if a seat opens.
                       </p>
                     )}
+                    {holding && <p className="ticket-note">Awaiting payment. Your seat is held for a few minutes.</p>}
+                    {b.payment?.status === 'paid' && <p className="sub">Paid RM {Number(b.payment.amount).toFixed(2)}</p>}
+                    {b.payment?.status === 'refunded' && <p className="sub">Refunded RM {Number(b.payment.refunded_amount).toFixed(2)}</p>}
                     {b.status === 'attended' && b.checked_in_at && <p className="ticket-note">Checked in {formatWhen(b.checked_in_at)}.</p>}
 
                     {(canShow || canCancel) && (
                       <div className="ticket-actions">
+                        {holding && (
+                          <button className="btn" onClick={() => setPaying(b)}>
+                            Pay now
+                          </button>
+                        )}
                         {canShow && (
                           <button className="btn" onClick={() => setShown(b)}>
                             Show pass
@@ -168,6 +186,15 @@ export default function Passes() {
       )}
 
       {shown && <PassDialog key={shown.id} booking={shown} onClose={() => setShown(null)} />}
+      {paying && (
+        <Checkout
+          key={paying.id}
+          booking={paying}
+          info={{ title: paying.ticket_type?.event?.title ?? 'Your booking', tier: paying.ticket_type?.name ?? '', price: paying.ticket_type?.price ?? '0' }}
+          onClose={() => setPaying(null)}
+          onFinished={reload}
+        />
+      )}
     </>
   )
 }

@@ -1016,3 +1016,142 @@ span.seat {
   font-variant-numeric: tabular-nums;
   color: #a3adba;
 }
+
+
+/* ---------- Checkout ---------- */
+
+.checkout .pass-dialog-body {
+  display: grid;
+  gap: 14px;
+  text-align: left;
+  justify-items: stretch;
+}
+
+.checkout h2 {
+  font-size: 1.6rem;
+}
+
+.hold {
+  display: grid;
+  gap: 8px;
+  padding: 14px 16px;
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+  box-shadow: inset 0 0 0 2px var(--ink);
+}
+
+.hold-time {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.hold-time strong {
+  font-size: 2.4rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  font-variation-settings: "wdth" 70;
+  letter-spacing: -0.02em;
+}
+
+.hold-time span {
+  font-weight: 700;
+}
+
+.hold-bar {
+  height: 6px;
+  background: color-mix(in srgb, var(--ink) 15%, transparent);
+}
+
+.hold-bar i {
+  display: block;
+  height: 100%;
+  background: var(--ink);
+  transition: width 1s linear;
+}
+
+.hold[data-low] {
+  background: color-mix(in srgb, var(--bad) 16%, var(--surface));
+}
+
+.hold[data-low] .hold-time strong {
+  color: var(--bad);
+}
+
+.hold[data-low] .hold-bar i {
+  background: var(--bad);
+}
+
+.methods {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.methods legend {
+  padding: 0;
+  margin-bottom: 6px;
+  font-weight: 800;
+}
+
+.method {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 2px var(--line);
+}
+
+.method[data-on] {
+  box-shadow: inset 0 0 0 3px var(--ink);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.method input {
+  accent-color: var(--ink);
+}
+
+.method strong {
+  display: block;
+}
+
+.method em {
+  font-style: normal;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+.sandbox select {
+  max-width: 320px;
+}
+
+.receipt {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+}
+
+.receipt div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.receipt dt {
+  color: var(--ink-soft);
+}
+
+.receipt dd {
+  margin: 0;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.checkout-ok {
+  color: var(--ok);
+}

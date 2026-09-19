@@ -96,6 +96,10 @@ export type Booking = {
   booked_at: string
   checked_in_at: string | null
   qr_token: string | null
+  hold_expires_at?: string | null
+  hold_seconds_left?: number | null
+  payment?: { id: number; amount: string; method: 'card' | 'fpx' | 'ewallet'; status: 'paid' | 'failed' | 'refunded'; reference: string | null; paid_at: string | null; refunded_at: string | null; refunded_amount: string } | null
+  refund?: { refunded: boolean; amount: string } | null
   seat?: { id: number; row_label: string; number: number; label: string } | null
   customer?: { id: number; name: string; email: string }
   waitlist_position?: number

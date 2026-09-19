@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { api, ApiError, errorText, type Booking, type EventItem, type SeatInfo, type TicketType } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
 import SeatMap from '@/customer/fx/SeatMap'
+import Checkout from '@/customer/Checkout'
 import { useFetch } from '@/lib/useFetch'
 import { CATEGORY_LABEL, Notice, formatWhen, Skeleton } from '@/customer/ui'
 
@@ -17,6 +18,7 @@ export default function EventDetail() {
   const [seats, setSeats] = useState<Record<string, SeatInfo[]>>({})
   const [seatPick, setSeatPick] = useState<{ tierId: number; seat: SeatInfo } | null>(null)
   const [seatsKey, setSeatsKey] = useState(0)
+  const [checkout, setCheckout] = useState<{ booking: Booking; tier: TicketType } | null>(null)
 
   // Numbered seats: load every tier's seats (free or taken) so the room shows the real thing.
   const seated = !!event?.seated
@@ -45,6 +47,11 @@ export default function EventDetail() {
       const b = await api<Booking>('/bookings', { method: 'POST', body: { ticket_type_id: t.id, ...(wantsSeat ? { seat_id: seatPick!.seat.id } : {}) } })
       setSeatPick(null)
       setSeatsKey((k) => k + 1)
+      if (b.status === 'pending') {
+        setCheckout({ booking: b, tier: t })
+        reload()
+        return
+      }
       setNote(
         b.status === 'confirmed'
           ? { tone: 'ok', text: b.seat ? `You're in. Seat ${b.seat.label} is yours, and the pass is waiting in My passes.` : `You're in. Your ${t.name} pass is confirmed and waiting in My passes.` }
@@ -123,9 +130,22 @@ export default function EventDetail() {
 
       {event.description && <p className="prose">{event.description}</p>}
 
+      {checkout && (
+        <Checkout
+          key={checkout.booking.id}
+          booking={checkout.booking}
+          info={{ title: event.title, tier: checkout.tier.name, price: checkout.tier.price }}
+          onClose={() => setCheckout(null)}
+          onFinished={() => {
+            setSeatsKey((k) => k + 1)
+            reload()
+          }}
+        />
+      )}
+
       <section>
         <h2 className="section-title">Choose your pass</h2>
-        <p className="section-note">Sold-out tiers open a waitlist. You&apos;re confirmed automatically if a seat frees up.</p>
+        <p className="section-note">Sold-out tiers open a waitlist. You&apos;re confirmed automatically if a seat frees up. Free cancellation until 24 hours before the event; after that tickets are not refundable.</p>
 
         {note && <Notice tone={note.tone}>{note.text}</Notice>}
         {!bookable && <Notice tone="warn">This event is {event.status}, so booking is closed.</Notice>}
