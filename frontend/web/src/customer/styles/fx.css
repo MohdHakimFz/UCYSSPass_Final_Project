@@ -909,5 +909,27 @@ span.seat {
 }
 
 .seatmap[data-pick] .seatmap-name {
-  margin-bottom: 26px;
+  margin-bottom: 46px;
+}
+
+/* The number printed on each chair's cushion; the picked chair shows its full label, for example B3. */
+.seat-no {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1;
+  color: #14181f;
+  pointer-events: none;
+}
+
+.seat:not([data-free]) .seat-no {
+  color: #6b7787;
+}
+
+.seat[data-picked] .seat-no {
+  font-size: 14px;
+  color: #14181f;
 }

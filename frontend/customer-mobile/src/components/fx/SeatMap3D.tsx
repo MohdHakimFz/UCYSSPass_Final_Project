@@ -175,6 +175,7 @@ export default function SeatMap3D({
                             key={st.id}
                             size={realSize}
                             label={st.label}
+                            number={st.number}
                             state={st.taken ? 'taken' : isPicked ? 'picked' : 'free'}
                             onPress={() => pick!.onPick(b.id, isPicked ? null : st)}
                           />
@@ -237,7 +238,7 @@ function rowsOf(seats: SeatInfo[]) {
 }
 
 // A chair seen from above: a backrest bar, a cushion, and armrests down both sides.
-function Chair({ size, state, label, onPress }: { size: number; state: 'free' | 'taken' | 'picked'; label: string; onPress?: () => void }) {
+function Chair({ size, state, label, number, onPress }: { size: number; state: 'free' | 'taken' | 'picked'; label: string; number: number; onPress?: () => void }) {
   const tone = state === 'picked' ? c.picked : state === 'free' ? c.free : c.taken
   return (
     <Pressable
@@ -252,7 +253,9 @@ function Chair({ size, state, label, onPress }: { size: number; state: 'free' | 
       <View style={{ height: size * 0.28, marginHorizontal: size * 0.06, backgroundColor: tone.back, borderTopWidth: 3, borderTopColor: tone.edge }} />
       <View style={{ flex: 1, flexDirection: 'row', marginTop: 2 }}>
         <View style={{ width: size * 0.14, backgroundColor: tone.arm }} />
-        <View style={[{ flex: 1, backgroundColor: tone.seat }, state === 'free' && s.glow, state === 'picked' && s.glowPicked]} />
+        <View style={[{ flex: 1, backgroundColor: tone.seat, alignItems: 'center', justifyContent: 'center' }, state === 'free' && s.glow, state === 'picked' && s.glowPicked]}>
+          <Text style={{ fontFamily: fonts.heavy, fontSize: Math.max(9, size * (state === 'picked' ? 0.3 : 0.34)), color: state === 'taken' ? '#6b7787' : colors.ink }}>{state === 'picked' ? label : number}</Text>
+        </View>
         <View style={{ width: size * 0.14, backgroundColor: tone.arm }} />
       </View>
     </Pressable>

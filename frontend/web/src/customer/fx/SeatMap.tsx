@@ -159,7 +159,11 @@ export default function SeatMap({
                                   pick!.onPick(b.id, picked ? null : s)
                                 }
                               }}
-                            />
+                            >
+                              <b className="seat-no" aria-hidden="true">
+                                {picked ? s.label : s.number}
+                              </b>
+                            </span>
                           )
                         })}
                       </span>
