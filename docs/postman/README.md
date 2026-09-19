@@ -4,7 +4,7 @@ Two files:
 
 | File | What it is |
 | --- | --- |
-| `SentryPass.postman_collection.json` | **184 requests in 19 folders, with 287 test assertions** (collection name in Postman: "UCYSS API") |
+| `SentryPass.postman_collection.json` | **186 requests in 19 folders, with 290 test assertions** (collection name in Postman: "UCYSS API") |
 | `SentryPass.local.postman_environment.json` | Local settings: `base_url`, admin login, check-in device key |
 
 ## Run it in Postman
@@ -23,7 +23,7 @@ npx newman run docs/postman/SentryPass.postman_collection.json \
   --env-var "checkin_api_key=<your CHECKIN_API_KEY>"
 ```
 
-Last run: 184 requests, 287 assertions, 0 failures (about 52 seconds).
+Last run: 186 requests, 290 assertions, 0 failures (about 52 seconds).
 
 ## What it covers
 
@@ -48,7 +48,7 @@ Each folder mixes the success case and the error cases (401, 403, 404, 409, 422,
 | 15. Drafts stay private | A draft is 404 to the public, customers and other organisers, visible to the owner and admin, cannot be booked (409), the organiser publishes it themselves |
 | 16. Members-only tickets | A tier limited to members, a non-member is refused (403), nobody can make themselves a member, an admin adds a customer to the member list, the customer can then book, and the admin's people search |
 | 17. Announcements to guests | Nobody booked means nobody to tell (422), a subject is required, another organiser and a customer are refused (403), the organiser sends to everyone booked, the history, and the admin email log |
-| 18. Organiser summary and password reset | `/organiser/summary`, the same answer for a known and an unknown email, a wrong reset code |
+| 18. Organiser summary, attendance and password reset | `/organiser/summary`, attendance, the same answer for a known and an unknown email, a wrong reset code |
 | 19. Cleanup | Deletes everything the run created |
 
 ## Notes

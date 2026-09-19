@@ -54,6 +54,12 @@ class Event extends Model
         return $this->belongsTo(User::class, 'organiser_id');
     }
 
+    /** Every booking on the event, through its ticket tiers. */
+    public function bookings(): \Illuminate\Database\Eloquent\Relations\HasManyThrough
+    {
+        return $this->hasManyThrough(Booking::class, TicketType::class);
+    }
+
     public function announcements(): HasMany
     {
         return $this->hasMany(Announcement::class);

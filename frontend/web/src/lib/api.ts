@@ -162,6 +162,14 @@ export type NotificationRow = {
   }
 }
 
+/** Who registered and who came, for finished events. */
+export type Attendance = {
+  events: { id: number; title: string; mode?: EventMode; category: Category; start_at: string; registered: number; attended: number; rate: number | null }[]
+  registered: number
+  attended: number
+  rate: number | null
+}
+
 export type AnnouncementRow = { id: number; subject: string; message: string; recipients: number; created_at: string; sender?: { id: number; name: string } | null }
 
 /** What an organiser sent to an event's guests before, and how many people a new message would reach now. */

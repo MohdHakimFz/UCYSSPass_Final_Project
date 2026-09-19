@@ -8714,7 +8714,7 @@
 			]
 		},
 		{
-			"name": "18. Organiser summary and password reset",
+			"name": "18. Organiser summary, attendance and password reset",
 			"item": [
 				{
 					"name": "18.1 The organiser's own numbers",
@@ -8805,7 +8805,95 @@
 					}
 				},
 				{
-					"name": "18.3 Forgot password gives a general answer",
+					"name": "18.3 Attendance: who registered and who came, for finished events",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+									"const j = pm.response.json();",
+									"pm.test(\"The shape\", function () { pm.expect(j).to.include.all.keys(\"events\", \"registered\", \"attended\", \"rate\"); pm.expect(j.events).to.be.an(\"array\"); });"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/organiser/attendance",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"organiser",
+								"attendance"
+							]
+						},
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{orgA_token}}",
+									"type": "string"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "18.4 A customer has no attendance numbers",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status is 403\", function () { pm.response.to.have.status(403); });"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/organiser/attendance",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"organiser",
+								"attendance"
+							]
+						},
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{c6_token}}",
+									"type": "string"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "18.5 Forgot password gives a general answer",
 					"event": [
 						{
 							"listen": "test",
@@ -8855,7 +8943,7 @@
 					}
 				},
 				{
-					"name": "18.4 An unknown email gets the very same answer",
+					"name": "18.6 An unknown email gets the very same answer",
 					"event": [
 						{
 							"listen": "test",
@@ -8905,7 +8993,7 @@
 					}
 				},
 				{
-					"name": "18.5 A wrong reset code is refused",
+					"name": "18.7 A wrong reset code is refused",
 					"event": [
 						{
 							"listen": "test",

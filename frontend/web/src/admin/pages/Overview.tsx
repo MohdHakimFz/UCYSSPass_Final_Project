@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import AttendancePanel from '@/dashboard/AttendancePanel'
 import { Link } from 'react-router-dom'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@carbon/react'
 import { Calendar, Currency, Hourglass, Ticket, UserFollow } from '@carbon/icons-react'
@@ -192,6 +193,8 @@ export default function Overview() {
           </ul>
         </section>
       </div>
+
+      <AttendancePanel base="/admin" />
 
       <div className="split">
         <section className="panel">

@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AdminNotificationController;
 use App\Http\Controllers\Api\AdminStatsController;
 use App\Http\Controllers\Api\AnnouncementController;
+use App\Http\Controllers\Api\AttendanceController;
 use App\Http\Controllers\Api\ExportController;
 use App\Http\Controllers\Api\OrganiserSummaryController;
 use App\Http\Controllers\Api\AuthController;
@@ -69,6 +70,7 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/admin/stats', AdminStatsController::class);
     Route::get('/organiser/summary', OrganiserSummaryController::class);
+    Route::get('/organiser/attendance', AttendanceController::class);
     Route::get('/admin/notifications', AdminNotificationController::class);
     Route::get('/admin/export/users', [ExportController::class, 'users']);
     Route::get('/admin/export/bookings', [ExportController::class, 'bookings']);

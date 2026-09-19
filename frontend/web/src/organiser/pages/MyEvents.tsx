@@ -8,6 +8,7 @@ import { useFetch } from '@/lib/useFetch'
 import type { EventItem, OrganiserSummary, Paginated } from '@/lib/api'
 import { CATEGORY_LABEL, ModeTag, Notice, StatusTag, formatWhen, Skeleton } from '@/dashboard/ui'
 import { EmptyState, PageHeader, StatTile, money } from '@/dashboard/parts'
+import AttendancePanel from '@/dashboard/AttendancePanel'
 
 export default function MyEvents() {
   const { user } = useAuth()
@@ -48,6 +49,8 @@ export default function MyEvents() {
       )}
 
       {error && <Notice tone="error">{error}</Notice>}
+
+      <AttendancePanel base="/organiser" />
 
       <TableContainer>
         {!data && !error ? (

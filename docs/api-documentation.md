@@ -6,7 +6,7 @@ A JSON REST API for event ticketing and venue booking, built on Laravel 12 with 
 - **Format:** JSON in, JSON out. Send `Accept: application/json`. Dates are ISO 8601 in UTC (`2026-12-01T09:00:00.000000Z`).
 - **Auth:** `Authorization: Bearer <token>`, where the token comes from `POST /auth/register` or `POST /auth/login`.
 - **Health check:** `GET http://localhost/up` (outside `/api`).
-- **Try it:** import [`postman/SentryPass.postman_collection.json`](postman/). It runs every endpoint below, success and error cases (184 requests, 287 assertions).
+- **Try it:** import [`postman/SentryPass.postman_collection.json`](postman/). It runs every endpoint below, success and error cases (186 requests, 290 assertions).
 
 ## Contents
 
@@ -479,6 +479,7 @@ Authenticate with a Bearer token (organiser who owns the event, or admin) **or**
 | Method | Path | Auth | Description |
 | --- | --- | --- | --- |
 | GET | `/organiser/summary` | Organiser (own events), Admin (all) | Counts and revenue for the organiser's dashboard. `403` for a customer. |
+| GET | `/organiser/attendance` | Organiser (own events), Admin (all) | Who registered and who actually came, for the latest finished events. `403` for a customer. |
 | GET | `/admin/stats` | Admin | Revenue, seats, holds, recent activity and breakdowns. |
 | GET | `/admin/notifications` | Admin | Email log, newest first. `?type=confirmation\|waitlist_promoted\|cancelled\|reminder\|announcement`. Each row includes the raw `provider_response`. |
 | GET | `/admin/export/users` | Admin | All users as CSV. |
@@ -493,6 +494,17 @@ Authenticate with a Bearer token (organiser who owns the event, or admin) **or**
   "revenue": { "gross": 30, "refunded": 30, "net": 0 }
 }
 ```
+
+`GET /organiser/attendance` `200` lists up to the 8 latest events that have ended (published or completed, not drafts), with the people who **registered** (confirmed or checked in) and the ones who **attended** (checked in, or joined an online meeting):
+
+```json
+{
+  "events": [ { "id": 41, "title": "Intro to Web Hacking (Online)", "mode": "online", "category": "workshop", "start_at": "2026-10-24T20:00:00.000000Z", "registered": 40, "attended": 31, "rate": 78 } ],
+  "registered": 40, "attended": 31, "rate": 78
+}
+```
+
+`rate` is a whole percentage, or `null` when nobody registered. The numbers for all events come from one query.
 
 `GET /admin/stats` has these keys: `revenue` (`gross`, `refunded`, `net`, `payments`), `revenue_per_day` (14 days), `pending_holds`, `draft_events`, `recent_activity` (the latest 8 bookings), `users_by_role`, `events_by_status`, `events_by_category`, `bookings_by_status`, `bookings_per_day` (14 days) and `seat_manifest` (upcoming published events with capacity, seats left, confirmed, attended and waitlisted).
 
