@@ -120,7 +120,9 @@ export const CATEGORY_LABEL: Record<Category, string> = {
   workshop: 'Workshop',
 }
 
-export type TicketType = { id: number; event_id: number; name: string; price: string; capacity: number; seats_remaining: number }
+export type TicketType = { id: number; event_id: number; name: string; price: string; capacity: number; seats_per_row?: number; seats_remaining: number }
+
+export type SeatInfo = { id: number; row: string; number: number; label: string; taken: boolean }
 
 export type EventItem = {
   id: number
@@ -130,6 +132,7 @@ export type EventItem = {
   start_at: string
   end_at: string
   status: 'draft' | 'published' | 'cancelled' | 'completed'
+  seated?: boolean
   venue?: { id: number; name: string }
   from_price?: string | null
   seats_remaining?: number | null
@@ -145,6 +148,7 @@ export type Booking = {
   booked_at: string
   checked_in_at: string | null
   qr_token: string | null
+  seat?: { id: number; row_label: string; number: number; label: string } | null
   waitlist_position?: number
   ticket_type?: {
     id: number

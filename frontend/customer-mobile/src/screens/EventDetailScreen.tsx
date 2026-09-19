@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ScrollView, Share, StyleSheet, Text, View } from 'react-native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
-import { api, ApiError, CATEGORY_LABEL, errorText, type Booking, type EventItem, type TicketType } from '../lib/api'
+import { api, ApiError, CATEGORY_LABEL, errorText, type Booking, type EventItem, type SeatInfo, type TicketType } from '../lib/api'
 import { useFetch } from '../lib/useFetch'
 import SeatMap3D from '../components/fx/SeatMap3D'
 import { Button, Empty, Notice, Skeleton, formatWhen } from '../components/ui'
@@ -14,21 +14,46 @@ export default function EventDetailScreen({ route }: NativeStackScreenProps<Root
   const { data: event, error, reload } = useFetch<EventItem>(`/events/${id}`)
   const [busyId, setBusyId] = useState<number | null>(null)
   const [picked, setPicked] = useState<number | null>(null)
+  const [seats, setSeats] = useState<Record<string, SeatInfo[]>>({})
+  const [seatPick, setSeatPick] = useState<{ tierId: number; seat: SeatInfo } | null>(null)
+  const [seatsKey, setSeatsKey] = useState(0)
+
+  // Numbered seats: load every tier's seats so the room shows the real thing.
+  const seated = !!event?.seated
+  const tierIds = (event?.ticket_types ?? []).map((t) => t.id).join(',')
+  useEffect(() => {
+    if (!seated || !tierIds) return
+    let live = true
+    Promise.all(tierIds.split(',').map((tid) => api<SeatInfo[]>(`/ticket-types/${tid}/seats`).then((rows) => [tid, rows] as const)))
+      .then((pairs) => live && setSeats(Object.fromEntries(pairs)))
+      .catch(() => undefined)
+    return () => {
+      live = false
+    }
+  }, [seated, tierIds, seatsKey])
   const [note, setNote] = useState<{ tone: 'ok' | 'error' | 'warn'; text: string } | null>(null)
 
   async function book(t: TicketType) {
     setBusyId(t.id)
     setNote(null)
     try {
-      const b = await api<Booking>('/bookings', { method: 'POST', body: { ticket_type_id: t.id } })
+      const wantsSeat = seated && seatPick?.tierId === t.id && t.seats_remaining > 0
+      const b = await api<Booking>('/bookings', { method: 'POST', body: { ticket_type_id: t.id, ...(wantsSeat ? { seat_id: seatPick!.seat.id } : {}) } })
+      setSeatPick(null)
+      setSeatsKey((k) => k + 1)
       setNote(
         b.status === 'confirmed'
-          ? { tone: 'ok', text: `You're in. Your ${t.name} pass is confirmed and waiting in My passes.` }
+          ? { tone: 'ok', text: b.seat ? `You're in. Seat ${b.seat.label} is yours, and the pass is waiting in My passes.` : `You're in. Your ${t.name} pass is confirmed and waiting in My passes.` }
           : { tone: 'warn', text: `${t.name} is sold out, so you're on the waitlist. If a seat opens you'll be confirmed automatically.` },
       )
       reload()
     } catch (err) {
       const status = err instanceof ApiError ? err.status : 0
+      if (status === 409 || status === 422) {
+        // Someone may have taken the seat first: show the room as it is now so the person can choose again.
+        setSeatPick(null)
+        setSeatsKey((k) => k + 1)
+      }
       setNote({
         tone: 'error',
         text: status === 429 ? 'Too many booking attempts. Wait a minute and try again.' : status === 403 ? 'Only customer accounts can book seats.' : errorText(err),
@@ -81,6 +106,18 @@ export default function EventDetailScreen({ route }: NativeStackScreenProps<Root
           blocks={event.ticket_types!.map((t) => ({ id: t.id, name: t.name, capacity: t.capacity, remaining: t.seats_remaining }))}
           selectedId={picked ?? event.ticket_types![0].id}
           onSelect={(id) => setPicked(Number(id))}
+          pick={
+            seated && Object.keys(seats).length
+              ? {
+                  seats,
+                  value: seatPick ? { tierId: seatPick.tierId, seatId: seatPick.seat.id } : null,
+                  onPick: (tierId, seat) => {
+                    setSeatPick(seat ? { tierId: Number(tierId), seat } : null)
+                    if (seat) setPicked(Number(tierId))
+                  },
+                }
+              : undefined
+          }
         />
         <View style={{ backgroundColor: colors.paper, borderTopWidth: 3, borderTopColor: colors.ink }}>
           {event.ticket_types!.map((t) => (
@@ -93,9 +130,17 @@ export default function EventDetailScreen({ route }: NativeStackScreenProps<Root
                 <Text style={s.tierName}>{Number(t.price) === 0 ? 'Free' : `RM ${Number(t.price).toFixed(2)}`}</Text>
               </View>
               <Button
-                title={t.seats_remaining > 0 ? 'Book this pass' : 'Join waitlist'}
+                title={
+                  t.seats_remaining === 0
+                    ? 'Join waitlist'
+                    : seated
+                      ? seatPick?.tierId === t.id
+                        ? `Book seat ${seatPick.seat.label}`
+                        : 'Choose a seat above'
+                      : 'Book this pass'
+                }
                 onPress={() => book(t)}
-                disabled={!bookable}
+                disabled={!bookable || (seated && t.seats_remaining > 0 && seatPick?.tierId !== t.id)}
                 busy={busyId === t.id}
               />
             </View>

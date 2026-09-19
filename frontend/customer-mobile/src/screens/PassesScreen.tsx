@@ -67,6 +67,7 @@ function PassModal({ booking, onClose, onCalendar }: { booking: Booking; onClose
           <Text style={s.sub}>
             {booking.ticket_type?.name} pass{ev ? ` · ${formatWhen(ev.start_at)}` : ''}
           </Text>
+          {booking.seat && <Text style={s.passSeat}>Seat {booking.seat.label}</Text>}
           <QrImage bookingId={booking.id} />
           <Text style={s.qrNote}>Brightness is turned up and the screen stays on while this pass is open. Hold it steady for the scanner.</Text>
           <View style={{ alignSelf: 'stretch', gap: 8 }}>
@@ -173,6 +174,7 @@ export default function PassesScreen() {
                   </Text>
                 )}
                 {ev && <Text style={s.sub}>{formatWhen(ev.start_at)}</Text>}
+                {b.seat && <Text style={s.seatBadge}>Seat {b.seat.label}</Text>}
                 {b.status === 'waitlisted' && (
                   <Text style={s.note}>
                     {b.waitlist_position ? `You're number ${b.waitlist_position} in the queue. ` : "You're on the waitlist. "}
@@ -212,6 +214,8 @@ export default function PassesScreen() {
 }
 
 const s = StyleSheet.create({
+  passSeat: { fontFamily: fonts.heavy, fontSize: 30, letterSpacing: -1, color: colors.ink },
+  seatBadge: { alignSelf: 'flex-start', marginTop: 6, paddingHorizontal: 8, paddingVertical: 3, fontFamily: fonts.heavy, fontSize: 14, color: colors.ink, backgroundColor: colors.accent, overflow: 'hidden' },
   center: { flex: 1, backgroundColor: colors.concrete, padding: 24, gap: 14, justifyContent: 'center' },
   h1: { fontFamily: fonts.heavy, fontSize: 28, lineHeight: 32, color: colors.ink },
   title: { fontFamily: fonts.heavy, fontSize: 18, color: colors.ink },

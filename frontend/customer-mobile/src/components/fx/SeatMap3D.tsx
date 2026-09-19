@@ -4,7 +4,16 @@ import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg'
 import { subscribeTilt } from '../../lib/motion'
 import { colors, fonts } from '../../theme'
 
+import type { SeatInfo } from '../../lib/api'
+
 export type SeatBlock = { id: number | string; name: string; capacity: number; remaining: number }
+
+/** Present when the event has numbered seats: real seats to choose from instead of a picture of availability. */
+export type SeatPick = {
+  seats: Record<string, SeatInfo[]>
+  value: { tierId: number | string; seatId: number } | null
+  onPick: (tierId: number | string, seat: SeatInfo | null) => void
+}
 
 const MAX_SEATS = 60
 const COLS = 10
@@ -39,11 +48,13 @@ export default function SeatMap3D({
   blocks,
   selectedId,
   onSelect,
+  pick,
   caption,
 }: {
   blocks: SeatBlock[]
   selectedId?: number | string | null
   onSelect?: (id: number | string) => void
+  pick?: SeatPick
   caption?: string
 }) {
   const [width, setWidth] = useState(0)
@@ -99,6 +110,7 @@ export default function SeatMap3D({
   const seat = width ? (width - 32 - GAP * (COLS - 1) - 24) / COLS : 0
   const layouts = useMemo(() => blocks.map((b, i) => seatsFor(b, i)), [blocks])
   const glow = Math.max(width, 240) * 0.7
+  const chosenLabel = pick?.value ? pick.seats[String(pick.value.tierId)]?.find((x) => x.id === pick.value!.seatId)?.label : null
 
   return (
     <View
@@ -123,7 +135,7 @@ export default function SeatMap3D({
       <Animated.View
         style={{
           opacity: rise,
-          transform: [{ translateY: rise.interpolate({ inputRange: [0, 1], outputRange: [24, 0] }) }, { perspective: 700 }, { rotateX: '28deg' }, { rotateY: lean.interpolate({ inputRange: [-1, 1], outputRange: ['-12deg', '12deg'] }) }, { scale: 0.96 }],
+          transform: [{ translateY: rise.interpolate({ inputRange: [0, 1], outputRange: [24, 0] }) }, { perspective: 700 }, { rotateX: pick ? '18deg' : '28deg' }, { rotateY: pick ? '0deg' : lean.interpolate({ inputRange: [-1, 1], outputRange: ['-12deg', '12deg'] }) }, { scale: 0.96 }],
         }}
       >
         <View style={s.stage}>
@@ -131,26 +143,54 @@ export default function SeatMap3D({
         </View>
 
         {blocks.map((b, bi) => {
-          const active = selectedId === b.id
+          const real = pick?.seats[String(b.id)]
+          const active = pick ? pick.value?.tierId === b.id : selectedId === b.id
+          const Wrapper = pick ? View : Pressable
+          const wrapperProps = pick
+            ? {}
+            : {
+                accessibilityRole: 'button' as const,
+                accessibilityLabel: `${b.name}, ${b.remaining > 0 ? `${b.remaining} seats left` : 'sold out'}`,
+                accessibilityState: { selected: active },
+                onPress: () => onSelect?.(b.id),
+              }
+          const rows = real ? rowsOf(real) : []
+          const perRow = rows.length ? Math.max(...rows.map(([, r]) => r.length)) : 1
+          const realSize = width ? Math.min(46, (width - 32 - 24 - 18 - GAP * perRow) / perRow) : 0
           return (
-            <Pressable
-              key={b.id}
-              accessibilityRole="button"
-              accessibilityLabel={`${b.name}, ${b.remaining > 0 ? `${b.remaining} seats left` : 'sold out'}`}
-              accessibilityState={{ selected: active }}
-              onPress={() => onSelect?.(b.id)}
-              style={[s.block, active && s.blockActive]}
-            >
+            <Wrapper key={b.id} {...wrapperProps} style={[s.block, active && s.blockActive]}>
               <View style={s.blockHead}>
                 <Text style={s.blockName}>{b.name}</Text>
                 <Text style={[s.blockLeft, b.remaining === 0 && { color: '#a3adba' }]}>{b.remaining > 0 ? `${b.remaining} left` : 'Sold out'}</Text>
               </View>
-              <View style={s.seats}>
-                {layouts[bi].map((free, i) => (
-                  <View key={i} style={[{ width: seat, height: seat }, free ? s.seatFree : s.seatTaken]} />
-                ))}
-              </View>
-            </Pressable>
+              {real ? (
+                <View style={{ gap: 12 }}>
+                  {rows.map(([row, seats]) => (
+                    <View key={row} style={{ flexDirection: 'row', alignItems: 'flex-end', gap: GAP }}>
+                      <Text style={s.rowLabel}>{row}</Text>
+                      {seats.map((st) => {
+                        const isPicked = pick!.value?.tierId === b.id && pick!.value.seatId === st.id
+                        return (
+                          <Chair
+                            key={st.id}
+                            size={realSize}
+                            label={st.label}
+                            state={st.taken ? 'taken' : isPicked ? 'picked' : 'free'}
+                            onPress={() => pick!.onPick(b.id, isPicked ? null : st)}
+                          />
+                        )
+                      })}
+                    </View>
+                  ))}
+                </View>
+              ) : (
+                <View style={s.seats}>
+                  {layouts[bi].map((free, i) => (
+                    <View key={i} style={[{ width: seat, height: seat }, free ? s.seatFree : s.seatTaken]} />
+                  ))}
+                </View>
+              )}
+            </Wrapper>
           )
         })}
       </Animated.View>
@@ -179,12 +219,56 @@ export default function SeatMap3D({
         </Animated.View>
       )}
 
-      <Text style={s.caption}>{caption ?? 'Live availability. Bright seats are free; the organiser assigns your exact seat.'}</Text>
+      <Text style={s.caption}>
+        {pick
+          ? chosenLabel
+            ? `Seat ${chosenLabel} is yours to book. Tap it again to change your mind.`
+            : 'Tap any glowing seat. Dark seats are taken.'
+          : (caption ?? 'Live availability. Bright seats are free; the organiser assigns your exact seat.')}
+      </Text>
     </View>
   )
 }
 
+function rowsOf(seats: SeatInfo[]) {
+  const rows = new Map<string, SeatInfo[]>()
+  for (const seat of seats) rows.set(seat.row, [...(rows.get(seat.row) ?? []), seat])
+  return [...rows.entries()]
+}
+
+// A chair seen from above: a backrest bar, a cushion, and armrests down both sides.
+function Chair({ size, state, label, onPress }: { size: number; state: 'free' | 'taken' | 'picked'; label: string; onPress?: () => void }) {
+  const tone = state === 'picked' ? c.picked : state === 'free' ? c.free : c.taken
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`Seat ${label}, ${state === 'taken' ? 'taken' : state === 'picked' ? 'your choice' : 'free'}`}
+      accessibilityState={{ disabled: state === 'taken', selected: state === 'picked' }}
+      disabled={state === 'taken'}
+      onPress={onPress}
+      hitSlop={3}
+      style={{ width: size, height: size * 1.1 }}
+    >
+      <View style={{ height: size * 0.28, marginHorizontal: size * 0.06, backgroundColor: tone.back, borderTopWidth: 3, borderTopColor: tone.edge }} />
+      <View style={{ flex: 1, flexDirection: 'row', marginTop: 2 }}>
+        <View style={{ width: size * 0.14, backgroundColor: tone.arm }} />
+        <View style={[{ flex: 1, backgroundColor: tone.seat }, state === 'free' && s.glow, state === 'picked' && s.glowPicked]} />
+        <View style={{ width: size * 0.14, backgroundColor: tone.arm }} />
+      </View>
+    </Pressable>
+  )
+}
+
+const c = {
+  free: { seat: '#e4623f', back: '#8f3018', edge: '#ffb59a', arm: '#7a2a14' },
+  picked: { seat: '#ffe0d2', back: '#ff9c78', edge: '#ffffff', arm: '#ff9c78' },
+  taken: { seat: '#2c3644', back: '#151a22', edge: '#3a4658', arm: '#1b222c' },
+}
+
 const s = StyleSheet.create({
+  glow: { shadowColor: '#e4623f', shadowOpacity: 0.9, shadowRadius: 6, shadowOffset: { width: 0, height: 0 } },
+  glowPicked: { shadowColor: '#ffffff', shadowOpacity: 1, shadowRadius: 10, shadowOffset: { width: 0, height: 0 } },
+  rowLabel: { width: 18, textAlign: 'center', fontFamily: fonts.heavy, fontSize: 12, color: '#a3adba' },
   panel: { backgroundColor: '#0d1015', padding: 16, paddingBottom: 12, overflow: 'hidden', borderWidth: 2, borderColor: colors.ink },
   stage: { alignSelf: 'center', width: '64%', paddingVertical: 8, marginBottom: 14, backgroundColor: colors.accent, alignItems: 'center', shadowColor: colors.accent, shadowOpacity: 0.7, shadowRadius: 14, shadowOffset: { width: 0, height: 0 } },
   stageText: { fontFamily: fonts.heavy, fontSize: 11, letterSpacing: 5, color: colors.ink },
