@@ -6,7 +6,7 @@ import { useAuth } from '@/lib/auth'
 import { useFeedback } from '@/dashboard/feedback'
 import { useFetch } from '@/lib/useFetch'
 import type { EventItem, OrganiserSummary, Paginated } from '@/lib/api'
-import { CATEGORY_LABEL, Notice, StatusTag, formatWhen, Skeleton } from '@/dashboard/ui'
+import { CATEGORY_LABEL, ModeTag, Notice, StatusTag, formatWhen, Skeleton } from '@/dashboard/ui'
 import { EmptyState, PageHeader, StatTile, money } from '@/dashboard/parts'
 
 export default function MyEvents() {
@@ -82,9 +82,10 @@ export default function MyEvents() {
                     <TableCell>
                       <Link className="cell-link cell-title" to={`/organiser/events/${ev.id}`}>
                         {ev.title}
-                      </Link>
+                      </Link>{' '}
+                      <ModeTag mode={ev.mode} />
                       <span className="sub">
-                        {CATEGORY_LABEL[ev.category]}, {ev.venue?.name ?? 'No venue'}
+                        {CATEGORY_LABEL[ev.category]}, {ev.mode === 'online' ? 'Online meeting' : (ev.venue?.name ?? 'No venue')}
                       </span>
                     </TableCell>
                     <TableCell>{formatWhen(ev.start_at)}</TableCell>

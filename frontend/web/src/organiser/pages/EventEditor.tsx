@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Button, ProgressBar, Select, Toggle, SelectItem, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TextArea, TextInput } from '@carbon/react'
+import { Button, ContentSwitcher, ProgressBar, Switch, Select, Toggle, SelectItem, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TextArea, TextInput } from '@carbon/react'
 import { Add, Copy, Download } from '@carbon/icons-react'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
@@ -9,6 +9,8 @@ import {
   type Booking,
   type Category,
   type EventItem,
+  type EventMode,
+  type MeetingPlatform,
   type EventStats,
   type EventStatus,
   type Paginated,
@@ -147,7 +149,11 @@ function EventForm({
     end_at: event ? toLocalInput(event.end_at) : '',
     status: (event?.status ?? 'draft') as EventStatus,
     seated: event?.seated ?? false,
+    mode: (event?.mode ?? 'physical') as EventMode,
+    meeting_url: event?.meeting_url ?? '',
+    meeting_platform: (event?.meeting_platform ?? 'zoom') as MeetingPlatform,
   })
+  const online = f.mode === 'online'
   const [note, setNote] = useState<{ tone: 'ok' | 'error'; text: string } | null>(null)
   const [busy, setBusy] = useState(false)
   const { confirm } = useFeedback()
@@ -160,9 +166,12 @@ function EventForm({
     }
     setBusy(true)
     setNote(null)
+    const { venue_id: _venue, meeting_url, meeting_platform, seated, ...rest } = f
     const body = {
-      ...f,
-      venue_id: Number(f.venue_id || venues?.[0]?.id),
+      ...rest,
+      ...(online
+        ? { meeting_url: meeting_url.trim() || null, meeting_platform: meeting_url.trim() ? meeting_platform : null, seated: false }
+        : { venue_id: Number(f.venue_id || venues?.[0]?.id), seated }),
       start_at: new Date(f.start_at).toISOString(),
       end_at: new Date(f.end_at).toISOString(),
       description: f.description || null,
@@ -190,6 +199,10 @@ function EventForm({
   return (
     <form className="pane" onSubmit={save} style={{ marginTop: 24 }}>
       {note && <Notice tone={note.tone}>{note.text}</Notice>}
+      <ContentSwitcher size="md" selectedIndex={online ? 1 : 0} onChange={({ index }: { index?: number }) => setF({ ...f, mode: index === 1 ? 'online' : 'physical' })} style={{ marginBottom: 16, maxWidth: 360 }}>
+        <Switch name="physical" text="In person" />
+        <Switch name="online" text="Online meeting" />
+      </ContentSwitcher>
       <div className="form-grid" style={{ marginTop: note ? 16 : 0 }}>
         <TextInput id="title" labelText="Title" required value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} />
         <Select id="category" labelText="Category" value={f.category} onChange={(e) => setF({ ...f, category: e.target.value as Category })}>
@@ -197,17 +210,37 @@ function EventForm({
             <SelectItem key={c} value={c} text={CATEGORY_LABEL[c]} />
           ))}
         </Select>
-        <Select id="venue" labelText="Venue" required disabled={!venues?.length} value={f.venue_id || String(venues?.[0]?.id ?? '')} onChange={(e) => setF({ ...f, venue_id: e.target.value })}>
-          {(venues ?? []).map((v) => (
-            <SelectItem key={v.id} value={String(v.id)} text={`${v.name} (holds ${v.capacity})`} />
-          ))}
-        </Select>
+        {online ? (
+          <Select id="platform" labelText="Meeting platform" value={f.meeting_platform} onChange={(e) => setF({ ...f, meeting_platform: e.target.value as MeetingPlatform })}>
+            <SelectItem value="zoom" text="Zoom" />
+            <SelectItem value="meet" text="Google Meet" />
+            <SelectItem value="teams" text="Microsoft Teams" />
+            <SelectItem value="other" text="Other" />
+          </Select>
+        ) : (
+          <Select id="venue" labelText="Venue" required disabled={!venues?.length} value={f.venue_id || String(venues?.[0]?.id ?? '')} onChange={(e) => setF({ ...f, venue_id: e.target.value })}>
+            {(venues ?? []).filter((v) => v.name !== 'Online').map((v) => (
+              <SelectItem key={v.id} value={String(v.id)} text={`${v.name} (holds ${v.capacity})`} />
+            ))}
+          </Select>
+        )}
         <Select id="status" labelText="Status" value={f.status} onChange={(e) => setF({ ...f, status: e.target.value as EventStatus })}>
           {STATUSES.map((s) => (
             <SelectItem key={s} value={s} text={s[0].toUpperCase() + s.slice(1)} />
           ))}
         </Select>
         <TextInput id="start" labelText="Starts" required type="datetime-local" value={f.start_at} onChange={(e) => setF({ ...f, start_at: e.target.value })} />
+        {online ? (
+          <TextInput
+            id="meeting-url"
+            labelText="Meeting link"
+            type="url"
+            placeholder="https://zoom.us/j/..."
+            helperText="Only people with a confirmed ticket, you and admins can see this link. Needed before you publish."
+            value={f.meeting_url}
+            onChange={(e) => setF({ ...f, meeting_url: e.target.value })}
+          />
+        ) : (
         <Toggle
           id="seated"
           labelText="Numbered seats"
@@ -216,15 +249,16 @@ function EventForm({
           toggled={f.seated}
           onToggle={(on: boolean) => setF({ ...f, seated: on })}
         />
+        )}
         <TextInput id="end" labelText="Ends" required type="datetime-local" value={f.end_at} onChange={(e) => setF({ ...f, end_at: e.target.value })} />
       </div>
       <TextArea id="description" labelText="Description" rows={4} value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} style={{ marginBottom: 24 }} />
       <div className="form-actions">
-        <Button type="submit" disabled={busy || !venues?.length}>
+        <Button type="submit" disabled={busy || (!online && !venues?.length)}>
           {busy ? 'Saving…' : event ? 'Save event' : 'Create event'}
         </Button>
-        {venues === null && <span className="sub">Loading venues…</span>}
-        {venues?.length === 0 && <span className="sub">There are no venues yet. Ask an administrator to add one.</span>}
+        {!online && venues === null && <span className="sub">Loading venues…</span>}
+        {!online && venues?.length === 0 && <span className="sub">There are no venues yet. Ask an administrator to add one.</span>}
       </div>
     </form>
   )

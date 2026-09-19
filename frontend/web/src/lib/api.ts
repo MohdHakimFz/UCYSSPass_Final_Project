@@ -57,6 +57,8 @@ export type User = { id: number; name: string; email: string; role: Role; create
 export type Venue = { id: number; name: string; address: string; capacity: number }
 export type EventStatus = 'draft' | 'published' | 'cancelled' | 'completed'
 export type Category = 'ctf' | 'bootcamp' | 'conference' | 'workshop'
+export type EventMode = 'physical' | 'online'
+export type MeetingPlatform = 'zoom' | 'meet' | 'teams' | 'other'
 
 export type TicketType = {
   id: number
@@ -80,6 +82,10 @@ export type EventItem = {
   start_at: string
   end_at: string
   status: EventStatus
+  mode?: EventMode
+  /** Only sent to the organiser, admins and confirmed guests. */
+  meeting_url?: string | null
+  meeting_platform?: MeetingPlatform | null
   seated?: boolean
   venue?: { id: number; name: string; address?: string }
   from_price?: string | null

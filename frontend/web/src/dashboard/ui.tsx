@@ -41,6 +41,14 @@ export function formatWhen(iso: string) {
   })
 }
 
+export function ModeTag({ mode }: { mode?: 'physical' | 'online' }) {
+  return mode === 'online' ? (
+    <CarbonTag type="blue" size="sm">
+      Online
+    </CarbonTag>
+  ) : null
+}
+
 export const CATEGORY_LABEL = { ctf: 'CTF', bootcamp: 'Bootcamp', conference: 'Conference', workshop: 'Workshop' } as const
 
 export function SeatBar({ capacity, remaining }: { capacity: number; remaining: number }) {

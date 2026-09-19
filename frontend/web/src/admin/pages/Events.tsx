@@ -141,7 +141,7 @@ export default function EventsPage() {
                       </Link>
                       <span className="sub">
                         {CATEGORY[ev.category]}
-                        {ev.venue ? `, ${ev.venue.name}` : ''}
+                        {ev.mode === 'online' ? ', Online meeting' : ev.venue ? `, ${ev.venue.name}` : ''}
                       </span>
                     </TableCell>
                     <TableCell>{formatWhen(ev.start_at)}</TableCell>
