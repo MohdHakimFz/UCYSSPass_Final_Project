@@ -43,7 +43,7 @@ If the course strictly requires the JWT format, the change is contained: the aut
 
 **Third-party APIs**
 
-- **Resend** (email): confirmations, cancellations, waitlist promotions, reminders (with a calendar file attached) and password reset codes. The raw answer from Resend is stored in `notifications.provider_response` and shown in the admin email log.
+- **Resend or Brevo** (email, chosen with one setting): confirmations, cancellations, waitlist promotions, reminders (with a calendar file attached), announcements and password reset codes. The raw answer from the service is stored in `notifications.provider_response` and shown in the admin email log. Resend in test mode only delivers to the account owner's address; Brevo, with a verified sender, delivers to anyone, which is why the app supports both.
 - **goqr.me QR Code API**: renders the signed ticket as a PNG.
 
 Evidence: `docs/api-documentation.md` (Third-party APIs), Postman requests 7.12 and 10.3, the `emails:test` command, and the admin email log.
@@ -69,9 +69,9 @@ Everything is in [`performance/PERFORMANCE.md`](performance/PERFORMANCE.md): mis
 | ERD, DDL and DML with at least 5 records per table | `ERD.png`, `database/schema.sql`, `database/sample-data.sql` (checked by loading it into an empty database) |
 | `/users`, `/events`, `/venues`, `/bookings` with GET, POST, PUT, DELETE, JSON, status codes, validation | `api-documentation.md` |
 | Authentication, role-based access, validation, centralised error handling | `api-documentation.md` (Security and middleware), `backend/bootstrap/app.php`, the policies and form requests |
-| At least one genuine third-party API | Resend and the QR Code API (above) |
+| At least one genuine third-party API | Resend or Brevo, and the QR Code API (above) |
 | Two or more of logging, rate limiting, pagination, filtering, search, sorting | All of them, above |
 | Debugging and performance report | `performance/PERFORMANCE.md` |
 | Postman collection, success and error screenshots, API documentation | `postman/` (198 requests, 309 assertions), `PLAN-AND-POSTMAN-GUIDE.md` (screenshot list), `api-documentation.md` |
 | README with setup and run instructions | `README.md` |
-| Automated tests | 211 backend tests, 41 browser tests (Playwright), the Postman run in CI |
+| Automated tests | 220 backend tests, 41 browser tests (Playwright), the Postman run in CI |

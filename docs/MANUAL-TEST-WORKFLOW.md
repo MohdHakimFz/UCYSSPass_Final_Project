@@ -209,12 +209,12 @@ Pastikan `EXPO_PUBLIC_API_URL` betul (atau telefon dan komputer pada rangkaian y
 
 | Apa | Arahan | Jangkaan |
 | --- | --- | --- |
-| Backend | `docker compose exec laravel.test php artisan test` (folder `backend`) | 211 lulus |
+| Backend | `docker compose exec laravel.test php artisan test` (folder `backend`) | 220 lulus |
 | Browser | `npx playwright test` (folder `frontend/web`, API dan web hidup) | 41 lulus |
 | API (Postman) | lihat `docs/postman/README.md` | 198 permintaan, 309 semakan, 0 gagal |
 | Web | `npx tsc -b`, `npm run lint`, `npm run build` (folder `frontend/web`) | tiada ralat |
 | Mobile | `npx tsc --noEmit` (folder `frontend/customer-mobile`) | tiada ralat |
-| Resend | `docker compose exec laravel.test php artisan emails:test kl2307014329@student.uptm.edu.my` | `Resend answered 200` |
+| Email | `docker compose exec laravel.test php artisan emails:test <emel penerima>` | `Resend answered 200` atau `Brevo answered 201` |
 
 ## Kalau sesuatu gagal
 

@@ -28,10 +28,10 @@ class EmailService
         $booking = $notification->booking;
         $customer = $booking->customer;
 
-        if (! config('services.resend.key')) {
+        if (! $this->configured()) {
             $notification->update([
                 'sent_at' => now(),
-                'provider_response' => ['status' => 'skipped', 'reason' => 'RESEND_API_KEY not configured'],
+                'provider_response' => ['status' => 'skipped', 'reason' => $this->driver() === 'brevo' ? 'BREVO_API_KEY or BREVO_FROM_EMAIL not configured' : 'RESEND_API_KEY not configured'],
             ]);
 
             return $notification;
@@ -41,7 +41,8 @@ class EmailService
 
         $response = $this->deliver($customer->email, $subject, $body, $attachments);
 
-        Log::info('Resend email API call', [
+        Log::info('Email API call', [
+            'driver' => $this->driver(),
             'notification_id' => $notification->id,
             'booking_id' => $booking->id,
             'status' => $response->status(),
@@ -65,24 +66,57 @@ class EmailService
      */
     public function sendPlain(string $to, string $subject, string $html): bool
     {
-        if (! config('services.resend.key')) {
+        if (! $this->configured()) {
             return false;
         }
 
         $response = $this->deliver($to, $subject, $html);
 
-        Log::info('Resend transactional email', ['status' => $response->status(), 'subject' => $subject]);
+        Log::info('Transactional email', ['driver' => $this->driver(), 'status' => $response->status(), 'subject' => $subject]);
 
         return $response->successful();
     }
 
+    /** The email service in use: "resend" or "brevo". Anything else means Resend. */
+    public function driver(): string
+    {
+        return config('services.mail_api.driver') === 'brevo' ? 'brevo' : 'resend';
+    }
+
+    /** Whether the chosen service has everything it needs to send. */
+    public function configured(): bool
+    {
+        return $this->driver() === 'brevo'
+            ? filled(config('services.brevo.key')) && filled(config('services.brevo.from_email'))
+            : filled(config('services.resend.key'));
+    }
+
+    /** Who the email says it is from, for showing in a test. */
+    public function sender(): string
+    {
+        return $this->driver() === 'brevo'
+            ? config('services.brevo.from_name').' <'.config('services.brevo.from_email').'>'
+            : (string) config('services.resend.from');
+    }
+
     /**
-     * One call to the Resend API. Attachments are [{filename, content}] with the content already base64-encoded.
+     * One call to the email service. Attachments are [{filename, content}] with the content already base64-encoded.
      *
      * @param  list<array{filename: string, content: string}>  $attachments
      */
     public function deliver(string $to, string $subject, string $html, array $attachments = []): Response
     {
+        if ($this->driver() === 'brevo') {
+            return Http::withHeaders(['api-key' => (string) config('services.brevo.key'), 'accept' => 'application/json'])
+                ->post('https://api.brevo.com/v3/smtp/email', array_filter([
+                    'sender' => ['name' => config('services.brevo.from_name'), 'email' => config('services.brevo.from_email')],
+                    'to' => [['email' => $to]],
+                    'subject' => $subject,
+                    'htmlContent' => $html,
+                    'attachment' => array_map(fn (array $file) => ['name' => $file['filename'], 'content' => $file['content']], $attachments) ?: null,
+                ]));
+        }
+
         return Http::withToken((string) config('services.resend.key'))->post('https://api.resend.com/emails', array_filter([
             'from' => config('services.resend.from'),
             'to' => [$to],

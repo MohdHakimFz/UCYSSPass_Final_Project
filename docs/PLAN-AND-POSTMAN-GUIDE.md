@@ -15,7 +15,7 @@ Tarikh hantar: **12 Oktober 2026**. Rujukan markah: `SWC3633_SWC4443 - Project D
 
 | Bahagian | Status |
 | --- | --- |
-| Backend Laravel 12, Sanctum, PostgreSQL | Siap. **211** test PHPUnit lulus |
+| Backend Laravel 12, Sanctum, PostgreSQL | Siap. **220** test PHPUnit lulus |
 | Web (customer, organiser, admin) | Siap. **41** ujian Playwright lulus |
 | App mobile (customer) | Siap dan boleh dibina, tetapi **belum diuji pada telefon sebenar** |
 | Koleksi Postman | **198 permintaan, 309 semakan, 0 kegagalan** |
