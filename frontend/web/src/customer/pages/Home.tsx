@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { BRAND } from '@/lib/brand'
 import { Link } from 'react-router-dom'
 import {
   ArrowRight,
@@ -120,8 +121,8 @@ export default function Home() {
             </span>
           </h1>
           <p>
-            SentryPass is where CTFs, bootcamps, conferences and workshops sell seats. You get a signed QR pass on your
-            phone, and the door checks it in one scan.
+            {BRAND.name} ({BRAND.full}) runs its CTFs, bootcamps, talks and workshops here. Book a seat, get a signed QR pass
+            on your phone, or join an online meeting with one tap.
           </p>
           <div className="hero-actions">
             <Link to="/events" className="btn btn-lg">
@@ -319,8 +320,8 @@ export default function Home() {
       </Reveal>
 
       <footer className="site-foot">
-        <span>SentryPass</span>
-        <span>Events, seats and signed passes for the security community.</span>
+        <span>{BRAND.name}</span>
+        <span>{BRAND.tagline}</span>
       </footer>
     </>
   )

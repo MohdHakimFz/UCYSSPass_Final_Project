@@ -1,4 +1,5 @@
 import { useEffect, useState, type ComponentType } from 'react'
+import { BRAND } from '@/lib/brand'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import {
   Content,
@@ -76,10 +77,10 @@ export default function DashboardLayout({
       <GlobalTheme theme={theme}>
         <Theme theme={theme} className="dash-root">
         <FeedbackProvider>
-          <Header aria-label={`SentryPass ${area}`}>
+          <Header aria-label={`${BRAND.name} ${area}`}>
             <SkipToContent />
             <HeaderMenuButton aria-label={menuOpen ? 'Close menu' : 'Open menu'} isActive={menuOpen} onClick={() => setMenuOpen((o) => !o)} />
-            <HeaderName as={Link} to={base} prefix="SentryPass">
+            <HeaderName as={Link} to={base} prefix={BRAND.name}>
               {area}
             </HeaderName>
             <HeaderGlobalBar>

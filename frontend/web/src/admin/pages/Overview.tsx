@@ -31,7 +31,7 @@ export default function Overview() {
   if (!stats)
     return (
       <>
-        <PageHeader title="Overview" description="How SentryPass is doing right now." />
+        <PageHeader title="Overview" description="How UCYSS events are doing right now." />
         <Skeleton rows={8} />
       </>
     )
@@ -56,7 +56,7 @@ export default function Overview() {
 
   return (
     <>
-      <PageHeader title="Overview" description="How SentryPass is doing right now: money, seats and what needs a look." />
+      <PageHeader title="Overview" description="How UCYSS events are doing right now: money, seats and what needs a look." />
 
       <div className="kpis">
         <StatTile

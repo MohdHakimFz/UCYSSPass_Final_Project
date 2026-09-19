@@ -1,6 +1,9 @@
 <?php
 
 return [
+    // The name on emails and exports.
+    'brand' => env('APP_BRAND', 'UCYSS'),
+
     // How long a chosen seat is kept for someone while they pay.
     'hold_minutes' => (int) env('SEAT_HOLD_MINUTES', 3),
 

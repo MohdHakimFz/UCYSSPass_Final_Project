@@ -1,4 +1,5 @@
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { BRAND } from '@/lib/brand'
 import { useAuth } from '@/lib/auth'
 import { HOME } from '@/lib/roles'
 import ThemeSheet from '@/shared/ThemeSheet'
@@ -20,7 +21,7 @@ export default function Layout() {
       <header className="masthead">
         <div className="masthead-inner">
           <Link to="/" className="wordmark">
-            SentryPass
+            {BRAND.name}
           </Link>
           <nav className="nav" aria-label="Main">
             <NavLink to="/events">Events</NavLink>

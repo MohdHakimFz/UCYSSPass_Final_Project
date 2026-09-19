@@ -11,9 +11,9 @@ export function downloadIcs(b: Booking) {
   const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//SentryPass//Pass//EN',
+    'PRODID:-//UCYSS//Events//EN',
     'BEGIN:VEVENT',
-    `UID:booking-${b.id}@sentrypass`,
+    `UID:booking-${b.id}@ucyss`,
     `DTSTAMP:${stamp(new Date().toISOString())}`,
     `DTSTART:${stamp(ev.start_at)}`,
     `DTEND:${stamp(ev.end_at)}`,

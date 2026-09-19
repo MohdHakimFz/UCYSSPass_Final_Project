@@ -67,7 +67,7 @@ export default function CheckIn() {
 
     const pass = parsePass(raw)
     if (!pass) {
-      setOutcome({ kind: 'fail', title: 'Not a SentryPass ticket', detail: "That code doesn't contain a booking and signature." })
+      setOutcome({ kind: 'fail', title: 'Not a UCYSS ticket', detail: "That code doesn't contain a booking and signature." })
     } else {
       try {
         const booking = await api<Booking>(`/bookings/${pass.id}/checkin`, { method: 'POST', body: { qr_token: pass.token } })

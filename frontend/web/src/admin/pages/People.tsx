@@ -97,7 +97,7 @@ export default function PeoplePage() {
         description="Everyone with an account. Customers sign themselves up; organiser and admin accounts are created here."
         actions={
           <>
-            <Button kind="tertiary" renderIcon={Download} onClick={() => downloadFile('/admin/export/users', 'sentrypass-users.csv').catch((e) => toast({ kind: 'error', title: 'Export failed', subtitle: errorText(e) }))}>
+            <Button kind="tertiary" renderIcon={Download} onClick={() => downloadFile('/admin/export/users', 'ucyss-users.csv').catch((e) => toast({ kind: 'error', title: 'Export failed', subtitle: errorText(e) }))}>
               Export CSV
             </Button>
             <Button renderIcon={Add} onClick={() => { setFormError(null); setAdding(true) }}>

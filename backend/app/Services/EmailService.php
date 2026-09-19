@@ -107,7 +107,7 @@ class EmailService
 
         return match ($notification->type) {
             'confirmation' => [
-                "Your SentryPass ticket for {$event->title} is confirmed",
+                "Your ".config('sentrypass.brand')." ticket for {$event->title} is confirmed",
                 "<p>Your booking for <strong>{$event->title}</strong> is confirmed.{$seatLine} See you there!</p>",
             ],
             'waitlist_promoted' => [
@@ -117,7 +117,7 @@ class EmailService
                     : "<p>A seat opened up and you've been promoted from the waitlist for <strong>{$event->title}</strong>. Your ticket is now confirmed.{$seatLine}</p>",
             ],
             'cancelled' => [
-                "Your SentryPass booking for {$event->title} was cancelled",
+                "Your ".config('sentrypass.brand')." booking for {$event->title} was cancelled",
                 "<p>Your booking for <strong>{$event->title}</strong> has been cancelled.".$this->refundLine($notification->booking).'</p>',
             ],
         };

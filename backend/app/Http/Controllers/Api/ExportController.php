@@ -15,7 +15,7 @@ class ExportController extends Controller
     {
         abort_unless($request->user()->role === 'admin', 403);
 
-        return $this->csv('sentrypass-users.csv', ['ID', 'Name', 'Email', 'Role', 'Joined'], function () {
+        return $this->csv('ucyss-users.csv', ['ID', 'Name', 'Email', 'Role', 'Joined'], function () {
             foreach (User::query()->orderBy('id')->cursor() as $u) {
                 yield [$u->id, $u->name, $u->email, $u->role, $u->created_at];
             }
@@ -27,7 +27,7 @@ class ExportController extends Controller
         abort_unless($request->user()->role === 'admin', 403);
 
         return $this->csv(
-            'sentrypass-bookings.csv',
+            'ucyss-bookings.csv',
             ['ID', 'Attendee', 'Email', 'Event', 'Tier', 'Seat', 'Status', 'Booked at', 'Checked in at'],
             fn () => $this->bookingRows(Booking::query()),
         );

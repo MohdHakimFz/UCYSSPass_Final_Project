@@ -40,8 +40,8 @@ class PasswordResetService
 
         $sent = $this->emails->sendPlain(
             $user->email,
-            'Your SentryPass password reset code',
-            "<p>Your SentryPass password reset code is <strong style=\"font-size:20px;letter-spacing:2px\">{$code}</strong>.</p>"
+            'Your '.config('sentrypass.brand').' password reset code',
+            "<p>Your ".config('sentrypass.brand')." password reset code is <strong style=\"font-size:20px;letter-spacing:2px\">{$code}</strong>.</p>"
             .'<p>It works for '.self::LIFETIME_MINUTES.' minutes. If you did not ask for it, you can ignore this email.</p>',
         );
 

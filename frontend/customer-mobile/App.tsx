@@ -1,4 +1,5 @@
 import { ActivityIndicator, View } from 'react-native'
+import { BRAND } from './src/lib/brand'
 import { CalendarBlank, Ticket, UserCircle } from 'phosphor-react-native'
 import { StatusBar } from 'expo-status-bar'
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native'
@@ -45,7 +46,7 @@ function Tabs() {
         tabBarStyle: { backgroundColor: colors.paper, height: 64, paddingTop: 6, paddingBottom: 8, borderTopWidth: 2, borderTopColor: colors.ink },
       }}
     >
-      <Tab.Screen name="Events" component={EventsScreen} options={{ title: 'SentryPass', tabBarLabel: 'Events', tabBarIcon: ({ color, focused }) => <CalendarBlank size={24} color={color} weight={focused ? 'fill' : 'regular'} /> }} />
+      <Tab.Screen name="Events" component={EventsScreen} options={{ title: BRAND.name, tabBarLabel: 'Events', tabBarIcon: ({ color, focused }) => <CalendarBlank size={24} color={color} weight={focused ? 'fill' : 'regular'} /> }} />
       <Tab.Screen name="Passes" component={PassesScreen} options={{ title: 'My passes', tabBarLabel: 'My passes', tabBarIcon: ({ color, focused }) => <Ticket size={24} color={color} weight={focused ? 'fill' : 'regular'} /> }} />
       <Tab.Screen name="Account" component={AccountScreen} options={{ title: 'Account', tabBarLabel: 'Account', tabBarIcon: ({ color, focused }) => <UserCircle size={24} color={color} weight={focused ? 'fill' : 'regular'} /> }} />
     </Tab.Navigator>

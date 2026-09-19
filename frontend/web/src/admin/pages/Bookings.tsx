@@ -85,7 +85,7 @@ export default function BookingsPage() {
         title="Bookings"
         description="Every booking on the platform, with its payment. Cancel one to free the seat for the waitlist."
         actions={
-          <Button kind="tertiary" renderIcon={Download} onClick={() => downloadFile('/admin/export/bookings', 'sentrypass-bookings.csv').catch((e) => toast({ kind: 'error', title: 'Export failed', subtitle: errorText(e) }))}>
+          <Button kind="tertiary" renderIcon={Download} onClick={() => downloadFile('/admin/export/bookings', 'ucyss-bookings.csv').catch((e) => toast({ kind: 'error', title: 'Export failed', subtitle: errorText(e) }))}>
             Export CSV
           </Button>
         }

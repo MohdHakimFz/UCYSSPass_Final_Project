@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { BRAND } from '../lib/brand'
 import { Animated, Easing, StyleSheet, Text, View } from 'react-native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -10,7 +11,7 @@ import type { RootParamList } from '../../App'
 
 const PERIOD = 48
 
-// The first thing anyone sees: what SentryPass is, and two clear ways in.
+// The first thing anyone sees: what UCYSS is, and two clear ways in.
 export default function WelcomeScreen({ navigation }: NativeStackScreenProps<RootParamList, 'Welcome'>) {
   const insets = useSafeAreaInsets()
   const drift = useRef(new Animated.Value(0)).current
@@ -34,7 +35,7 @@ export default function WelcomeScreen({ navigation }: NativeStackScreenProps<Roo
       </Animated.View>
 
       <View style={[s.top, { paddingTop: insets.top + 24 }]}>
-        <Text style={s.brand}>SentryPass</Text>
+        <Text style={s.brand}>{BRAND.name}</Text>
       </View>
 
       <View style={s.middle}>

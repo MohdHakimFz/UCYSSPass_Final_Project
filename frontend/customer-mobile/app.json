@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "SentryPass",
+    "name": "UCYSS",
     "slug": "sentrypass",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -11,7 +11,7 @@
       [
         "expo-calendar",
         {
-          "calendarPermission": "SentryPass adds your event passes to your calendar."
+          "calendarPermission": "UCYSS adds your event passes to your calendar."
         }
       ],
       "expo-secure-store",

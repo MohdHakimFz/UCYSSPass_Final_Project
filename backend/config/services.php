@@ -20,7 +20,7 @@ return [
 
     'resend' => [
         'key' => env('RESEND_API_KEY'),
-        'from' => env('RESEND_FROM_EMAIL', 'SentryPass <onboarding@resend.dev>'),
+        'from' => env('RESEND_FROM_EMAIL', 'UCYSS <onboarding@resend.dev>'),
     ],
 
     'checkin' => [
