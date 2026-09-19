@@ -1,0 +1,168 @@
+name: CI
+
+# Runs on every push and pull request. Four independent jobs, so a failure says exactly which part broke:
+#   backend  - the PHPUnit suite against a real PostgreSQL
+#   web      - type-check, lint and production build of the web app
+#   mobile   - type-check of the mobile app
+#   postman  - starts the API on a fresh seeded database and runs the Postman collection with Newman
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: testing
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      DB_CONNECTION: pgsql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_DATABASE: testing
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo_pgsql, mbstring, bcmath, intl
+          coverage: none
+      - name: Cache Composer packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.composer/cache
+          key: composer-${{ hashFiles('backend/composer.lock') }}
+      - run: composer install --no-interaction --prefer-dist --no-progress
+      - run: cp .env.example .env && php artisan key:generate
+      - name: Run the tests
+        run: php artisan test --compact
+
+  web:
+    name: Web app
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/web/package-lock.json
+      - run: npm ci
+      - name: Type-check, lint and build
+        run: |
+          npx tsc -b
+          npm run lint
+          npm run build
+
+  mobile:
+    name: Mobile app
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend/customer-mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/customer-mobile/package-lock.json
+      - run: npm ci
+      - name: Type-check
+        run: npx tsc --noEmit
+
+  postman:
+    name: API collection (Postman)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: laravel
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      APP_ENV: local
+      DB_CONNECTION: pgsql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_DATABASE: laravel
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      CHECKIN_API_KEY: ci-checkin-key
+      PHP_CLI_SERVER_WORKERS: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo_pgsql, mbstring, bcmath, intl
+          coverage: none
+      - run: composer install --no-interaction --prefer-dist --no-progress
+      - run: cp .env.example .env && php artisan key:generate
+      - name: Create the tables and the seeded accounts
+        run: php artisan migrate:fresh --seed --force
+      - name: Start the API
+        run: |
+          nohup php artisan serve --host=127.0.0.1 --port=8000 > ../api.log 2>&1 &
+          for i in $(seq 1 30); do
+            curl -fs http://127.0.0.1:8000/up > /dev/null && exit 0
+            sleep 1
+          done
+          echo "The API did not start" && cat ../api.log && exit 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run the Postman collection
+        working-directory: .
+        run: |
+          npx --yes newman run docs/postman/SentryPass.postman_collection.json \
+            -e docs/postman/SentryPass.local.postman_environment.json \
+            --env-var "base_url=http://127.0.0.1:8000/api" \
+            --env-var "checkin_api_key=ci-checkin-key" \
+            --reporters cli,junit --reporter-junit-export newman-results.xml
+      - name: Keep the results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: newman-results
+          path: newman-results.xml
+      - name: Show the API log if something failed
+        if: failure()
+        run: tail -n 80 ../api.log

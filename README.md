@@ -66,3 +66,13 @@ npx expo start
 ```
 
 Set `EXPO_PUBLIC_API_URL` when the app can't reach `localhost`: `http://10.0.2.2/api` for an Android emulator, or `http://<your-computer-LAN-IP>/api` for a physical phone on the same Wi-Fi.
+
+## Tests and continuous integration
+
+| What | How to run it here |
+| --- | --- |
+| Backend (PHPUnit, real PostgreSQL) | `cd backend && docker compose exec laravel.test php artisan test` |
+| Browser tests (Playwright; needs the API and the web app running) | `cd frontend/web && npx playwright test` |
+| API collection (Newman) | `npx newman run docs/postman/SentryPass.postman_collection.json -e docs/postman/SentryPass.local.postman_environment.json --env-var "checkin_api_key=<your CHECKIN_API_KEY>"` |
+
+`.github/workflows/ci.yml` runs on every push and pull request, in four separate jobs: the backend tests against a PostgreSQL service, the web app's type-check, lint and build, the mobile app's type-check, and the Postman collection against a freshly seeded API (`php artisan serve`). The browser tests are not part of CI, because they need the whole stack running together.
