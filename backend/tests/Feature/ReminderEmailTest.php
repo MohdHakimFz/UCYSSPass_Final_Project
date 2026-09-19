@@ -200,4 +200,30 @@ class ReminderEmailTest extends TestCase
         $this->resendAnswers(403, ['message' => 'Only your own address']);
         $this->artisan('emails:test', ['to' => 'other@example.com'])->expectsOutputToContain('Resend answered 403')->assertFailed();
     }
+
+    public function test_one_booking_can_be_reminded_by_number_whatever_the_time_window(): void
+    {
+        $far = $this->booking(hours: 46, bookedHoursAgo: 0.1);
+        $other = $this->booking(hours: 46, bookedHoursAgo: 0.1);
+
+        $this->artisan('bookings:send-reminders', ['--booking' => $far->id])->expectsOutputToContain('Sent 1 reminders.')->assertSuccessful();
+
+        $this->assertSame(1, $this->sentReminders());
+        $this->assertSame(1, $far->notifications()->where('type', 'reminder')->count());
+        $this->assertSame(0, $other->notifications()->where('type', 'reminder')->count(), 'only the one asked for');
+        Http::assertSent(fn (Request $request) => $request['to'] === [$far->customer->email]);
+    }
+
+    public function test_asking_for_a_booking_twice_or_one_that_is_not_confirmed_sends_nothing_and_says_why(): void
+    {
+        $booking = $this->booking(hours: 46);
+        Artisan::call('bookings:send-reminders', ['--booking' => $booking->id]);
+
+        $this->artisan('bookings:send-reminders', ['--booking' => $booking->id])->expectsOutputToContain('Sent 0 reminders.')->expectsOutputToContain('must exist, be confirmed')->assertSuccessful();
+
+        $cancelled = $this->booking(hours: 46);
+        $cancelled->update(['status' => 'cancelled']);
+        $this->artisan('bookings:send-reminders', ['--booking' => $cancelled->id])->expectsOutputToContain('Sent 0 reminders.')->assertSuccessful();
+        $this->assertSame(1, $this->sentReminders());
+    }
 }

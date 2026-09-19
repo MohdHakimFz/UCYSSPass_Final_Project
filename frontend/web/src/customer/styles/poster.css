@@ -2,7 +2,7 @@
   SentryPass customer web: "Poster Wall".
   One accent (vermilion), cool neutrals, sharp corners everywhere (radius 0),
   type-led posters. Each category is a colour block plus a pure-CSS pattern.
-  Light and dark follow the system setting.
+  Light and dark follow the system setting unless the visitor picks one (data-theme on <html>).
 */
 
 :root {
@@ -25,7 +25,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme]) {
     --bg: #0f1318;
     --surface: #171c23;
     --ink: #edeff2;
@@ -38,6 +38,26 @@
     --bad: #f0786c;
     --shadow: 0 0 0;
   }
+}
+
+/* Chosen by the visitor with the toggle in the header */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0f1318;
+  --surface: #171c23;
+  --ink: #edeff2;
+  --ink-soft: #a3adba;
+  --line: #2a323d;
+  --steel: #3b4653;
+  --accent-press: #f0704d;
+  --ok: #4cc38f;
+  --held: #e3b341;
+  --bad: #f0786c;
+  --shadow: 0 0 0;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
 }
 
 *,
@@ -1435,4 +1455,31 @@ button:disabled {
 .on-now {
   font-weight: 800;
   color: var(--accent-press);
+}
+
+/* Light / dark / system switch in the header */
+.theme-toggle {
+  display: inline-flex;
+  border: 1px solid var(--line);
+}
+
+.theme-toggle button {
+  border: 0;
+  border-right: 1px solid var(--line);
+  padding: 0.3rem 0.55rem;
+  background: transparent;
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.theme-toggle button:last-child {
+  border-right: 0;
+}
+
+.theme-toggle button[aria-pressed="true"] {
+  background: var(--ink);
+  color: var(--bg);
 }

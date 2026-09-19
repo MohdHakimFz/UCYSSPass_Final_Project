@@ -2,6 +2,7 @@ import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-do
 import { BRAND } from '@/lib/brand'
 import { useAuth } from '@/lib/auth'
 import { HOME } from '@/lib/roles'
+import ThemeToggle from './ThemeToggle'
 import ThemeSheet from '@/shared/ThemeSheet'
 import posterCss from './styles/poster.css?inline'
 import homeCss from './styles/home.css?inline'
@@ -27,6 +28,7 @@ export default function Layout() {
             <NavLink to="/events">Events</NavLink>
             {!staff && <NavLink to="/passes">My passes</NavLink>}
           </nav>
+          <ThemeToggle />
           <div className="who">
             {user ? (
               <>

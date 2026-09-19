@@ -80,9 +80,9 @@ Log masuk sebagai **customer**. Guna event percuma yang baru dipublish.
 - [ ] **My passes.** Tiket muncul, **Show pass** memaparkan kod QR. 📸
 - [ ] **Tempahan berganda.** Tempah tier yang sama lagi: ditolak ("already have an active booking").
 - [ ] **Add to calendar.** Butang memuat turun fail `.ics`; buka dalam kalendar.
-- [ ] **Waitlist.** Buat tier dengan **1 seat**, tempah dengan customer A, kemudian customer B: B masuk **waitlist** (nombor giliran). Customer A **Cancel booking**: B jadi **Confirmed** secara automatik (dan dapat email).
+- [ ] **Waitlist.** Guna dua akaun customer (A dan B, dua browser atau satu biasa satu incognito). Organiser: buat tier baru dengan **Seats = 1** pada event yang dipublish. (1) A buka event, **Book this pass** pada tier itu: Confirmed. (2) B buka event yang sama: tier itu kini **Sold out** dan butangnya jadi **Join waitlist**; tekan: B nampak "You're number 1 in the queue" dalam **My passes**. (3) A ke **My passes**, **Cancel booking**, sahkan. (4) Dalam 5 saat B refresh/tunggu: tempahan B jadi **Confirmed** sendiri, dan emel "You're in" sampai ke B.
 - [ ] **Batal.** **Cancel booking** meminta pengesahan; selepas itu status **Cancelled**.
-- [ ] **Event ditutup.** Event draft, dibatalkan atau sudah tamat tak boleh ditempah.
+- [ ] **Event ditutup.** Tiga keadaan, semuanya mesti gagal ditempah oleh customer: (a) **Draft**: organiser simpan event tanpa tekan Publish; customer tak nampak event itu langsung dalam senarai. (b) **Cancelled**: organiser/admin batalkan event yang sudah dipublish; event hilang dari senarai customer, dan buka pautan terus ke event itu tak boleh ditempah. (c) **Sudah tamat**: event yang masa tamatnya sudah lepas hilang dari senarai; tempahan melalui API/Postman ditolak dengan mesej event telah tamat. Cara paling mudah: buat satu event, publish, sahkan customer nampak; kemudian **Cancel event** dan refresh halaman customer: event itu hilang.
 - [ ] **Had tempahan.** Cuba 6 tempahan dalam seminit oleh satu customer: yang ke-6 dapat mesej terlalu banyak permintaan (429).
 
 ## 4. Bayaran, tahan seat dan refund
@@ -93,7 +93,7 @@ Buat tier berbayar (contohnya `VIP`, `RM 30`) pada event yang dipublish.
 - [ ] **Bayaran ditolak.** Dalam tetingkap bayaran pilih hasil ujian **decline**: mesej ditolak, tahan kekal, boleh cuba lagi.
 - [ ] **Bayaran diluluskan.** Pilih **approve**: jadi **Confirmed**, ada QR, dan "Paid RM 30.00". 📸
 - [ ] **Tahan tamat.** Tempah tier berbayar, **jangan bayar**, tunggu 3 minit (atau jalankan `bookings:release-expired`): tempahan dilepaskan, seat kembali dijual.
-- [ ] **Refund.** Batalkan tempahan berbayar untuk event lebih 24 jam lagi: mesej refund penuh, dan tiket ditanda **Refunded**. Untuk event kurang 24 jam: tiada refund (mesej menyebutnya).
+- [ ] **Refund.** Tiada butang "Refund" berasingan: refund berlaku **automatik apabila customer menekan Cancel booking**. (1) Customer tempah tier berbayar dan luluskan bayaran (event lebih 24 jam lagi). (2) **My passes**, **Cancel booking**: dialog pengesahan berkata "You will be refunded RM 30.00". (3) Sahkan: mesej "Booking cancelled. RM 30.00 has been refunded." dan kad tiket menunjukkan **Refunded RM 30.00**. (4) Untuk kes kurang 24 jam: event berbayar yang bermula dalam 24 jam, dialog berkata tidak akan direfund, dan tiada baris Refunded.
 
 ## 5. Seat bernombor
 
@@ -129,15 +129,20 @@ Organiser: **Create event**, pilih **Online meeting**.
 
 ## 8. Peringatan email
 
-- [ ] **Sediakan.** Buat event percuma yang bermula lebih kurang **20 jam dari sekarang** (published), tempah dengan customer yang emelnya `kl2307014329@student.uptm.edu.my` (emel pemilik akaun Resend). Kemudian jadikan tempahan itu "lama" supaya layak (peringatan tak dihantar kepada yang baru menempah dalam sejam):
+- [ ] **Sediakan.** Emel dihantar melalui **Brevo** ke emel customer sebenar (`mh29209501@gmail.com`). Peraturan layak: tempahan **Confirmed**, event **published** dan bermula dalam **24 jam akan datang**, tempahan dibuat **lebih sejam lalu**, dan belum pernah diingatkan. Tempahan lama yang event-nya jauh (contoh 3 hari lagi) atau sudah **Attended** tidak layak, sebab itu keputusan `Sent 0` tadi. Langkah: (1) Organiser buat event percuma, **bermula lebih kurang 20 jam dari sekarang**, publish. (2) Customer `mh29209501@gmail.com` tempah tier percuma itu. (3) Cari nombor tempahan itu (paling atas):
 
   ```powershell
-  docker compose exec laravel.test php artisan tinker --execute="App\Models\Booking::latest('id')->first()->update(['booked_at' => now()->subHours(3)]);"
+  docker compose exec laravel.test php artisan tinker --execute="echo App\Models\Booking::latest('id')->first()->id;"
   ```
-- [ ] **Hantar.** `docker compose exec laravel.test php artisan bookings:send-reminders`: mencetak `Sent 1 reminders.`
+  (4) Jadikan tempahan itu "lama" (ganti `123` dengan nombor tadi):
+
+  ```powershell
+  docker compose exec laravel.test php artisan tinker --execute="App\Models\Booking::find(123)->update(['booked_at' => now()->subHours(3)]);"
+  ```
+- [ ] **Hantar.** `docker compose exec laravel.test php artisan bookings:send-reminders`: mencetak `Sent 1 reminders.` (Nak cuba tanpa menunggu tetingkap masa atau tanpa langkah `booked_at`? Guna `docker compose exec laravel.test php artisan bookings:send-reminders --booking=123`: peringatkan tempahan itu sahaja, tidak kira bila event bermula.)
 - [ ] **Sekali sahaja.** Jalankan arahan yang sama lagi: `Sent 0 reminders.`
 - [ ] **Peti masuk.** Emel "Reminder: ... is coming up" sampai, dengan masa Malaysia, tempat, dan lampiran `event.ics`. 📸
-- [ ] **Log admin.** Admin, **Emails**, tapis "Reminder before the event": ada baris dengan jawapan Resend (status 200).
+- [ ] **Log admin.** Admin, **Emails**, tapis "Reminder before the event": ada baris dengan jawapan Brevo (status 201).
 
 ## 9. Pengumuman organiser
 
