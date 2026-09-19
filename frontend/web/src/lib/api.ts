@@ -151,7 +151,7 @@ export type EventDetail = EventItem
 
 export type NotificationRow = {
   id: number
-  type: 'confirmation' | 'waitlist_promoted' | 'cancelled'
+  type: 'confirmation' | 'waitlist_promoted' | 'cancelled' | 'reminder'
   sent_at: string | null
   provider_response: { status: number | string; body?: unknown; reason?: string } | null
   booking?: {

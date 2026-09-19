@@ -15,13 +15,15 @@ import {
   TableToolbar,
   TableToolbarContent,
   TableToolbarSearch,
+  Select,
+  SelectItem,
 } from '@carbon/react'
 import { Calendar } from '@carbon/icons-react'
 import { api, errorText, type EventItem, type EventStatus, type Paginated } from '@/lib/api'
 import { useFetch } from '@/lib/useFetch'
 import { useFeedback } from '@/dashboard/feedback'
 import { EmptyState, PageHeader, TablePager } from '@/dashboard/parts'
-import { Notice, Skeleton, StatusTag, formatWhen } from '@/dashboard/ui'
+import { ModeTag, Notice, Skeleton, StatusTag, formatWhen } from '@/dashboard/ui'
 
 const CATEGORY: Record<EventItem['category'], string> = { ctf: 'CTF', bootcamp: 'Bootcamp', conference: 'Conference', workshop: 'Workshop' }
 const TABS: { key: '' | EventStatus; label: string }[] = [
@@ -39,10 +41,12 @@ export default function EventsPage() {
   const [page, setPage] = useState(1)
   const [size, setSize] = useState(10)
   const [query, setQuery] = useState('')
+  const [mode, setMode] = useState<'' | 'physical' | 'online'>('')
 
   const qs = new URLSearchParams({ page: String(page), per_page: String(size), sort: 'start_at', direction: 'desc' })
   if (status) qs.set('status', status)
   if (query) qs.set('search', query)
+  if (mode) qs.set('mode', mode)
   const { data: rows, error, reload } = useFetch<Paginated<EventItem>>(`/events?${qs}`)
 
   async function setEventStatus(ev: EventItem, next: EventStatus) {
@@ -102,6 +106,22 @@ export default function EventsPage() {
       <TableContainer>
         <TableToolbar aria-label="Event list tools">
           <TableToolbarContent>
+            <Select
+              id="mode-filter"
+              labelText="Type"
+              hideLabel
+              size="lg"
+              value={mode}
+              onChange={(e) => {
+                setPage(1)
+                setMode(e.target.value as '' | 'physical' | 'online')
+              }}
+              style={{ minWidth: 160 }}
+            >
+              <SelectItem value="" text="All types" />
+              <SelectItem value="physical" text="In person" />
+              <SelectItem value="online" text="Online" />
+            </Select>
             <TableToolbarSearch
               persistent
               placeholder="Search events by title"
@@ -138,7 +158,8 @@ export default function EventsPage() {
                     <TableCell>
                       <Link className="cell-link cell-title" to={`/admin/events/${ev.id}`}>
                         {ev.title}
-                      </Link>
+                      </Link>{' '}
+                      <ModeTag mode={ev.mode} />
                       <span className="sub">
                         {CATEGORY[ev.category]}
                         {ev.mode === 'online' ? ', Online meeting' : ev.venue ? `, ${ev.venue.name}` : ''}

@@ -222,4 +222,18 @@ class OnlineEventTest extends TestCase
 
         $this->actingAs($customer, 'sanctum')->getJson("/api/bookings/{$booking->id}/qr-code")->assertNotFound();
     }
+
+    public function test_events_can_be_listed_by_mode(): void
+    {
+        $online = Event::factory()->create(['venue_id' => Venue::online()->id, 'mode' => 'online', 'status' => 'published', 'meeting_url' => 'https://zoom.us/j/1']);
+        $physical = $this->publishedEvent();
+
+        $ids = fn (string $query) => collect($this->getJson("/api/events?per_page=50&{$query}")->assertOk()->json('data'))->pluck('id');
+
+        $this->assertTrue($ids('mode=online')->contains($online->id));
+        $this->assertFalse($ids('mode=online')->contains($physical->id));
+        $this->assertTrue($ids('mode=physical')->contains($physical->id));
+        $this->assertFalse($ids('mode=physical')->contains($online->id));
+        $this->assertTrue($ids('mode=nonsense')->contains($online->id), 'an unknown mode is ignored, not an error');
+    }
 }

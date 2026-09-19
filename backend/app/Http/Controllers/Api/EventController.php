@@ -36,6 +36,7 @@ class EventController extends Controller
             ->withSum('ticketTypes as capacity', 'capacity')
             ->when($request->filled('organiser_id'), fn ($query) => $query->where('organiser_id', $request->integer('organiser_id')))
             ->when($request->filled('category'), fn ($query) => $query->where('category', $request->string('category')))
+            ->when(in_array($request->string('mode')->toString(), ['physical', 'online'], true), fn ($query) => $query->where('mode', $request->string('mode')))
             ->when($request->filled('venue_id'), fn ($query) => $query->where('venue_id', $request->integer('venue_id')))
             ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')))
             ->when(! $this->mayListDrafts($request), fn ($query) => $query->where('status', '!=', 'draft'))
