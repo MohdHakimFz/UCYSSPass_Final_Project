@@ -6,7 +6,7 @@ A JSON REST API for event ticketing and venue booking, built on Laravel 12 with 
 - **Format:** JSON in, JSON out. Send `Accept: application/json`. Dates are ISO 8601 in UTC (`2026-12-01T09:00:00.000000Z`).
 - **Auth:** `Authorization: Bearer <token>`, where the token comes from `POST /auth/register` or `POST /auth/login`.
 - **Health check:** `GET http://localhost/up` (outside `/api`).
-- **Try it:** import [`postman/SentryPass.postman_collection.json`](postman/). It runs every endpoint below, success and error cases (186 requests, 290 assertions).
+- **Try it:** import [`postman/SentryPass.postman_collection.json`](postman/). It runs every endpoint below, success and error cases (198 requests, 309 assertions).
 
 ## Contents
 
@@ -94,6 +94,7 @@ List endpoints are paginated with `?page=` and `?per_page=` (default 15). The re
 | `POST /bookings/{id}/pay` | 20 a minute |
 | `POST /bookings/{id}/join` | 30 a minute |
 | `POST /events/{id}/announcements` | 10 a minute |
+| `GET /certificates/{id}/{code}` | 30 a minute |
 | `POST /auth/forgot-password` | 3 a minute |
 | `POST /auth/reset-password` | 10 a minute |
 
@@ -356,6 +357,8 @@ Seats whose payment hold has run out are shown as free again.
 | POST | `/bookings/{id}/pay` | Owner | Pay for a held booking. |
 | PUT | `/bookings/{id}/cancel` | Owner, Admin | Cancels, releases the seat (or promotes the next person on the waitlist) and refunds by policy. |
 | POST | `/bookings/{id}/join` | Owner | Join an online meeting. Returns the link, and marks the booking attended. |
+| GET | `/bookings/{id}/certificate` | Owner, the event's organiser, Admin | The certificate of attendance as a PDF. |
+| GET | `/certificates/{id}/{code}` | Public | Check that a certificate is genuine. |
 | POST | `/bookings/{id}/checkin` | Organiser, Admin, or device `X-Api-Key` | Verify the signed ticket and mark the booking attended. |
 | DELETE | `/bookings/{id}` | Admin | `204`. Hard delete, for clean-up only. |
 
@@ -453,6 +456,26 @@ Calling it marks the booking `attended` with `checked_in_at` set, so the organis
 | `403` | Not your booking (an admin cannot join for someone else either) |
 | `422` | The booking has no online meeting (physical event, or not confirmed), or the meeting is not open yet ("The meeting opens 15 minutes before it starts."), or the organiser has not added a link |
 | `429` | More than 30 a minute |
+
+### Certificate of attendance
+
+`GET /bookings/{id}/certificate` returns a PDF (`Content-Type: application/pdf`, downloaded as `ucyss-certificate-{id}.pdf`) for a guest who **attended** an event that has **ended**. It shows the guest's name, the event, its date, the organiser, a certificate number and the address where anyone can check it.
+
+| Result | Cause |
+| --- | --- |
+| `200` | The PDF |
+| `422` | "Only people who attended get a certificate." or "The certificate is ready once the event has ended." |
+| `403` | Not the guest, the event's organiser or an admin |
+
+A booking says when to offer it: `certificate_ready` is `true` once the guest attended and the event is over, and then `certificate_url` is the address printed on the certificate, for example `https://ucyss.example/verify/612/8447A0895A`. The last part is a ten-character code that only the server can make for that booking (an HMAC of the booking, keyed with the app key).
+
+`GET /certificates/{id}/{code}` needs no sign-in, so anyone holding a certificate can check it:
+
+```json
+{ "valid": true, "name": "Adam Iskandar", "event": "Intro to Web Hacking (Online)", "date": "2026-10-24T20:00:00.000000Z" }
+```
+
+A wrong code, a booking that does not exist and a booking that never attended all get the same `404` (`"No certificate matches this code."`), so the endpoint cannot be used to find out who booked or attended anything. The web app has a page for the same address (`/verify/{id}/{code}`).
 
 ### Checking in
 

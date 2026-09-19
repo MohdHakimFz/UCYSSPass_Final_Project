@@ -23,7 +23,7 @@ class Booking extends Model
         'hold_expires_at',
     ];
 
-    protected $appends = ['hold_seconds_left', 'meeting'];
+    protected $appends = ['hold_seconds_left', 'meeting', 'certificate_ready', 'certificate_url'];
 
     /**
      * Seconds left on the payment hold, worked out on the server so a phone with the wrong clock still counts down correctly.
@@ -58,6 +58,22 @@ class Booking extends Model
                 'open' => $event->status === 'published' && now()->between($opensAt, $event->end_at),
             ];
         });
+    }
+
+    /** True once the person has attended and the event is over, so a screen knows when to offer the certificate. */
+    protected function certificateReady(): \Illuminate\Database\Eloquent\Casts\Attribute
+    {
+        return \Illuminate\Database\Eloquent\Casts\Attribute::get(
+            fn () => $this->status === 'attended' && (bool) $this->ticketType?->event?->end_at?->isPast()
+        );
+    }
+
+    /** The address that shows anyone the certificate is genuine, once it is ready. */
+    protected function certificateUrl(): \Illuminate\Database\Eloquent\Casts\Attribute
+    {
+        return \Illuminate\Database\Eloquent\Casts\Attribute::get(
+            fn () => $this->certificate_ready ? app(\App\Services\CertificateService::class)->verifyUrl($this) : null
+        );
     }
 
     protected function casts(): array

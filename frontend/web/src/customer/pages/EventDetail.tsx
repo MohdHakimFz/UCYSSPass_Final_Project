@@ -6,6 +6,7 @@ import { useAuth } from '@/lib/auth'
 import SeatMap from '@/customer/fx/SeatMap'
 import Checkout from '@/customer/Checkout'
 import { useFetch, useLiveTick } from '@/lib/useFetch'
+import ShareEvent from '@/customer/ShareEvent'
 import { CATEGORY_LABEL, Notice, formatWhen, Skeleton } from '@/customer/ui'
 
 export default function EventDetail() {
@@ -90,19 +91,6 @@ export default function EventDetail() {
     }
   }
 
-  async function share() {
-    const url = window.location.href
-    try {
-      if (navigator.share) await navigator.share({ title: event?.title, url })
-      else {
-        await navigator.clipboard.writeText(url)
-        setNote({ tone: 'ok', text: 'Link copied. Paste it anywhere to share this event.' })
-      }
-    } catch {
-      /* the person closed the share sheet */
-    }
-  }
-
   if (error) return <Notice tone="error">{error}</Notice>
   if (!event) return <Skeleton rows={3} />
 
@@ -137,11 +125,7 @@ export default function EventDetail() {
             <br />
             {formatWhen(event.start_at)}
           </p>
-          <div>
-            <button className="btn-quiet" onClick={share}>
-              Share this event
-            </button>
-          </div>
+          {event.status === 'published' && <ShareEvent event={event} />}
         </div>
       </div>
 

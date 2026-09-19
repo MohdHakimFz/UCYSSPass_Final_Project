@@ -111,6 +111,10 @@ export type Booking = {
   seat?: { id: number; row_label: string; number: number; label: string } | null
   customer?: { id: number; name: string; email: string }
   waitlist_position?: number
+  /** True once the guest attended and the event is over: a certificate can be downloaded. */
+  certificate_ready?: boolean
+  /** Where anyone can check the certificate is genuine. */
+  certificate_url?: string | null
   /** For a confirmed guest of an online event. The link itself is only given by the join call. */
   meeting?: { platform: MeetingPlatform | null; opens_at: string; ends_at: string; open: boolean } | null
   ticket_type?: {
@@ -140,7 +144,11 @@ export async function apiBlobUrl(path: string): Promise<string> {
 export async function downloadFile(path: string, filename: string): Promise<void> {
   const token = tokenStore.get()
   const res = await fetch(`${BASE}${path}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
-  if (!res.ok) throw new ApiError("Couldn't create the export.", res.status)
+  if (!res.ok) {
+    // The server says why (for example, "The certificate is ready once the event has ended.").
+    const why = await res.json().catch(() => null)
+    throw new ApiError(why?.message ?? "Couldn't download the file.", res.status)
+  }
   const url = URL.createObjectURL(await res.blob())
   const a = document.createElement('a')
   a.href = url

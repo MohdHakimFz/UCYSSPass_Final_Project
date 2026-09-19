@@ -9,6 +9,7 @@ use App\Http\Requests\Booking\StoreBookingRequest;
 use App\Models\Booking;
 use App\Models\TicketType;
 use App\Services\BookingService;
+use App\Services\CertificateService;
 use App\Services\QrCodeApiService;
 use App\Services\QrTicketService;
 use Illuminate\Http\JsonResponse;
@@ -192,6 +193,22 @@ class BookingController extends Controller
         $apiResponse = $this->qrCodeApi->fetch($booking);
 
         return response($apiResponse->body())->header('Content-Type', $apiResponse->header('Content-Type'));
+    }
+
+    /**
+     * The certificate of attendance as a PDF, once the person has attended and the event is over.
+     */
+    public function certificate(Booking $booking, CertificateService $certificates): Response
+    {
+        $this->authorize('view', $booking);
+
+        $problem = $certificates->problem($booking);
+        abort_if($problem !== null, 422, (string) $problem);
+
+        return response($certificates->pdf($booking), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="ucyss-certificate-'.$booking->id.'.pdf"',
+        ]);
     }
 
     /**

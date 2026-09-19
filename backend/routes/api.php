@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\ExportController;
 use App\Http\Controllers\Api\OrganiserSummaryController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BookingController;
+use App\Http\Controllers\Api\CertificateVerifyController;
 use App\Http\Controllers\Api\EventController;
 use App\Http\Controllers\Api\TicketTypeController;
 use App\Http\Controllers\Api\UserController;
@@ -57,6 +58,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/bookings', [BookingController::class, 'index']);
     Route::get('/bookings/{booking}', [BookingController::class, 'show']);
     Route::get('/bookings/{booking}/qr-code', [BookingController::class, 'qrCode']);
+    Route::get('/bookings/{booking}/certificate', [BookingController::class, 'certificate']);
     Route::put('/bookings/{booking}/cancel', [BookingController::class, 'cancel']);
     Route::post('/bookings/{booking}/join', [BookingController::class, 'join'])->middleware('throttle:30,1,join');
     Route::post('/bookings/{booking}/pay', [BookingController::class, 'pay'])->middleware('throttle:20,1,pay');
@@ -83,6 +85,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/events/{event}/export', [ExportController::class, 'attendees']);
     Route::post('/events/{event}/duplicate', [EventController::class, 'duplicate']);
 });
+
+// Anyone holding a certificate can check that it is genuine.
+Route::get('/certificates/{booking}/{code}', CertificateVerifyController::class)->middleware('throttle:30,1,verify-certificate');
 
 // Check-in — scanning device (X-Api-Key) or a logged-in organiser/admin (Sanctum), spec §6.
 Route::post('/bookings/{booking}/checkin', [BookingController::class, 'checkin'])->middleware('checkin.auth');

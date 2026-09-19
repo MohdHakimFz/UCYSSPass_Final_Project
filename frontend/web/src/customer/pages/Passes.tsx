@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { api, apiBlobUrl, errorText, type Booking, type Paginated } from '@/lib/api'
+import { api, apiBlobUrl, downloadFile, errorText, type Booking, type Paginated } from '@/lib/api'
 import { useFetch } from '@/lib/useFetch'
 import Tilt from '@/shared/Tilt'
 import Checkout from '@/customer/Checkout'
@@ -180,7 +180,7 @@ export default function Passes() {
 
                     {online && b.meeting && <p className="ticket-note">{b.meeting.open ? 'The meeting is open. Join from here.' : `The link opens ${formatWhen(b.meeting.opens_at)}.`}</p>}
 
-                    {(canShow || canCancel) && (
+                    {(canShow || canCancel || b.certificate_ready) && (
                       <div className="ticket-actions">
                         {holding && (
                           <button className="btn" onClick={() => setPaying(b)}>
@@ -191,6 +191,11 @@ export default function Passes() {
                         {canShow && !online && (
                           <button className="btn" onClick={() => setShown(b)}>
                             Show pass
+                          </button>
+                        )}
+                        {b.certificate_ready && (
+                          <button className="btn" onClick={() => downloadFile(`/bookings/${b.id}/certificate`, `ucyss-certificate-${b.id}.pdf`).catch((err) => setNote({ tone: 'error', text: errorText(err) }))}>
+                            Download certificate
                           </button>
                         )}
                         {canShow && (

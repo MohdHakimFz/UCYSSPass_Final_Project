@@ -3,6 +3,10 @@
 return [
     // The name on emails and exports.
     'brand' => env('APP_BRAND', 'UCYSS'),
+    'society' => env('APP_SOCIETY', 'UPTM Cybersecurity Student Society'),
+
+    // Where the web app lives, so a certificate can point to its check page.
+    'web_url' => env('WEB_URL', 'http://localhost:5175'),
 
     // How long a chosen seat is kept for someone while they pay.
     'hold_minutes' => (int) env('SEAT_HOLD_MINUTES', 3),
