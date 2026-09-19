@@ -6,6 +6,7 @@ import Tilt from '@/shared/Tilt'
 import Checkout from '@/customer/Checkout'
 import { CATEGORY_LABEL, Notice, Skeleton, Tag, formatWhen } from '@/customer/ui'
 import { downloadIcs } from '@/lib/ics'
+import { joinLabel } from '@/lib/meeting'
 
 function QrImage({ bookingId }: { bookingId: number }) {
   const [src, setSrc] = useState<string | null>(null)
@@ -71,14 +72,11 @@ function PassDialog({ booking, onClose }: { booking: Booking; onClose: () => voi
   )
 }
 
-const PLATFORM: Record<string, string> = { zoom: 'Zoom', meet: 'Google Meet', teams: 'Microsoft Teams', other: 'the meeting' }
-
 /** Opens the online meeting: the server only hands over the link once the meeting is open, and counts the click as attending. */
 function JoinButton({ booking, onDone, onError }: { booking: Booking; onDone: () => void; onError: (text: string) => void }) {
   const [busy, setBusy] = useState(false)
   const m = booking.meeting
   if (!m) return null
-  const where = PLATFORM[m.platform ?? 'other']
 
   async function join() {
     // The tab has to open during the click, or the browser blocks it; the link is filled in when it arrives.
@@ -99,7 +97,7 @@ function JoinButton({ booking, onDone, onError }: { booking: Booking; onDone: ()
 
   return m.open ? (
     <button className="btn" disabled={busy} onClick={join}>
-      {busy ? 'Opening…' : `Join on ${where}`}
+      {busy ? 'Opening…' : joinLabel(m.platform)}
     </button>
   ) : (
     <button className="btn" disabled title={`The meeting opens at ${formatWhen(m.opens_at)}`}>

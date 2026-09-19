@@ -81,7 +81,10 @@ function PassModal({ booking, onClose, onCalendar }: { booking: Booking; onClose
   )
 }
 
-const PLATFORM: Record<string, string> = { zoom: 'Zoom', meet: 'Google Meet', teams: 'Microsoft Teams', other: 'the meeting' }
+const PLATFORM: Record<string, string> = { zoom: 'Zoom', meet: 'Google Meet', teams: 'Microsoft Teams', webex: 'Webex', discord: 'Discord', whatsapp: 'WhatsApp', telegram: 'Telegram' }
+
+// "Join on Zoom", or just "Join meeting" for a service we do not know.
+const joinLabel = (p: string | null) => (p && PLATFORM[p] ? `Join on ${PLATFORM[p]}` : 'Join meeting')
 
 /** Joins the online meeting: the server gives the link only once the meeting is open, and counts the tap as attending. */
 function JoinButton({ booking, onDone, onError }: { booking: Booking; onDone: () => void; onError: (text: string) => void }) {
@@ -103,7 +106,7 @@ function JoinButton({ booking, onDone, onError }: { booking: Booking; onDone: ()
   }
 
   return m.open ? (
-    <Button title={`Join on ${PLATFORM[m.platform ?? 'other']}`} busy={busy} onPress={join} />
+    <Button title={joinLabel(m.platform)} busy={busy} onPress={join} />
   ) : (
     <Button title={`Opens ${formatWhen(m.opens_at)}`} disabled onPress={() => undefined} />
   )

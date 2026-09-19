@@ -9,6 +9,7 @@ use App\Models\Booking;
 use App\Models\Event;
 use App\Models\Payment;
 use App\Models\Venue;
+use App\Support\MeetingPlatform;
 use App\Services\BookingService;
 use App\Services\SeatingService;
 use Illuminate\Http\JsonResponse;
@@ -99,6 +100,10 @@ class EventController extends Controller
         if ($mode === 'online') {
             $data['venue_id'] = Venue::online()->id;
             $data['seated'] = false;
+            // The platform is read from the link, so a new link always brings the right name.
+            if (array_key_exists('meeting_url', $data)) {
+                $data['meeting_platform'] = MeetingPlatform::fromUrl($data['meeting_url']);
+            }
         } else {
             $data['meeting_url'] = null;
             $data['meeting_platform'] = null;

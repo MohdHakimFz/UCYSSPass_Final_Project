@@ -10,7 +10,6 @@ import {
   type Category,
   type EventItem,
   type EventMode,
-  type MeetingPlatform,
   type EventStats,
   type EventStatus,
   type Paginated,
@@ -18,6 +17,7 @@ import {
   type Venue,
 } from '@/lib/api'
 import { useFetch } from '@/lib/useFetch'
+import { detectPlatform, platformName } from '@/lib/meeting'
 import { useFeedback } from '@/dashboard/feedback'
 import { PageHeader } from '@/dashboard/parts'
 import { CATEGORY_LABEL, Notice, StatusTag, formatWhen, Skeleton } from '@/dashboard/ui'
@@ -155,9 +155,9 @@ function EventForm({
     seated: event?.seated ?? false,
     mode: (event?.mode ?? 'physical') as EventMode,
     meeting_url: event?.meeting_url ?? '',
-    meeting_platform: (event?.meeting_platform ?? 'zoom') as MeetingPlatform,
   })
   const online = f.mode === 'online'
+  const detected = online && f.meeting_url ? detectPlatform(f.meeting_url.trim()) : null
   const [note, setNote] = useState<{ tone: 'ok' | 'error'; text: string } | null>(null)
   const [busy, setBusy] = useState(false)
   const { confirm } = useFeedback()
@@ -170,11 +170,11 @@ function EventForm({
     }
     setBusy(true)
     setNote(null)
-    const { venue_id: _venue, meeting_url, meeting_platform, seated, ...rest } = f
+    const { venue_id: _venue, meeting_url, seated, ...rest } = f
     const body = {
       ...rest,
       ...(online
-        ? { meeting_url: meeting_url.trim() || null, meeting_platform: meeting_url.trim() ? meeting_platform : null, seated: false }
+        ? { meeting_url: meeting_url.trim() || null, seated: false }
         : { venue_id: Number(f.venue_id || venues?.[0]?.id), seated }),
       start_at: new Date(f.start_at).toISOString(),
       end_at: new Date(f.end_at).toISOString(),
@@ -215,12 +215,19 @@ function EventForm({
           ))}
         </Select>
         {online ? (
-          <Select id="platform" labelText="Meeting platform" value={f.meeting_platform} onChange={(e) => setF({ ...f, meeting_platform: e.target.value as MeetingPlatform })}>
-            <SelectItem value="zoom" text="Zoom" />
-            <SelectItem value="meet" text="Google Meet" />
-            <SelectItem value="teams" text="Microsoft Teams" />
-            <SelectItem value="other" text="Other" />
-          </Select>
+          <TextInput
+            id="meeting-url"
+            labelText="Meeting link"
+            type="url"
+            placeholder="Paste a Zoom, Google Meet or Teams link"
+            helperText={
+              detected
+                ? `Detected: ${platformName(detected)}. Only people with a confirmed ticket, you and admins can see this link.`
+                : 'Only people with a confirmed ticket, you and admins can see this link. Needed before you publish.'
+            }
+            value={f.meeting_url}
+            onChange={(e) => setF({ ...f, meeting_url: e.target.value })}
+          />
         ) : (
           <Select id="venue" labelText="Venue" required disabled={!venues?.length} value={f.venue_id || String(venues?.[0]?.id ?? '')} onChange={(e) => setF({ ...f, venue_id: e.target.value })}>
             {(venues ?? []).filter((v) => v.name !== 'Online').map((v) => (
@@ -234,17 +241,7 @@ function EventForm({
           ))}
         </Select>
         <TextInput id="start" labelText="Starts" required type="datetime-local" value={f.start_at} onChange={(e) => setF({ ...f, start_at: e.target.value })} />
-        {online ? (
-          <TextInput
-            id="meeting-url"
-            labelText="Meeting link"
-            type="url"
-            placeholder="https://zoom.us/j/..."
-            helperText="Only people with a confirmed ticket, you and admins can see this link. Needed before you publish."
-            value={f.meeting_url}
-            onChange={(e) => setF({ ...f, meeting_url: e.target.value })}
-          />
-        ) : (
+        {online ? null : (
         <Toggle
           id="seated"
           labelText="Numbered seats"

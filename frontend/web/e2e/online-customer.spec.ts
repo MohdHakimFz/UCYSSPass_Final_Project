@@ -27,7 +27,7 @@ test.describe('online events, customer side', () => {
       method: 'POST',
       token: orgToken,
       body: {
-        title, description: 'Online talk', category: 'workshop', mode: 'online', meeting_url: LINK, meeting_platform: 'meet', status: 'published',
+        title, description: 'Online talk', category: 'workshop', mode: 'online', meeting_url: LINK, status: 'published',
         start_at: start.toISOString(), end_at: new Date(start.getTime() + 90 * 60_000).toISOString(),
       },
     })
@@ -57,7 +57,7 @@ test.describe('online events, customer side', () => {
     await expect(page.getByRole('button', { name: 'Show pass' })).toHaveCount(0)
 
     const popup = page.waitForEvent('popup')
-    await page.getByRole('button', { name: /Join on Google Meet/ }).click()
+    await page.getByRole('button', { name: 'Join meeting' }).click()
     await (await popup).waitForURL(/meeting=1/)
 
     await expect.poll(async () => (await api<{ status: string }>(`/bookings/${booking.id}`, { token: custToken })).status).toBe('attended')

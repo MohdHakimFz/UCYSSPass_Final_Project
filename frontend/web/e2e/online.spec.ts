@@ -39,7 +39,7 @@ test.describe('online events, organiser side', () => {
     await expect(page.getByText('An online event needs a meeting link before it can be published.')).toBeVisible()
 
     await page.locator('#meeting-url').fill('https://meet.google.com/abc-defg-hij')
-    await page.locator('#platform').selectOption('meet')
+    await expect(page.getByText('Detected: Google Meet')).toBeVisible()
     await page.getByRole('button', { name: 'Save event' }).click()
     await expect(page.getByText('Event saved.')).toBeVisible()
 
@@ -51,6 +51,7 @@ test.describe('online events, organiser side', () => {
     expect(publicView.mode).toBe('online')
     expect(publicView.status).toBe('published')
     expect(publicView).not.toHaveProperty('meeting_url')
+    expect(publicView.meeting_platform).toBe('meet')
 
     // The organiser's own list marks it as online.
     await page.goto('/organiser')

@@ -198,4 +198,18 @@ class OnlineEventTest extends TestCase
 
         $this->actingAs($customer, 'sanctum')->getJson('/api/bookings')->assertJsonPath('data.0.meeting', null);
     }
+
+    public function test_the_platform_comes_from_the_link_and_follows_it_when_the_link_changes(): void
+    {
+        $organiser = $this->organiser();
+        $res = $this->actingAs($organiser, 'sanctum')->postJson('/api/events', $this->onlineBody(['meeting_url' => 'https://meet.google.com/abc-defg-hij', 'meeting_platform' => 'zoom']))->assertCreated();
+        $res->assertJsonPath('meeting_platform', 'meet');
+
+        $this->actingAs($organiser, 'sanctum')->putJson('/api/events/'.$res->json('id'), ['meeting_url' => 'https://uptm.zoom.us/j/55'])
+            ->assertOk()->assertJsonPath('meeting_platform', 'zoom');
+
+        // A change that leaves the link alone leaves the platform alone too.
+        $this->actingAs($organiser, 'sanctum')->putJson('/api/events/'.$res->json('id'), ['title' => 'Renamed'])
+            ->assertOk()->assertJsonPath('meeting_platform', 'zoom');
+    }
 }

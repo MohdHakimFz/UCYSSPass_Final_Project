@@ -156,7 +156,7 @@ export type Booking = {
   refund?: { refunded: boolean; amount: string } | null
   waitlist_position?: number
   /** For a confirmed guest of an online event. The link itself is only given by the join call. */
-  meeting?: { platform: 'zoom' | 'meet' | 'teams' | 'other' | null; opens_at: string; ends_at: string; open: boolean } | null
+  meeting?: { platform: 'zoom' | 'meet' | 'teams' | 'webex' | 'discord' | 'whatsapp' | 'telegram' | 'other' | null; opens_at: string; ends_at: string; open: boolean } | null
   ticket_type?: {
     id: number
     name: string

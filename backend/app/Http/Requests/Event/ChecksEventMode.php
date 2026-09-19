@@ -14,7 +14,6 @@ trait ChecksEventMode
         return [
             'mode' => ['sometimes', 'required', 'in:physical,online'],
             'meeting_url' => ['nullable', 'url:https,http', 'max:500'],
-            'meeting_platform' => ['nullable', 'in:zoom,meet,teams,other'],
         ];
     }
 

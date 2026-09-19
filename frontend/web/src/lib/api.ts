@@ -58,7 +58,7 @@ export type Venue = { id: number; name: string; address: string; capacity: numbe
 export type EventStatus = 'draft' | 'published' | 'cancelled' | 'completed'
 export type Category = 'ctf' | 'bootcamp' | 'conference' | 'workshop'
 export type EventMode = 'physical' | 'online'
-export type MeetingPlatform = 'zoom' | 'meet' | 'teams' | 'other'
+export type MeetingPlatform = 'zoom' | 'meet' | 'teams' | 'webex' | 'discord' | 'whatsapp' | 'telegram' | 'other'
 
 export type TicketType = {
   id: number
