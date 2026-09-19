@@ -20,6 +20,7 @@ import { useFetch } from '@/lib/useFetch'
 import { detectPlatform, platformName } from '@/lib/meeting'
 import { useFeedback } from '@/dashboard/feedback'
 import SeatMapPanel from '@/dashboard/SeatMapPanel'
+import Announcements from '@/organiser/Announcements'
 import { PageHeader } from '@/dashboard/parts'
 import { CATEGORY_LABEL, Notice, StatusTag, formatWhen, Skeleton } from '@/dashboard/ui'
 
@@ -132,6 +133,11 @@ export default function EventEditor() {
               <SeatMapPanel eventId={event.id} />
             </section>
           )}
+          <section className="section">
+            <h2>Announcements</h2>
+            <p className="note">Tell everyone who has booked (and everyone on the waitlist) about a change. It goes out as an email.</p>
+            <Announcements eventId={event.id} published={event.status === 'published'} />
+          </section>
           <section className="section">
             <h2>Attendees</h2>
             <p className="note">Everyone booked on this event. People are checked in from the Check-in tab.</p>

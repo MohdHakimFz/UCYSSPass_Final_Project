@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1260" viewBox="0 0 1800 1260" font-family="Segoe UI, Helvetica, Arial, sans-serif">
 <rect width="100%" height="100%" fill="#E4E8EC"/>
 <text x="60" y="62" font-size="32" font-weight="800" fill="#12263A">UCYSS Events</text>
-<text x="60" y="92" font-size="16" fill="#4B5D6E">Entity relationship diagram · PostgreSQL · the 8 domain tables (Laravel's own personal_access_tokens, sessions, cache and jobs tables are left out)</text>
+<text x="60" y="92" font-size="16" fill="#4B5D6E">Entity relationship diagram · PostgreSQL · the 9 domain tables (Laravel's own personal_access_tokens, sessions, cache and jobs tables are left out)</text>
 <polyline points="400,191 520,217" fill="none" stroke="#12263A" stroke-width="2"/>
 <text x="415.63717024042876" y="186.38805355209288" font-size="14" font-weight="800" text-anchor="middle" fill="#E4572E">1</text>
 <text x="504.36282975957124" y="205.61194644790712" font-size="14" font-weight="800" text-anchor="middle" fill="#E4572E">N</text>
@@ -34,6 +34,18 @@
 <text x="1336.0" y="759.0" font-size="14" font-weight="800" text-anchor="middle" fill="#E4572E">1</text>
 <text x="1384.0" y="849.0" font-size="14" font-weight="800" text-anchor="middle" fill="#E4572E">N</text>
 <text x="1354" y="815" font-size="12" fill="#4B5D6E" text-anchor="end">paid</text>
+<polyline points="690,516 690,780" fill="none" stroke="#12263A" stroke-width="2"/>
+<text x="682.0" y="532.0" font-size="14" font-weight="800" text-anchor="middle" fill="#E4572E">1</text>
+<text x="682.0" y="764.0" font-size="14" font-weight="800" text-anchor="middle" fill="#E4572E">N</text>
+<text x="702" y="710" font-size="12" fill="#4B5D6E" text-anchor="start">is told</text>
+<polyline points="400,767 460,767 460,883 520,883" fill="none" stroke="#12263A" stroke-width="2"/>
+<text x="416.0" y="759.0" font-size="14" font-weight="800" text-anchor="middle" fill="#E4572E">1</text>
+<text x="504.0" y="875.0" font-size="14" font-weight="800" text-anchor="middle" fill="#E4572E">N</text>
+<text x="468" y="903" font-size="12" fill="#4B5D6E" text-anchor="start">sends</text>
+<polyline points="860,831 910,831 910,1083 980,1083" fill="none" stroke="#12263A" stroke-width="2"/>
+<text x="876.0" y="823.0" font-size="14" font-weight="800" text-anchor="middle" fill="#E4572E">1</text>
+<text x="964.0" y="1075.0" font-size="14" font-weight="800" text-anchor="middle" fill="#E4572E">N</text>
+<text x="866" y="875" font-size="12" fill="#4B5D6E" text-anchor="start">carried by</text>
 <polyline points="1150,832 1150,980" fill="none" stroke="#12263A" stroke-width="2"/>
 <text x="1142.0" y="848.0" font-size="14" font-weight="800" text-anchor="middle" fill="#E4572E">1</text>
 <text x="1142.0" y="964.0" font-size="14" font-weight="800" text-anchor="middle" fill="#E4572E">N</text>
@@ -261,8 +273,34 @@
 <text x="1452" y="1018" font-size="14" font-weight="400" fill="#12263A">refunded_amount</text>
 <text x="1728" y="1018" font-size="12" text-anchor="end" fill="#4B5D6E">numeric</text>
 </g>
+<g id="announcements">
+<rect x="520" y="780" width="340" height="194" rx="6" fill="#fff" stroke="#12263A" stroke-width="2"/>
+<path d="M520,818 V786 Q520,780 526,780 H854 Q860,780 860,786 V818 Z" fill="#12263A"/>
+<text x="536" y="805" font-size="18" font-weight="700" fill="#fff">announcements</text>
+<text x="532" y="836" font-size="11" font-weight="800" fill="#E4572E">PK</text>
+<text x="572" y="836" font-size="14" font-weight="700" fill="#12263A">id</text>
+<text x="848" y="836" font-size="12" text-anchor="end" fill="#4B5D6E">bigint</text>
+<rect x="521" y="844" width="338" height="26" fill="#F3F5F7"/>
+<text x="532" y="862" font-size="11" font-weight="800" fill="#E4572E">FK</text>
+<text x="572" y="862" font-size="14" font-weight="400" fill="#12263A">event_id</text>
+<text x="848" y="862" font-size="12" text-anchor="end" fill="#4B5D6E">bigint</text>
+<text x="532" y="888" font-size="11" font-weight="800" fill="#E4572E">FK</text>
+<text x="572" y="888" font-size="14" font-weight="400" fill="#12263A">sender_id</text>
+<text x="848" y="888" font-size="12" text-anchor="end" fill="#4B5D6E">bigint</text>
+<rect x="521" y="896" width="338" height="26" fill="#F3F5F7"/>
+
+<text x="572" y="914" font-size="14" font-weight="400" fill="#12263A">subject</text>
+<text x="848" y="914" font-size="12" text-anchor="end" fill="#4B5D6E">varchar</text>
+
+<text x="572" y="940" font-size="14" font-weight="400" fill="#12263A">message</text>
+<text x="848" y="940" font-size="12" text-anchor="end" fill="#4B5D6E">text</text>
+<rect x="521" y="948" width="338" height="26" fill="#F3F5F7"/>
+
+<text x="572" y="966" font-size="14" font-weight="400" fill="#12263A">recipients</text>
+<text x="848" y="966" font-size="12" text-anchor="end" fill="#4B5D6E">int</text>
+</g>
 <g id="notifications">
-<rect x="980" y="980" width="340" height="194" rx="6" fill="#fff" stroke="#12263A" stroke-width="2"/>
+<rect x="980" y="980" width="340" height="220" rx="6" fill="#fff" stroke="#12263A" stroke-width="2"/>
 <path d="M980,1018 V986 Q980,980 986,980 H1314 Q1320,980 1320,986 V1018 Z" fill="#12263A"/>
 <text x="996" y="1005" font-size="18" font-weight="700" fill="#fff">notifications</text>
 <text x="992" y="1036" font-size="11" font-weight="800" fill="#E4572E">PK</text>
@@ -272,20 +310,23 @@
 <text x="992" y="1062" font-size="11" font-weight="800" fill="#E4572E">FK</text>
 <text x="1032" y="1062" font-size="14" font-weight="400" fill="#12263A">booking_id</text>
 <text x="1308" y="1062" font-size="12" text-anchor="end" fill="#4B5D6E">bigint</text>
-
-<text x="1032" y="1088" font-size="14" font-weight="400" fill="#12263A">type</text>
-<text x="1308" y="1088" font-size="12" text-anchor="end" fill="#4B5D6E">confirmation | reminder | ...</text>
+<text x="992" y="1088" font-size="11" font-weight="800" fill="#E4572E">FK</text>
+<text x="1032" y="1088" font-size="14" font-weight="400" fill="#12263A">announcement_id</text>
+<text x="1308" y="1088" font-size="12" text-anchor="end" fill="#4B5D6E">bigint</text>
 <rect x="981" y="1096" width="338" height="26" fill="#F3F5F7"/>
 
-<text x="1032" y="1114" font-size="14" font-weight="400" fill="#12263A">channel</text>
-<text x="1308" y="1114" font-size="12" text-anchor="end" fill="#4B5D6E">email</text>
+<text x="1032" y="1114" font-size="14" font-weight="400" fill="#12263A">type</text>
+<text x="1308" y="1114" font-size="12" text-anchor="end" fill="#4B5D6E">confirmation | reminder | ...</text>
 
-<text x="1032" y="1140" font-size="14" font-weight="400" fill="#12263A">sent_at</text>
-<text x="1308" y="1140" font-size="12" text-anchor="end" fill="#4B5D6E">timestamp</text>
+<text x="1032" y="1140" font-size="14" font-weight="400" fill="#12263A">channel</text>
+<text x="1308" y="1140" font-size="12" text-anchor="end" fill="#4B5D6E">email</text>
 <rect x="981" y="1148" width="338" height="26" fill="#F3F5F7"/>
 
-<text x="1032" y="1166" font-size="14" font-weight="400" fill="#12263A">provider_response</text>
-<text x="1308" y="1166" font-size="12" text-anchor="end" fill="#4B5D6E">jsonb</text>
+<text x="1032" y="1166" font-size="14" font-weight="400" fill="#12263A">sent_at</text>
+<text x="1308" y="1166" font-size="12" text-anchor="end" fill="#4B5D6E">timestamp</text>
+
+<text x="1032" y="1192" font-size="14" font-weight="400" fill="#12263A">provider_response</text>
+<text x="1308" y="1192" font-size="12" text-anchor="end" fill="#4B5D6E">jsonb</text>
 </g>
 <g font-size="13" fill="#12263A"><text x="60" y="1210" font-weight="700">Reading the diagram</text>
 <text x="60" y="1232"><tspan fill="#E4572E" font-weight="800">PK</tspan> primary key · <tspan fill="#E4572E" font-weight="800">FK</tspan> foreign key · <tspan fill="#E4572E" font-weight="800">UK</tspan> unique · 1 / N: one row on this side relates to many rows on the other · every foreign key is cascade-deleted except events.venue_id (restrict) and bookings.seat_id (set null)</text></g>

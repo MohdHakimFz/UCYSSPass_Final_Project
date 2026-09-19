@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AdminNotificationController;
 use App\Http\Controllers\Api\AdminStatsController;
+use App\Http\Controllers\Api\AnnouncementController;
 use App\Http\Controllers\Api\ExportController;
 use App\Http\Controllers\Api\OrganiserSummaryController;
 use App\Http\Controllers\Api\AuthController;
@@ -75,6 +76,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // Organiser tools for an event they own.
     Route::get('/events/{event}/stats', [EventController::class, 'stats']);
     Route::get('/events/{event}/seat-map', [EventController::class, 'seatMap']);
+    Route::get('/events/{event}/announcements', [AnnouncementController::class, 'index']);
+    Route::post('/events/{event}/announcements', [AnnouncementController::class, 'store'])->middleware('throttle:10,1,announce');
     Route::get('/events/{event}/export', [ExportController::class, 'attendees']);
     Route::post('/events/{event}/duplicate', [EventController::class, 'duplicate']);
 });

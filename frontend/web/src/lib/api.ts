@@ -153,7 +153,7 @@ export type EventDetail = EventItem
 
 export type NotificationRow = {
   id: number
-  type: 'confirmation' | 'waitlist_promoted' | 'cancelled' | 'reminder'
+  type: 'confirmation' | 'waitlist_promoted' | 'cancelled' | 'reminder' | 'announcement'
   sent_at: string | null
   provider_response: { status: number | string; body?: unknown; reason?: string } | null
   booking?: {
@@ -161,6 +161,11 @@ export type NotificationRow = {
     ticket_type?: { name: string; event?: { id: number; title: string } }
   }
 }
+
+export type AnnouncementRow = { id: number; subject: string; message: string; recipients: number; created_at: string; sender?: { id: number; name: string } | null }
+
+/** What an organiser sent to an event's guests before, and how many people a new message would reach now. */
+export type AnnouncementList = { audience: number; data: AnnouncementRow[] }
 
 export type SeatMapSeat = {
   id: number

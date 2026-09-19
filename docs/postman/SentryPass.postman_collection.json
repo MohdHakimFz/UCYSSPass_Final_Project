@@ -8150,10 +8150,574 @@
 			]
 		},
 		{
-			"name": "17. Organiser summary and password reset",
+			"name": "17. Announcements to guests",
+			"description": "An organiser can email everyone booked on their event (and the waitlist). Each person gets it once.",
 			"item": [
 				{
-					"name": "17.1 The organiser's own numbers",
+					"name": "17.1 Organiser A creates a published event",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status is 201\", function () { pm.response.to.have.status(201); });",
+									"pm.collectionVariables.set(\"announce_event_id\", pm.response.json().id);"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/events",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"events"
+							]
+						},
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{orgA_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"venue_id\": \"{{venue_id}}\",\n  \"title\": \"Postman Announce {{run_id}}\",\n  \"description\": \"Created by the Postman collection.\",\n  \"category\": \"workshop\",\n  \"start_at\": \"2026-12-10T09:00:00Z\",\n  \"end_at\": \"2026-12-10T12:00:00Z\",\n  \"status\": \"published\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					}
+				},
+				{
+					"name": "17.2 A free tier",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status is 201\", function () { pm.response.to.have.status(201); });",
+									"pm.collectionVariables.set(\"announce_tier_id\", pm.response.json().id);"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/events/{{announce_event_id}}/ticket-types",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"events",
+								"{{announce_event_id}}",
+								"ticket-types"
+							]
+						},
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{orgA_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Free\",\n  \"price\": 0,\n  \"capacity\": 5\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					}
+				},
+				{
+					"name": "17.3 With nobody booked there is nobody to tell",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status is 422\", function () { pm.response.to.have.status(422); });",
+									"pm.test(\"Says nobody has booked\", function () { pm.expect(pm.response.json().message).to.include(\"Nobody\"); });"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/events/{{announce_event_id}}/announcements",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"events",
+								"{{announce_event_id}}",
+								"announcements"
+							]
+						},
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{orgA_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"subject\": \"Room change\",\n  \"message\": \"We moved to Makmal 4.\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					}
+				},
+				{
+					"name": "17.4 Customer 6 books",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status is 201\", function () { pm.response.to.have.status(201); });"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/bookings",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"bookings"
+							]
+						},
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{c6_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"ticket_type_id\": \"{{announce_tier_id}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					}
+				},
+				{
+					"name": "17.5 A subject is required",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status is 422\", function () { pm.response.to.have.status(422); });",
+									"pm.test(\"Names the field\", function () { pm.expect(pm.response.json().errors).to.have.property(\"subject\"); });"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/events/{{announce_event_id}}/announcements",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"events",
+								"{{announce_event_id}}",
+								"announcements"
+							]
+						},
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{orgA_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"subject\": \"\",\n  \"message\": \"Hello\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					}
+				},
+				{
+					"name": "17.6 Another organiser cannot write to this event's guests",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status is 403\", function () { pm.response.to.have.status(403); });"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/events/{{announce_event_id}}/announcements",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"events",
+								"{{announce_event_id}}",
+								"announcements"
+							]
+						},
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{orgB_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"subject\": \"Hi\",\n  \"message\": \"Hello\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					}
+				},
+				{
+					"name": "17.7 A customer cannot",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status is 403\", function () { pm.response.to.have.status(403); });"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/events/{{announce_event_id}}/announcements",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"events",
+								"{{announce_event_id}}",
+								"announcements"
+							]
+						},
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{c6_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"subject\": \"Hi\",\n  \"message\": \"Hello\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					}
+				},
+				{
+					"name": "17.8 The organiser sends it to everyone booked",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status is 201\", function () { pm.response.to.have.status(201); });",
+									"const j = pm.response.json();",
+									"pm.test(\"Recorded with its audience\", function () { pm.expect(j.subject).to.eql(\"Room change\"); pm.expect(j.recipients).to.eql(1); });"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/events/{{announce_event_id}}/announcements",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"events",
+								"{{announce_event_id}}",
+								"announcements"
+							]
+						},
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{orgA_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"subject\": \"Room change\",\n  \"message\": \"We moved to Makmal 4.\\nSee you there.\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					}
+				},
+				{
+					"name": "17.9 The history shows what was sent and who would hear now",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+									"const j = pm.response.json();",
+									"pm.test(\"One announcement, and an audience of one\", function () { pm.expect(j.audience).to.eql(1); pm.expect(j.data).to.have.length(1); pm.expect(j.data[0].subject).to.eql(\"Room change\"); });"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/events/{{announce_event_id}}/announcements",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"events",
+								"{{announce_event_id}}",
+								"announcements"
+							]
+						},
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{orgA_token}}",
+									"type": "string"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "17.10 The admin email log has an announcement row",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+									"pm.test(\"At least one announcement email\", function () { pm.expect(pm.response.json().total).to.be.above(0); });"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/notifications?type=announcement&per_page=50",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"notifications"
+							],
+							"query": [
+								{
+									"key": "type",
+									"value": "announcement"
+								},
+								{
+									"key": "per_page",
+									"value": "50"
+								}
+							]
+						},
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "18. Organiser summary and password reset",
+			"item": [
+				{
+					"name": "18.1 The organiser's own numbers",
 					"event": [
 						{
 							"listen": "test",
@@ -8198,7 +8762,7 @@
 					}
 				},
 				{
-					"name": "17.2 A customer has no summary",
+					"name": "18.2 A customer has no summary",
 					"event": [
 						{
 							"listen": "test",
@@ -8241,7 +8805,7 @@
 					}
 				},
 				{
-					"name": "17.3 Forgot password gives a general answer",
+					"name": "18.3 Forgot password gives a general answer",
 					"event": [
 						{
 							"listen": "test",
@@ -8291,7 +8855,7 @@
 					}
 				},
 				{
-					"name": "17.4 An unknown email gets the very same answer",
+					"name": "18.4 An unknown email gets the very same answer",
 					"event": [
 						{
 							"listen": "test",
@@ -8341,7 +8905,7 @@
 					}
 				},
 				{
-					"name": "17.5 A wrong reset code is refused",
+					"name": "18.5 A wrong reset code is refused",
 					"event": [
 						{
 							"listen": "test",
@@ -8393,10 +8957,10 @@
 			]
 		},
 		{
-			"name": "18. Cleanup",
+			"name": "19. Cleanup",
 			"item": [
 				{
-					"name": "18.1 Admin deletes customer 1",
+					"name": "19.1 Admin deletes customer 1",
 					"event": [
 						{
 							"listen": "test",
@@ -8439,7 +9003,7 @@
 					}
 				},
 				{
-					"name": "18.2 Admin deletes customer 2",
+					"name": "19.2 Admin deletes customer 2",
 					"event": [
 						{
 							"listen": "test",
@@ -8482,7 +9046,7 @@
 					}
 				},
 				{
-					"name": "18.3 Admin deletes customer 3",
+					"name": "19.3 Admin deletes customer 3",
 					"event": [
 						{
 							"listen": "test",
@@ -8525,7 +9089,7 @@
 					}
 				},
 				{
-					"name": "18.4 Admin deletes customer 4",
+					"name": "19.4 Admin deletes customer 4",
 					"event": [
 						{
 							"listen": "test",
@@ -8568,7 +9132,7 @@
 					}
 				},
 				{
-					"name": "18.5 Admin deletes customer 5",
+					"name": "19.5 Admin deletes customer 5",
 					"event": [
 						{
 							"listen": "test",
@@ -8611,7 +9175,7 @@
 					}
 				},
 				{
-					"name": "18.6 Admin deletes customer 6",
+					"name": "19.6 Admin deletes customer 6",
 					"event": [
 						{
 							"listen": "test",
@@ -8654,7 +9218,7 @@
 					}
 				},
 				{
-					"name": "18.7 Admin deletes organiser A (and their event)",
+					"name": "19.7 Admin deletes organiser A (and their event)",
 					"event": [
 						{
 							"listen": "test",
@@ -8697,7 +9261,7 @@
 					}
 				},
 				{
-					"name": "18.8 Admin deletes organiser B",
+					"name": "19.8 Admin deletes organiser B",
 					"event": [
 						{
 							"listen": "test",
@@ -8740,7 +9304,7 @@
 					}
 				},
 				{
-					"name": "18.9 Admin deletes the test venue",
+					"name": "19.9 Admin deletes the test venue",
 					"event": [
 						{
 							"listen": "test",
@@ -8783,7 +9347,7 @@
 					}
 				},
 				{
-					"name": "18.10 The event is gone",
+					"name": "19.10 The event is gone",
 					"event": [
 						{
 							"listen": "test",
@@ -9020,6 +9584,14 @@
 		},
 		{
 			"key": "member_tier_id",
+			"value": ""
+		},
+		{
+			"key": "announce_event_id",
+			"value": ""
+		},
+		{
+			"key": "announce_tier_id",
 			"value": ""
 		}
 	]

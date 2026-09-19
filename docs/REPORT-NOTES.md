@@ -65,13 +65,13 @@ Everything is in [`performance/PERFORMANCE.md`](performance/PERFORMANCE.md): mis
 
 | Requirement in the description | Evidence |
 | --- | --- |
-| At least 4 related tables, keys, integrity constraints | `database/schema.sql` (8 tables, 9 foreign keys, check and unique constraints), `ERD.png`, `database.md` |
+| At least 4 related tables, keys, integrity constraints | `database/schema.sql` (9 tables, 12 foreign keys, check and unique constraints), `ERD.png`, `database.md` |
 | ERD, DDL and DML with at least 5 records per table | `ERD.png`, `database/schema.sql`, `database/sample-data.sql` (checked by loading it into an empty database) |
 | `/users`, `/events`, `/venues`, `/bookings` with GET, POST, PUT, DELETE, JSON, status codes, validation | `api-documentation.md` |
 | Authentication, role-based access, validation, centralised error handling | `api-documentation.md` (Security and middleware), `backend/bootstrap/app.php`, the policies and form requests |
 | At least one genuine third-party API | Resend and the QR Code API (above) |
 | Two or more of logging, rate limiting, pagination, filtering, search, sorting | All of them, above |
 | Debugging and performance report | `performance/PERFORMANCE.md` |
-| Postman collection, success and error screenshots, API documentation | `postman/` (174 requests, 272 assertions), `PLAN-AND-POSTMAN-GUIDE.md` (screenshot list), `api-documentation.md` |
+| Postman collection, success and error screenshots, API documentation | `postman/` (184 requests, 287 assertions), `PLAN-AND-POSTMAN-GUIDE.md` (screenshot list), `api-documentation.md` |
 | README with setup and run instructions | `README.md` |
-| Automated tests | 186 backend tests, 32 browser tests (Playwright), the Postman run in CI |
+| Automated tests | 196 backend tests, 34 browser tests (Playwright), the Postman run in CI |

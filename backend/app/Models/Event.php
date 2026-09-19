@@ -54,6 +54,11 @@ class Event extends Model
         return $this->belongsTo(User::class, 'organiser_id');
     }
 
+    public function announcements(): HasMany
+    {
+        return $this->hasMany(Announcement::class);
+    }
+
     public function ticketTypes(): HasMany
     {
         return $this->hasMany(TicketType::class);

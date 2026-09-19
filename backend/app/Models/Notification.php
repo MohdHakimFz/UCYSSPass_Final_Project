@@ -13,6 +13,7 @@ class Notification extends Model
 
     protected $fillable = [
         'booking_id',
+        'announcement_id',
         'type',
         'channel',
         'sent_at',
@@ -25,6 +26,11 @@ class Notification extends Model
             'sent_at' => 'datetime',
             'provider_response' => 'array',
         ];
+    }
+
+    public function announcement(): BelongsTo
+    {
+        return $this->belongsTo(Announcement::class);
     }
 
     public function booking(): BelongsTo

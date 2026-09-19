@@ -85,6 +85,14 @@ INSERT INTO payments (id, booking_id, amount, method, status, reference, failure
   (5, 5,  25.00, 'card',    'failed',   NULL,                'The payment was declined.', NULL,                  NULL,                  0.00,  '2026-10-05 10:01:00', '2026-10-05 10:01:00'),
   (6, 5,  25.00, 'card',    'failed',   NULL,                'Insufficient funds.',       NULL,                  NULL,                  0.00,  '2026-10-05 10:02:00', '2026-10-05 10:02:00');
 
+-- 5 announcements an organiser sent to the guests of an event
+INSERT INTO announcements (id, event_id, sender_id, subject, message, recipients, created_at, updated_at) VALUES
+  (1, 1, 2, 'Room link and what to install', E'The meeting link is on your pass, and it opens 15 minutes before we start.\nPlease install Burp Suite Community first.', 2, '2026-10-22 09:00:00', '2026-10-22 09:00:00'),
+  (2, 2, 2, 'Bring your student card',        E'Bring your student card for the lab door.\nParking is at Blok C.',                                                       3, '2026-11-05 10:00:00', '2026-11-05 10:00:00'),
+  (3, 3, 3, 'Lab moved to level 3',           'The Cyber Range Lab is on level 3, Blok D.',                                                                            2, '2026-11-12 09:30:00', '2026-11-12 09:30:00'),
+  (4, 4, 3, 'Doors open at 1:30 pm',          'Doors open at 1:30 pm, and the talk starts at 2:00 pm sharp.',                                                          1, '2026-11-27 12:00:00', '2026-11-27 12:00:00'),
+  (5, 1, 2, 'Recording',                      'A recording will be shared after the session.',                                                                         2, '2026-10-24 22:15:00', '2026-10-24 22:15:00');
+
 -- 7 email log rows, with the raw answer from the email provider
 INSERT INTO notifications (id, booking_id, type, channel, sent_at, provider_response, created_at, updated_at) VALUES
   (1, 1,  'confirmation',      'email', '2026-10-01 10:00:02', '{"status": 200, "body": {"id": "sample-email-1"}}', '2026-10-01 10:00:02', '2026-10-01 10:00:02'),
@@ -95,6 +103,14 @@ INSERT INTO notifications (id, booking_id, type, channel, sent_at, provider_resp
   (6, 1,  'reminder',          'email', '2026-10-23 12:00:02', '{"status": 200, "body": {"id": "sample-email-6"}}', '2026-10-23 12:00:02', '2026-10-23 12:00:02'),
   (7, 2,  'reminder',          'email', '2026-10-23 12:00:03', '{"status": 403, "body": {"name": "validation_error"}}', '2026-10-23 12:00:03', '2026-10-23 12:00:03');
 
+-- Five emails that carried an announcement (announcement_id says which one)
+INSERT INTO notifications (id, booking_id, announcement_id, type, channel, sent_at, provider_response, created_at, updated_at) VALUES
+  (8,  1, 1, 'announcement', 'email', '2026-10-22 09:00:05', '{"status": 200, "body": {"id": "sample-email-8"}}',  '2026-10-22 09:00:05', '2026-10-22 09:00:05'),
+  (9,  2, 1, 'announcement', 'email', '2026-10-22 09:00:06', '{"status": 200, "body": {"id": "sample-email-9"}}',  '2026-10-22 09:00:06', '2026-10-22 09:00:06'),
+  (10, 3, 2, 'announcement', 'email', '2026-11-05 10:00:05', '{"status": 200, "body": {"id": "sample-email-10"}}', '2026-11-05 10:00:05', '2026-11-05 10:00:05'),
+  (11, 6, 3, 'announcement', 'email', '2026-11-12 09:30:05', '{"status": 200, "body": {"id": "sample-email-11"}}', '2026-11-12 09:30:05', '2026-11-12 09:30:05'),
+  (12, 7, 4, 'announcement', 'email', '2026-11-27 12:00:05', '{"status": 403, "body": {"name": "validation_error"}}', '2026-11-27 12:00:05', '2026-11-27 12:00:05');
+
 -- Ids were given by hand above, so move each id counter past them
 SELECT setval('users_id_seq', (SELECT max(id) FROM users));
 SELECT setval('venues_id_seq', (SELECT max(id) FROM venues));
@@ -104,6 +120,7 @@ SELECT setval('seats_id_seq', (SELECT max(id) FROM seats));
 SELECT setval('bookings_id_seq', (SELECT max(id) FROM bookings));
 SELECT setval('payments_id_seq', (SELECT max(id) FROM payments));
 SELECT setval('notifications_id_seq', (SELECT max(id) FROM notifications));
+SELECT setval('announcements_id_seq', (SELECT max(id) FROM announcements));
 
 -- Two students are on the member list, and the draft workshop has a members-only tier
 UPDATE users SET is_member = true WHERE id IN (4, 5);

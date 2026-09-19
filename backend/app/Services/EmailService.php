@@ -24,7 +24,7 @@ class EmailService
      */
     public function send(Notification $notification): Notification
     {
-        $notification->loadMissing('booking.customer', 'booking.seat', 'booking.ticketType.event.venue');
+        $notification->loadMissing('booking.customer', 'booking.seat', 'booking.ticketType.event.venue', 'announcement');
         $booking = $notification->booking;
         $customer = $booking->customer;
 
@@ -136,6 +136,7 @@ class EmailService
                 [],
             ],
             'reminder' => $this->reminder($booking),
+            'announcement' => $this->announcement($notification->announcement, $booking),
         };
     }
 
@@ -167,6 +168,21 @@ class EmailService
             "<p>Hi {$this->firstName($booking)}, a reminder from {$brand}.</p><p><strong>{$title}</strong><br>{$when} (Malaysia time)</p>{$where}<p>A calendar file is attached, so you can add it to your calendar.</p>",
             [['filename' => 'event.ics', 'content' => base64_encode(Ics::forBooking($booking))]],
         ];
+    }
+
+    /**
+     * A message from the organiser. What they wrote is escaped, and line breaks are kept.
+     *
+     * @return array{0: string, 1: string, 2: list<array{filename: string, content: string}>}
+     */
+    private function announcement(\App\Models\Announcement $announcement, Booking $booking): array
+    {
+        $event = $booking->ticketType->event;
+        $body = "<p>Hi {$this->firstName($booking)}, a message about <strong>".e($event->title).'</strong>:</p>'
+            .'<p>'.nl2br(e($announcement->message)).'</p>'
+            .'<p style="color:#666">You are getting this because you booked (or joined the waitlist for) this event.</p>';
+
+        return [$announcement->subject, $body, []];
     }
 
     private function firstName(Booking $booking): string

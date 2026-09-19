@@ -6,7 +6,7 @@ A JSON REST API for event ticketing and venue booking, built on Laravel 12 with 
 - **Format:** JSON in, JSON out. Send `Accept: application/json`. Dates are ISO 8601 in UTC (`2026-12-01T09:00:00.000000Z`).
 - **Auth:** `Authorization: Bearer <token>`, where the token comes from `POST /auth/register` or `POST /auth/login`.
 - **Health check:** `GET http://localhost/up` (outside `/api`).
-- **Try it:** import [`postman/SentryPass.postman_collection.json`](postman/). It runs every endpoint below, success and error cases (174 requests, 272 assertions).
+- **Try it:** import [`postman/SentryPass.postman_collection.json`](postman/). It runs every endpoint below, success and error cases (184 requests, 287 assertions).
 
 ## Contents
 
@@ -93,6 +93,7 @@ List endpoints are paginated with `?page=` and `?per_page=` (default 15). The re
 | `POST /bookings` | 5 a minute per user (anti-scalping). Paying and joining have their own counters, so they never use up this allowance |
 | `POST /bookings/{id}/pay` | 20 a minute |
 | `POST /bookings/{id}/join` | 30 a minute |
+| `POST /events/{id}/announcements` | 10 a minute |
 | `POST /auth/forgot-password` | 3 a minute |
 | `POST /auth/reset-password` | 10 a minute |
 
@@ -183,6 +184,8 @@ A venue named **Online** is created automatically the first time an online event
 | GET | `/events/{id}/seat-map` | Owner, Admin | Every numbered seat and who holds it. |
 | GET | `/events/{id}/export` | Owner, Admin | Attendee list as CSV. |
 | POST | `/events/{id}/duplicate` | Owner, Admin | Copies the event and its tiers as a draft with every seat open. |
+| GET | `/events/{id}/announcements` | Owner, Admin | Announcements sent so far, and how many people one would reach now. |
+| POST | `/events/{id}/announcements` | Owner, Admin | Email a message to everyone booked on the event. |
 
 **`GET /events` query parameters**
 
@@ -285,6 +288,29 @@ Each item also carries `venue { id, name }`, `from_price` (cheapest tier), `seat
 ```
 
 `state` is `free`, `held` (chosen, waiting for payment), `booked` (confirmed) or `attended` (checked in). An event without numbered seats returns `"seated": false` with empty `seats`.
+
+**Announcements.** An organiser writes to everyone who is booked on an event: guests who are `confirmed`, `pending` (holding a seat) or `waitlisted`, each person once even if they hold two tiers. Cancelled bookings and people already checked in are left out.
+
+`POST /events/{id}/announcements`
+
+```json
+{ "subject": "Room change", "message": "We moved to Makmal 4.\nSee you there." }
+```
+
+`201`
+
+```json
+{ "id": 7, "event_id": 995, "sender_id": 6444, "subject": "Room change", "message": "We moved to Makmal 4.\nSee you there.", "recipients": 12, "sender": { "id": 6444, "name": "Nurul Aisyah" } }
+```
+
+| Result | Cause |
+| --- | --- |
+| `201` | Recorded. The emails go out after the response has been sent, one per guest, each logged in `notifications` (type `announcement`) with Resend's answer |
+| `422` | `subject` (max 150) or `message` (max 2000) missing or too long; the event is not published; nobody is booked; or more than 500 guests |
+| `403` | Not this event's organiser or an admin |
+| `429` | More than 10 a minute |
+
+`GET /events/{id}/announcements` returns `{ "audience": 12, "data": [ { "id", "subject", "message", "recipients", "created_at", "sender" } ] }`, newest first. What was typed is escaped in the email, and line breaks are kept.
 
 **Cancelling an event.** `PUT /events/{id}` with `{ "status": "cancelled" }` cancels every pending, confirmed and waitlisted booking on it, refunds paid ones, and records a `cancelled` email for each attendee. The response is the event plus `"cancelled_bookings": <count>`. Nobody is promoted from a waitlist, because the whole event is off.
 
@@ -454,7 +480,7 @@ Authenticate with a Bearer token (organiser who owns the event, or admin) **or**
 | --- | --- | --- | --- |
 | GET | `/organiser/summary` | Organiser (own events), Admin (all) | Counts and revenue for the organiser's dashboard. `403` for a customer. |
 | GET | `/admin/stats` | Admin | Revenue, seats, holds, recent activity and breakdowns. |
-| GET | `/admin/notifications` | Admin | Email log, newest first. `?type=confirmation\|waitlist_promoted\|cancelled\|reminder`. Each row includes the raw `provider_response`. |
+| GET | `/admin/notifications` | Admin | Email log, newest first. `?type=confirmation\|waitlist_promoted\|cancelled\|reminder\|announcement`. Each row includes the raw `provider_response`. |
 | GET | `/admin/export/users` | Admin | All users as CSV. |
 | GET | `/admin/export/bookings` | Admin | All bookings as CSV. |
 
@@ -512,7 +538,7 @@ When a booking is confirmed it gets `qr_token = HMAC-SHA256("{booking_id}|{ticke
 
 ### Notifications and reminders
 
-Booking confirmed, booking cancelled, waitlist promotion and a **reminder** each create a row in `notifications` and send an email through Resend. The row keeps `sent_at` and the provider's raw response in `provider_response`. The reminder goes to each confirmed guest once, when their event is within 24 hours (`REMINDER_HOURS_BEFORE`), and not to someone who booked in the last hour. It states the time in Malaysian time, the venue and seat or the meeting link, and carries a calendar file (`event.ics`). A task runs every 10 minutes (`bookings:send-reminders`). Everything a person typed (an event title, a name) is escaped before it goes into an email. Without `RESEND_API_KEY` the row is recorded as `{"status":"skipped"}`. `php artisan emails:test <address>` sends one test email and prints Resend's exact answer.
+Booking confirmed, booking cancelled, waitlist promotion, a **reminder** and an organiser **announcement** each create a row in `notifications` and send an email through Resend. The row keeps `sent_at` and the provider's raw response in `provider_response`. The reminder goes to each confirmed guest once, when their event is within 24 hours (`REMINDER_HOURS_BEFORE`), and not to someone who booked in the last hour. It states the time in Malaysian time, the venue and seat or the meeting link, and carries a calendar file (`event.ics`). A task runs every 10 minutes (`bookings:send-reminders`). Everything a person typed (an event title, a name) is escaped before it goes into an email. Without `RESEND_API_KEY` the row is recorded as `{"status":"skipped"}`. `php artisan emails:test <address>` sends one test email and prints Resend's exact answer.
 
 ### Screens stay up to date
 

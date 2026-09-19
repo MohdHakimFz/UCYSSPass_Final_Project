@@ -11,6 +11,7 @@ const TYPES = [
   { value: "waitlist_promoted", label: "Promoted from waitlist" },
   { value: "cancelled", label: "Booking cancelled" },
   { value: "reminder", label: "Reminder before the event" },
+  { value: "announcement", label: "Organiser announcement" },
 ] as const;
 
 function delivery(n: NotificationRow) {

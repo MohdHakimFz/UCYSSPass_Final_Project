@@ -1217,3 +1217,29 @@ body {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* What an organiser sent before */
+.announcement-history {
+  margin: 24px 0 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    padding: 12px 0;
+    border-top: 1px solid var(--cds-border-subtle-01, #e0e0e0);
+  }
+
+  .sub {
+    display: block;
+    margin-top: 2px;
+  }
+
+  details {
+    margin-top: 6px;
+  }
+
+  summary {
+    cursor: pointer;
+    color: var(--cds-link-primary, #0f62fe);
+  }
+}

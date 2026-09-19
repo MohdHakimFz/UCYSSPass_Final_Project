@@ -1,5 +1,5 @@
 -- UCYSS / SentryPass: database creation script (DDL).
--- PostgreSQL 18. Eight domain tables: users, venues, events, ticket_types, seats, bookings, payments, notifications.
+-- PostgreSQL 18. Nine domain tables: users, venues, events, ticket_types, seats, bookings, payments, notifications, announcements.
 -- Exported from the live database with pg_dump; the Laravel migrations in backend/database/migrations create the same schema.
 -- Load into an empty database:   psql -d yourdb -f schema.sql   then   psql -d yourdb -f sample-data.sql
 
@@ -9,6 +9,38 @@
 
 -- Dumped from database version 18.6
 -- Dumped by pg_dump version 18.6
+
+--
+-- Name: announcements; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.announcements (
+    id bigint NOT NULL,
+    event_id bigint NOT NULL,
+    sender_id bigint NOT NULL,
+    subject character varying(150) NOT NULL,
+    message text NOT NULL,
+    recipients integer DEFAULT 0 NOT NULL,
+    created_at timestamp(0) without time zone,
+    updated_at timestamp(0) without time zone
+);
+
+--
+-- Name: announcements_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.announcements_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+--
+-- Name: announcements_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.announcements_id_seq OWNED BY public.announcements.id;
 
 --
 -- Name: bookings; Type: TABLE; Schema: public; Owner: -
@@ -102,8 +134,9 @@ CREATE TABLE public.notifications (
     provider_response jsonb,
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
+    announcement_id bigint,
     CONSTRAINT notifications_channel_check CHECK (((channel)::text = 'email'::text)),
-    CONSTRAINT notifications_type_check CHECK (((type)::text = ANY ((ARRAY['confirmation'::character varying, 'waitlist_promoted'::character varying, 'cancelled'::character varying, 'reminder'::character varying])::text[])))
+    CONSTRAINT notifications_type_check CHECK (((type)::text = ANY ((ARRAY['confirmation'::character varying, 'waitlist_promoted'::character varying, 'cancelled'::character varying, 'reminder'::character varying, 'announcement'::character varying])::text[])))
 );
 
 --
@@ -292,6 +325,12 @@ CREATE SEQUENCE public.venues_id_seq
 ALTER SEQUENCE public.venues_id_seq OWNED BY public.venues.id;
 
 --
+-- Name: announcements id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.announcements ALTER COLUMN id SET DEFAULT nextval('public.announcements_id_seq'::regclass);
+
+--
 -- Name: bookings id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -338,6 +377,13 @@ ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_
 --
 
 ALTER TABLE ONLY public.venues ALTER COLUMN id SET DEFAULT nextval('public.venues_id_seq'::regclass);
+
+--
+-- Name: announcements announcements_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.announcements
+    ADD CONSTRAINT announcements_pkey PRIMARY KEY (id);
 
 --
 -- Name: bookings bookings_pkey; Type: CONSTRAINT; Schema: public; Owner: -
@@ -417,6 +463,12 @@ ALTER TABLE ONLY public.venues
     ADD CONSTRAINT venues_pkey PRIMARY KEY (id);
 
 --
+-- Name: announcements_event_created_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX announcements_event_created_idx ON public.announcements USING btree (event_id, created_at);
+
+--
 -- Name: bookings_booked_idx; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -489,6 +541,20 @@ CREATE INDEX ticket_types_event_idx ON public.ticket_types USING btree (event_id
 CREATE INDEX users_role_idx ON public.users USING btree (role);
 
 --
+-- Name: announcements announcements_event_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.announcements
+    ADD CONSTRAINT announcements_event_id_foreign FOREIGN KEY (event_id) REFERENCES public.events(id) ON DELETE CASCADE;
+
+--
+-- Name: announcements announcements_sender_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.announcements
+    ADD CONSTRAINT announcements_sender_id_foreign FOREIGN KEY (sender_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+--
 -- Name: bookings bookings_customer_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -522,6 +588,13 @@ ALTER TABLE ONLY public.events
 
 ALTER TABLE ONLY public.events
     ADD CONSTRAINT events_venue_id_foreign FOREIGN KEY (venue_id) REFERENCES public.venues(id) ON DELETE RESTRICT;
+
+--
+-- Name: notifications notifications_announcement_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.notifications
+    ADD CONSTRAINT notifications_announcement_id_foreign FOREIGN KEY (announcement_id) REFERENCES public.announcements(id) ON DELETE CASCADE;
 
 --
 -- Name: notifications notifications_booking_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -

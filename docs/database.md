@@ -4,7 +4,7 @@ UCYSS (the code is still called SentryPass) uses **PostgreSQL 18**. The schema i
 
 | File | What it is |
 | --- | --- |
-| [`ERD.png`](ERD.png) / [`ERD.svg`](ERD.svg) | Entity relationship diagram of the eight domain tables |
+| [`ERD.png`](ERD.png) / [`ERD.svg`](ERD.svg) | Entity relationship diagram of the nine domain tables |
 | [`database/schema.sql`](database/schema.sql) | **DDL**: the exact `CREATE TABLE`, constraints, indexes and foreign keys, exported with `pg_dump` |
 | [`database/sample-data.sql`](database/sample-data.sql) | **DML**: sample rows, at least five in every table |
 
@@ -21,7 +21,8 @@ UCYSS (the code is still called SentryPass) uses **PostgreSQL 18**. The schema i
 | `seats` | One numbered seat of a tier (only on a `seated` event) | `row_label` and `number`, unique within the tier |
 | `bookings` | One customer's place on one tier | `status` (`pending`, `confirmed`, `waitlisted`, `attended`, `cancelled`), `seat_id`, `qr_token` (HMAC-signed ticket), `hold_expires_at` (the payment hold), `booked_at`, `checked_in_at` |
 | `payments` | One payment attempt for a booking | `amount`, `method` (`card`, `fpx`, `ewallet`), `status` (`paid`, `failed`, `refunded`), `refunded_amount` |
-| `notifications` | An email owed to a customer | `type` (`confirmation`, `waitlist_promoted`, `cancelled`, `reminder`), `sent_at`, `provider_response` (raw JSON from the email API) |
+| `notifications` | An email owed to a customer | `type` (`confirmation`, `waitlist_promoted`, `cancelled`, `reminder`, `announcement`), `announcement_id` (for an announcement), `sent_at`, `provider_response` (raw JSON from the email API) |
+| `announcements` | A message an organiser sent to the guests of an event | `event_id`, `sender_id`, `subject`, `message`, `recipients` |
 
 Laravel also creates `personal_access_tokens` (Sanctum), `sessions`, `cache`, `jobs` and `migrations`; they are not part of the domain model and are left out of the diagram.
 
@@ -38,6 +39,9 @@ Laravel also creates `personal_access_tokens` (Sanctum), `sessions`, `cache`, `j
 | `bookings.seat_id` → `seats` | at most one booking per seat | **set null** | Removing a seat keeps the booking |
 | `payments.booking_id` → `bookings` | many payment attempts per booking | cascade | |
 | `notifications.booking_id` → `bookings` | many emails per booking | cascade | |
+| `notifications.announcement_id` → `announcements` | many emails per announcement | cascade | Optional: only announcement emails have one |
+| `announcements.event_id` → `events` | many announcements per event | cascade | |
+| `announcements.sender_id` → `users` | many announcements per sender | cascade | |
 
 ## Constraints enforced by the database
 
@@ -82,11 +86,12 @@ There are two ways to get data:
 | `seats` | 18 | Numbered seats for the seated CTF |
 | `bookings` | 12 | Every status, one with a payment hold, seated and unseated |
 | `payments` | 6 | Paid by card, FPX and e-wallet, one refunded, two declined |
-| `notifications` | 7 | Every email type, including a reminder and a refused one |
+| `notifications` | 12 | Every email type, including a reminder, five announcement emails and a refused one |
+| `announcements` | 5 | Messages from two organisers to the guests of four events |
 
 The demo password for every account is `password`.
 
-`sample-data.sql` was checked by loading `schema.sql` and then `sample-data.sql` into an empty PostgreSQL database: no errors, and 8, 6, 7, 10, 18, 12, 6 and 7 rows.
+`sample-data.sql` was checked by loading `schema.sql` and then `sample-data.sql` into an empty PostgreSQL database: no errors, and 8, 6, 7, 10, 18, 12, 6, 12 and 5 rows.
 
 ## Regenerating the files
 
@@ -94,7 +99,7 @@ The demo password for every account is `password`.
 cd backend
 # DDL
 docker compose exec -T pgsql pg_dump -U sail -d laravel --schema-only --no-owner --no-privileges \
-  -t users -t venues -t events -t ticket_types -t seats -t bookings -t payments -t notifications > ../docs/database/schema.sql
+  -t users -t venues -t events -t ticket_types -t seats -t bookings -t payments -t notifications -t announcements > ../docs/database/schema.sql
 
 # Load both files into a scratch database to check them
 docker compose exec -T pgsql psql -U sail -d postgres -c "CREATE DATABASE ddl_check"
