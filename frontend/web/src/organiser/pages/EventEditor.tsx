@@ -16,6 +16,8 @@ import {
   type Venue,
 } from '@/lib/api'
 import { useFetch } from '@/lib/useFetch'
+import { useFeedback } from '@/dashboard/feedback'
+import { PageHeader } from '@/dashboard/parts'
 import { CATEGORY_LABEL, Notice, StatusTag, formatWhen, Skeleton } from '@/dashboard/ui'
 
 const CATEGORIES = Object.keys(CATEGORY_LABEL) as Category[]
@@ -56,10 +58,12 @@ export default function EventEditor() {
 
   return (
     <>
-      <div className="page-head">
-        <h1>{isNew ? 'Create event' : event!.title}</h1>
-        {!isNew && <StatusTag status={event!.status} />}
-      </div>
+      <PageHeader
+        crumbs={[{ label: 'My events', to: '/organiser/events' }, { label: isNew ? 'New event' : event!.title }]}
+        title={isNew ? 'Create event' : event!.title}
+        status={!isNew && <StatusTag status={event!.status} />}
+        description={isNew ? 'Fill in the details, save, then add ticket tiers so people can book.' : undefined}
+      />
 
       {actionNote && <Notice tone="error">{actionNote}</Notice>}
 
@@ -127,10 +131,14 @@ function EventForm({
   })
   const [note, setNote] = useState<{ tone: 'ok' | 'error'; text: string } | null>(null)
   const [busy, setBusy] = useState(false)
+  const { confirm } = useFeedback()
 
   async function save(e: React.FormEvent) {
     e.preventDefault()
-    if (event && f.status === 'cancelled' && event.status !== 'cancelled' && !window.confirm('Cancel this event? Every active booking is cancelled and those attendees are emailed.')) return
+    if (event && f.status === 'cancelled' && event.status !== 'cancelled') {
+      const ok = await confirm({ title: 'Cancel this event?', body: 'Every active booking is cancelled, paid tickets are refunded, and those attendees are emailed.', confirmLabel: 'Cancel the event', danger: true })
+      if (!ok) return
+    }
     setBusy(true)
     setNote(null)
     const body = {
@@ -209,6 +217,7 @@ function Tiers({ event, stats, onChange }: { event: EventItem; stats: EventStats
   const waitByTier = new Map(stats?.tiers.map((t) => [t.id, t.waitlisted]))
   const tiers = event.ticket_types ?? []
   const [draft, setDraft] = useState<Tier | null>(null)
+  const { confirm } = useFeedback()
   const [note, setNote] = useState<{ tone: 'ok' | 'error'; text: string } | null>(null)
 
   async function save(e: React.FormEvent) {
@@ -232,7 +241,7 @@ function Tiers({ event, stats, onChange }: { event: EventItem; stats: EventStats
   }
 
   async function remove(t: TicketType) {
-    if (!window.confirm(`Delete the ${t.name} tier? Bookings on it are deleted too.`)) return
+    if (!(await confirm({ title: `Delete the ${t.name} tier?`, body: 'Bookings on it are deleted too.', confirmLabel: 'Delete tier', danger: true }))) return
     setNote(null)
     try {
       await api(`/ticket-types/${t.id}`, { method: 'DELETE' })

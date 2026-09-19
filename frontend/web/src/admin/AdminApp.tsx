@@ -1,4 +1,5 @@
 import { Route, Routes } from 'react-router-dom'
+import { Calendar, Dashboard, Email, Location, Ticket, UserMultiple } from '@carbon/icons-react'
 import DashboardLayout from '@/dashboard/DashboardLayout'
 import Overview from './pages/Overview'
 import Events from './pages/Events'
@@ -9,19 +10,19 @@ import People from './pages/People'
 import Emails from './pages/Emails'
 
 const LINKS = [
-  { to: '/admin', label: 'Overview', end: true },
-  { to: '/admin/events', label: 'Events' },
-  { to: '/admin/bookings', label: 'Bookings' },
-  { to: '/admin/venues', label: 'Venues' },
-  { to: '/admin/users', label: 'People' },
-  { to: '/admin/notifications', label: 'Emails' },
+  { to: '/admin', label: 'Overview', icon: Dashboard, end: true },
+  { to: '/admin/events', label: 'Events', icon: Calendar },
+  { to: '/admin/bookings', label: 'Bookings', icon: Ticket },
+  { to: '/admin/venues', label: 'Venues', icon: Location },
+  { to: '/admin/users', label: 'People', icon: UserMultiple },
+  { to: '/admin/notifications', label: 'Emails', icon: Email },
 ]
 
 // Everything under /admin. Loaded on demand so customers never download the dashboard code.
 export default function AdminApp() {
   return (
     <Routes>
-      <Route element={<DashboardLayout area="Admin" base="/admin" links={LINKS} />}>
+      <Route element={<DashboardLayout area="Admin" base="/admin" links={LINKS} crossLink={{ to: '/organiser', label: 'Organiser tools' }} />}>
         <Route index element={<Overview />} />
         <Route path="events" element={<Events />} />
         <Route path="events/:id" element={<EventDetail />} />

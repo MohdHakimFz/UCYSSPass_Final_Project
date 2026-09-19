@@ -1,4 +1,3 @@
-import { Link } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import { useState } from "react";
 import { Button, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@carbon/react";
@@ -11,6 +10,7 @@ import {
   type Paginated,
 } from "@/lib/api";
 import { useFetch } from "@/lib/useFetch";
+import { PageHeader } from "@/dashboard/parts";
 import { Notice, Pager, Tag, formatWhen, Skeleton } from "@/dashboard/ui";
 
 const CATEGORY = { ctf: "CTF", bootcamp: "Bootcamp", conference: "Conference", workshop: "Workshop" } as const;
@@ -31,19 +31,12 @@ export default function EventDetailPage() {
 
   return (
     <>
-      <p className="crumb">
-        <Link to="/admin/events">← All events</Link>
-      </p>
-      <div className="page-head">
-        <div>
-          <h1>{event.title}</h1>
-          <p className="lede-sub" style={{ marginTop: 8 }}>
-            {CATEGORY[event.category]} · {formatWhen(event.start_at)} · {event.venue?.name ?? "No venue"}
-            {event.venue?.address ? `, ${event.venue.address}` : ""}
-          </p>
-        </div>
-        <Tag status={event.status} />
-      </div>
+      <PageHeader
+        crumbs={[{ label: "Events", to: "/admin/events" }, { label: event.title }]}
+        title={event.title}
+        status={<Tag status={event.status} />}
+        description={`${CATEGORY[event.category]} · ${formatWhen(event.start_at)} · ${event.venue?.name ?? "No venue"}${event.venue?.address ? `, ${event.venue.address}` : ""}`}
+      />
 
       {note && <Notice tone="error">{note}</Notice>}
       {event.description && <p className="prose">{event.description}</p>}

@@ -89,8 +89,8 @@ test.describe('one sign-in, three areas', () => {
     await page.getByRole('button', { name: 'Sign in' }).click()
 
     await expectPath(page, '/admin')
-    await expect(page.getByRole('banner')).toContainText('Admin')
-    await expect(page.getByRole('banner')).not.toContainText('Organiser')
+    await expect(page.locator('.cds--header__name')).toContainText('Admin')
+    await expect(page.locator('.cds--header__name')).not.toContainText('Organiser')
   })
 
   test('an admin who opens the organiser area can get back to admin', async ({ page }) => {

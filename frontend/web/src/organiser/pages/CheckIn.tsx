@@ -6,6 +6,7 @@ import { api, ApiError, errorText, type Booking, type EventItem, type EventStats
 import { useAuth } from '@/lib/auth'
 import { useFetch } from '@/lib/useFetch'
 import { formatWhen } from '@/dashboard/ui'
+import { PageHeader } from '@/dashboard/parts'
 
 type Outcome =
   | { kind: 'ok'; booking: Booking }
@@ -125,8 +126,7 @@ export default function CheckIn() {
 
   return (
     <>
-      <div className="page-head">
-        <h1>Check-in</h1>
+      <PageHeader title="Check-in" description="Scan or type a ticket code at the door. Pick the event you are working on first." actions={
         <div style={{ minWidth: 280 }}>
           <Select id="event" labelText="Event" value={eventId} onChange={(e) => setChosen(e.target.value)}>
             {events?.data.length === 0 && <SelectItem value="" text="No published events" />}
@@ -135,7 +135,7 @@ export default function CheckIn() {
             ))}
           </Select>
         </div>
-      </div>
+      } />
 
       {outcome && (
         <div ref={resultRef} className="result" data-ok={outcome.kind === 'ok'} role="status" aria-live="polite">

@@ -1,92 +1,129 @@
-import { useState } from "react";
-import { Button, Select, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@carbon/react";
-import { api, downloadFile, errorText, type Booking, type BookingStatus, type Paginated } from "@/lib/api";
-import { useFetch } from "@/lib/useFetch";
-import { Notice, Pager, Tag, formatWhen, Skeleton } from "@/dashboard/ui";
+import { useState } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
+import {
+  Button,
+  ContentSwitcher,
+  OverflowMenu,
+  OverflowMenuItem,
+  Switch,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableHeader,
+  TableRow,
+  Tag,
+} from '@carbon/react'
+import { Download, Ticket } from '@carbon/icons-react'
+import { api, downloadFile, errorText, type Booking, type BookingStatus, type Paginated } from '@/lib/api'
+import { useFetch } from '@/lib/useFetch'
+import { useFeedback } from '@/dashboard/feedback'
+import { EmptyState, PageHeader, TablePager, money } from '@/dashboard/parts'
+import { Notice, Skeleton, StatusTag, formatWhen } from '@/dashboard/ui'
 
-const STATUSES: { value: BookingStatus; label: string }[] = [
-  { value: "confirmed", label: "Confirmed" },
-  { value: "waitlisted", label: "Waitlisted" },
-  { value: "pending", label: "Pending" },
-  { value: "attended", label: "Checked in" },
-  { value: "cancelled", label: "Cancelled" },
-];
+const TABS: { key: '' | BookingStatus; label: string }[] = [
+  { key: '', label: 'All' },
+  { key: 'confirmed', label: 'Confirmed' },
+  { key: 'waitlisted', label: 'Waitlisted' },
+  { key: 'pending', label: 'Awaiting payment' },
+  { key: 'attended', label: 'Checked in' },
+  { key: 'cancelled', label: 'Cancelled' },
+]
+
+function PaymentTag({ b }: { b: Booking }) {
+  const p = b.payment
+  if (p?.status === 'paid') return <Tag type="green" size="md">Paid {money(p.amount)}</Tag>
+  if (p?.status === 'refunded') return <Tag type="gray" size="md">Refunded {money(p.refunded_amount)}</Tag>
+  if (b.status === 'pending' && b.hold_expires_at) return <Tag type="warm-gray" size="md">Awaiting payment</Tag>
+  return <span className="sub">None</span>
+}
 
 export default function BookingsPage() {
-  const [page, setPage] = useState(1);
-  const [status, setStatus] = useState("");
-  const [note, setNote] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
+  const { toast, confirm } = useFeedback()
+  const [params, setParams] = useSearchParams()
+  const status = (params.get('status') ?? '') as '' | BookingStatus
+  const [page, setPage] = useState(1)
+  const [size, setSize] = useState(10)
 
-  const qs = new URLSearchParams({ page: String(page), per_page: "12" });
-  if (status) qs.set("status", status);
-  const { data: rows, error: loadError, reload: load } = useFetch<Paginated<Booking>>(`/bookings?${qs}`);
+  const qs = new URLSearchParams({ page: String(page), per_page: String(size) })
+  if (status) qs.set('status', status)
+  const { data: rows, error, reload } = useFetch<Paginated<Booking>>(`/bookings?${qs}`)
 
   async function cancel(b: Booking) {
-    if (!window.confirm(`Cancel ${b.customer?.name ?? "this"} booking? If someone is waitlisted they get the seat.`)) return;
-    setNote(null);
+    const ok = await confirm({
+      title: `Cancel ${b.customer?.name ?? 'this'} booking?`,
+      body: 'The seat goes to the next person on the waitlist, and any payment is refunded when the event is far enough away.',
+      confirmLabel: 'Cancel booking',
+      danger: true,
+    })
+    if (!ok) return
     try {
-      await api(`/bookings/${b.id}/cancel`, { method: "PUT" });
-      setNote({ tone: "ok", text: "Booking cancelled." });
-      await load();
+      const res = await api<Booking>(`/bookings/${b.id}/cancel`, { method: 'PUT' })
+      toast({ kind: 'success', title: 'Booking cancelled', subtitle: res.refund?.refunded ? `${money(res.refund.amount)} refunded.` : undefined })
+      reload()
     } catch (err) {
-      setNote({ tone: "error", text: errorText(err) });
+      toast({ kind: 'error', title: 'Could not cancel', subtitle: errorText(err) })
     }
   }
 
   async function remove(b: Booking) {
-    if (!window.confirm("Permanently delete this booking record? Use cancel unless you're cleaning up.")) return;
-    setNote(null);
+    const ok = await confirm({ title: 'Delete this booking record?', body: 'Use cancel unless you are cleaning up test data. This removes the record for good.', confirmLabel: 'Delete', danger: true })
+    if (!ok) return
     try {
-      await api(`/bookings/${b.id}`, { method: "DELETE" });
-      setNote({ tone: "ok", text: "Booking deleted." });
-      await load();
+      await api(`/bookings/${b.id}`, { method: 'DELETE' })
+      toast({ kind: 'success', title: 'Booking deleted' })
+      reload()
     } catch (err) {
-      setNote({ tone: "error", text: errorText(err) });
+      toast({ kind: 'error', title: 'Could not delete', subtitle: errorText(err) })
     }
   }
 
   return (
     <>
-      <div className="page-head">
-        <h1>Bookings</h1>
-        <Button
-          kind="tertiary" size="md"
-          onClick={() => downloadFile("/admin/export/bookings", "sentrypass-bookings.csv").catch((e) => setNote({ tone: "error", text: errorText(e) }))}
+      <PageHeader
+        title="Bookings"
+        description="Every booking on the platform, with its payment. Cancel one to free the seat for the waitlist."
+        actions={
+          <Button kind="tertiary" renderIcon={Download} onClick={() => downloadFile('/admin/export/bookings', 'sentrypass-bookings.csv').catch((e) => toast({ kind: 'error', title: 'Export failed', subtitle: errorText(e) }))}>
+            Export CSV
+          </Button>
+        }
+      />
+
+      <div className="chips">
+        <ContentSwitcher
+          size="md"
+          selectedIndex={Math.max(0, TABS.findIndex((t) => t.key === status))}
+          onChange={({ index }: { index?: number }) => {
+            setPage(1)
+            const key = TABS[index ?? 0].key
+            setParams(key ? { status: key } : {})
+          }}
         >
-          Export CSV
-        </Button>
+          {TABS.map((t) => (
+            <Switch key={t.label} name={t.key || 'all'} text={t.label} />
+          ))}
+        </ContentSwitcher>
       </div>
 
-      {note && <Notice tone={note.tone}>{note.text}</Notice>}
-      {loadError && <Notice tone="error">{loadError}</Notice>}
+      {error && <Notice tone="error">{error}</Notice>}
 
-      <div className="toolbar">
-        <Select id="s-1" labelText="Show"
-            value={status}
-            onChange={(e) => {
-              setPage(1);
-              setStatus(e.target.value);
-            }}
-          >
-            <option value="">All bookings</option>
-            {STATUSES.map((s) => (
-              <option key={s.value} value={s.value}>
-                {s.label}
-              </option>
-            ))}
-          </Select>
-      </div>
-
-      {!rows ? (
-        <Skeleton rows={5} />
-      ) : rows.data.length === 0 ? (
-        <p className="empty">No bookings with that status.</p>
-      ) : (
-        <Table>
+      <TableContainer>
+        {!rows ? (
+          <Skeleton rows={6} />
+        ) : rows.data.length === 0 ? (
+          <EmptyState icon={<Ticket size={32} />} title="No bookings here">
+            Nothing matches this filter yet.
+          </EmptyState>
+        ) : (
+          <Table aria-label="Bookings">
             <TableHead>
               <TableRow>
                 <TableHeader>Attendee</TableHeader>
                 <TableHeader>Event</TableHeader>
+                <TableHeader>Seat</TableHeader>
+                <TableHeader>Payment</TableHeader>
                 <TableHeader>Booked</TableHeader>
                 <TableHeader>Status</TableHeader>
                 <TableHeader />
@@ -96,35 +133,52 @@ export default function BookingsPage() {
               {rows.data.map((b) => (
                 <TableRow key={b.id}>
                   <TableCell>
-                    <strong>{b.customer?.name ?? "Unknown"}</strong>
+                    <span className="cell-title">{b.customer?.name ?? 'Unknown'}</span>
                     <span className="sub">{b.customer?.email}</span>
                   </TableCell>
                   <TableCell>
-                    <div>
-                      {b.ticket_type?.event?.title ?? "Unknown event"}
-                      <span className="sub">{b.ticket_type?.name}</span>
-                    </div>
+                    {b.ticket_type?.event ? (
+                      <Link className="cell-link" to={`/admin/events/${b.ticket_type.event.id}`}>
+                        {b.ticket_type.event.title}
+                      </Link>
+                    ) : (
+                      'Unknown event'
+                    )}
+                    <span className="sub">{b.ticket_type?.name}</span>
+                  </TableCell>
+                  <TableCell>{b.seat?.label ?? <span className="sub">None</span>}</TableCell>
+                  <TableCell>
+                    <PaymentTag b={b} />
                   </TableCell>
                   <TableCell>{formatWhen(b.booked_at)}</TableCell>
                   <TableCell>
-                    <Tag status={b.status} />
+                    <StatusTag status={b.status} />
                   </TableCell>
                   <TableCell>
-                    {b.status !== "cancelled" && (
-                      <Button kind="ghost" size="sm" onClick={() => cancel(b)}>
-                        Cancel
-                      </Button>
-                    )}{" "}
-                    <Button kind="danger--ghost" size="sm" onClick={() => remove(b)}>
-                      Delete
-                    </Button>
+                    <div className="row-actions">
+                      <OverflowMenu flipped aria-label={`Actions for booking ${b.id}`} size="sm">
+                        {b.status !== 'cancelled' && <OverflowMenuItem itemText="Cancel booking" onClick={() => cancel(b)} />}
+                        <OverflowMenuItem itemText="Delete record" isDelete hasDivider={b.status !== 'cancelled'} onClick={() => remove(b)} />
+                      </OverflowMenu>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
-      )}
-      {rows && <Pager page={rows.current_page} last={rows.last_page} total={rows.total} onPage={setPage} />}
+        )}
+        {rows && rows.total > 0 && (
+          <TablePager
+            page={rows.current_page}
+            pageSize={size}
+            total={rows.total}
+            onChange={(p, s) => {
+              setPage(s !== size ? 1 : p)
+              setSize(s)
+            }}
+          />
+        )}
+      </TableContainer>
     </>
-  );
+  )
 }

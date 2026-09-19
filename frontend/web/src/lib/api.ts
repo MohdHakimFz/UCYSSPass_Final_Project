@@ -152,6 +152,8 @@ export type NotificationRow = {
 }
 
 export type EventStats = {
+  revenue: Money
+  pending_holds: number
   capacity: number
   seats_remaining: number
   held: number
@@ -167,7 +169,14 @@ export type EventStats = {
   recent_checkins: { booking_id: number; name: string | null; tier: string | null; checked_in_at: string }[]
 }
 
+export type Money = { gross: number; refunded: number; net: number }
+
 export type Stats = {
+  revenue: Money & { payments: number }
+  revenue_per_day: { day: string; total: number }[]
+  pending_holds: number
+  draft_events: number
+  recent_activity: { id: number; customer: string | null; event: string | null; event_id: number | null; tier: string | null; status: BookingStatus; at: string }[]
   users_by_role: Partial<Record<Role, number>>
   events_by_status: Partial<Record<EventStatus, number>>
   events_by_category: Record<string, number>
@@ -185,4 +194,16 @@ export type Stats = {
     attended: number
     waitlisted: number
   }[]
+}
+
+export type OrganiserSummary = {
+  events: number
+  published: number
+  drafts: number
+  upcoming: number
+  tickets_sold: number
+  checked_in: number
+  waitlisted: number
+  awaiting_payment: number
+  revenue: Money
 }

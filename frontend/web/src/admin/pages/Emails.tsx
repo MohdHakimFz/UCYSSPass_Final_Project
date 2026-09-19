@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Select, Tag as CarbonTag, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@carbon/react";
 import type { NotificationRow, Paginated } from "@/lib/api";
 import { useFetch } from "@/lib/useFetch";
+import { Email } from "@carbon/icons-react";
+import { EmptyState, PageHeader } from "@/dashboard/parts";
 import { Notice, Pager, formatWhen, Skeleton } from "@/dashboard/ui";
 
 const TYPES = [
@@ -29,12 +31,10 @@ export default function NotificationsPage() {
 
   return (
     <>
-      <div className="page-head">
-        <h1>Emails</h1>
-      </div>
-      <p className="section-note">
-        Every booking email the platform tried to send, with the answer it got back from the email provider. Open a row to see the raw response.
-      </p>
+      <PageHeader
+        title="Emails"
+        description="Every booking email the platform tried to send, with the answer it got back from the email provider. Open a row to see the raw response."
+      />
 
       {error && <Notice tone="error">{error}</Notice>}
 
@@ -58,7 +58,7 @@ export default function NotificationsPage() {
       {!data && !error ? (
         <Skeleton rows={5} />
       ) : data && data.data.length === 0 ? (
-        <p className="empty">No emails yet. They appear when someone books, cancels or is promoted from a waitlist.</p>
+        <EmptyState icon={<Email size={32} />} title="No emails yet">They appear when someone books, cancels or is promoted from a waitlist.</EmptyState>
       ) : (
         data && (
           <Table>

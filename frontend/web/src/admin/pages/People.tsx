@@ -1,145 +1,131 @@
-import { useState } from "react";
-import { Button, Select, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TextInput } from "@carbon/react";
-import { api, downloadFile, errorText, type Paginated, type Role, type User } from "@/lib/api";
-import { useAuth } from "@/lib/auth";
-import { useFetch } from "@/lib/useFetch";
-import { Notice, Pager, Skeleton } from "@/dashboard/ui";
+import { useState } from 'react'
+import {
+  Button,
+  ContentSwitcher,
+  Modal,
+  OverflowMenu,
+  OverflowMenuItem,
+  PasswordInput,
+  Select,
+  SelectItem,
+  Switch,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableHeader,
+  TableRow,
+  Tag,
+  TextInput,
+} from '@carbon/react'
+import { Add, Download, UserMultiple } from '@carbon/icons-react'
+import { api, downloadFile, errorText, type Paginated, type Role, type User } from '@/lib/api'
+import { useAuth } from '@/lib/auth'
+import { useFetch } from '@/lib/useFetch'
+import { useFeedback } from '@/dashboard/feedback'
+import { EmptyState, PageHeader, TablePager } from '@/dashboard/parts'
+import { Notice, Skeleton } from '@/dashboard/ui'
 
-const ROLES: { value: Role; label: string }[] = [
-  { value: "admin", label: "Administrator" },
-  { value: "organiser", label: "Organiser" },
-  { value: "customer", label: "Customer" },
-];
+const ROLES: { value: Role; label: string; tag: 'blue' | 'purple' | 'gray' }[] = [
+  { value: 'admin', label: 'Administrator', tag: 'purple' },
+  { value: 'organiser', label: 'Organiser', tag: 'blue' },
+  { value: 'customer', label: 'Customer', tag: 'gray' },
+]
+const TABS: { key: '' | Role; label: string }[] = [{ key: '', label: 'Everyone' }, { key: 'customer', label: 'Customers' }, { key: 'organiser', label: 'Organisers' }, { key: 'admin', label: 'Admins' }]
 
 export default function PeoplePage() {
-  const { user: me } = useAuth();
-  const [page, setPage] = useState(1);
-  const [role, setRole] = useState<"" | Role>("");
-  const [adding, setAdding] = useState(false);
-  const [form, setForm] = useState({ name: "", email: "", password: "", role: "organiser" as Role });
-  const [note, setNote] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
-  const [busy, setBusy] = useState(false);
+  const { user: me } = useAuth()
+  const { toast, confirm } = useFeedback()
+  const [page, setPage] = useState(1)
+  const [size, setSize] = useState(10)
+  const [role, setRole] = useState<'' | Role>('')
+  const [adding, setAdding] = useState(false)
+  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'organiser' as Role })
+  const [formError, setFormError] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
+  const [changing, setChanging] = useState<{ user: User; role: Role } | null>(null)
 
-  const qs = new URLSearchParams({ page: String(page), per_page: "10" });
-  if (role) qs.set("role", role);
-  const { data: rows, error: loadError, reload: load } = useFetch<Paginated<User>>(`/users?${qs}`);
+  const qs = new URLSearchParams({ page: String(page), per_page: String(size) })
+  if (role) qs.set('role', role)
+  const { data: rows, error, reload } = useFetch<Paginated<User>>(`/users?${qs}`)
 
-  async function create(e: React.FormEvent) {
-    e.preventDefault();
-    setBusy(true);
-    setNote(null);
+  async function create() {
+    setBusy(true)
+    setFormError(null)
     try {
-      await api("/users", { method: "POST", body: form });
-      setNote({ tone: "ok", text: `${form.name} can now sign in as ${form.role}.` });
-      setForm({ name: "", email: "", password: "", role: "organiser" });
-      setAdding(false);
-      await load();
+      await api('/users', { method: 'POST', body: form })
+      toast({ kind: 'success', title: 'Account created', subtitle: `${form.name} can sign in as ${form.role}.` })
+      setForm({ name: '', email: '', password: '', role: 'organiser' })
+      setAdding(false)
+      reload()
     } catch (err) {
-      setNote({ tone: "error", text: errorText(err) });
+      setFormError(errorText(err))
     } finally {
-      setBusy(false);
+      setBusy(false)
     }
   }
 
-  async function changeRole(u: User, next: Role) {
-    setNote(null);
+  async function saveRole() {
+    if (!changing) return
     try {
-      await api(`/users/${u.id}`, { method: "PUT", body: { role: next } });
-      setNote({ tone: "ok", text: `${u.name} is now ${next === "admin" ? "an" : "a"} ${next}.` });
-      await load();
+      await api(`/users/${changing.user.id}`, { method: 'PUT', body: { role: changing.role } })
+      toast({ kind: 'success', title: 'Role changed', subtitle: `${changing.user.name} is now ${changing.role === 'admin' ? 'an' : 'a'} ${changing.role}.` })
+      setChanging(null)
+      reload()
     } catch (err) {
-      setNote({ tone: "error", text: errorText(err) });
+      toast({ kind: 'error', title: 'Could not change the role', subtitle: errorText(err) })
     }
   }
 
   async function remove(u: User) {
-    if (!window.confirm(`Delete ${u.name}? Their events and bookings are deleted too.`)) return;
-    setNote(null);
+    const ok = await confirm({ title: `Delete ${u.name}?`, body: 'Their events and bookings are deleted too. This cannot be undone.', confirmLabel: 'Delete account', danger: true })
+    if (!ok) return
     try {
-      await api(`/users/${u.id}`, { method: "DELETE" });
-      setNote({ tone: "ok", text: `${u.name} deleted.` });
-      await load();
+      await api(`/users/${u.id}`, { method: 'DELETE' })
+      toast({ kind: 'success', title: `${u.name} deleted` })
+      reload()
     } catch (err) {
-      setNote({ tone: "error", text: errorText(err) });
+      toast({ kind: 'error', title: 'Could not delete the account', subtitle: errorText(err) })
     }
   }
 
   return (
     <>
-      <div className="page-head">
-        <h1>People</h1>
-        <div className="form-actions">
-          <Button
-            kind="tertiary" size="md"
-            onClick={() => downloadFile("/admin/export/users", "sentrypass-users.csv").catch((e) => setNote({ tone: "error", text: errorText(e) }))}
-          >
-            Export CSV
-          </Button>
-          <Button onClick={() => setAdding(true)}>
-            Add account
-          </Button>
-        </div>
+      <PageHeader
+        title="People"
+        description="Everyone with an account. Customers sign themselves up; organiser and admin accounts are created here."
+        actions={
+          <>
+            <Button kind="tertiary" renderIcon={Download} onClick={() => downloadFile('/admin/export/users', 'sentrypass-users.csv').catch((e) => toast({ kind: 'error', title: 'Export failed', subtitle: errorText(e) }))}>
+              Export CSV
+            </Button>
+            <Button renderIcon={Add} onClick={() => { setFormError(null); setAdding(true) }}>
+              Add account
+            </Button>
+          </>
+        }
+      />
+
+      <div className="chips">
+        <ContentSwitcher size="md" selectedIndex={TABS.findIndex((t) => t.key === role)} onChange={({ index }: { index?: number }) => { setPage(1); setRole(TABS[index ?? 0].key) }}>
+          {TABS.map((t) => (
+            <Switch key={t.label} name={t.key || 'all'} text={t.label} />
+          ))}
+        </ContentSwitcher>
       </div>
 
-      {note && <Notice tone={note.tone}>{note.text}</Notice>}
-      {loadError && <Notice tone="error">{loadError}</Notice>}
+      {error && <Notice tone="error">{error}</Notice>}
 
-      {adding && (
-        <form className="pane" onSubmit={create}>
-          <h2>Add an organiser or admin account</h2>
-          <div className="form-grid">
-            <TextInput id="f-1" labelText="Full name" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-            <TextInput id="f-2" labelText="Email" required type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-            <TextInput id="f-3" labelText="Temporary password"
-                required
-                type="password"
-                minLength={8}
-                autoComplete="new-password"
-                value={form.password}
-                onChange={(e) => setForm({ ...form, password: e.target.value })}
-              />
-            <Select id="s-4" labelText="Role" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value as Role })}>
-                {ROLES.map((r) => (
-                  <option key={r.value} value={r.value}>
-                    {r.label}
-                  </option>
-                ))}
-              </Select>
-          </div>
-          <div className="form-actions">
-            <Button disabled={busy}>
-              {busy ? "Adding…" : "Add account"}
-            </Button>
-            <Button type="button" kind="ghost" onClick={() => setAdding(false)}>
-              Cancel
-            </Button>
-          </div>
-        </form>
-      )}
-
-      <div className="toolbar">
-        <Select id="s-5" labelText="Show"
-            value={role}
-            onChange={(e) => {
-              setPage(1);
-              setRole(e.target.value as "" | Role);
-            }}
-          >
-            <option value="">Everyone</option>
-            {ROLES.map((r) => (
-              <option key={r.value} value={r.value}>
-                {r.label}s
-              </option>
-            ))}
-          </Select>
-      </div>
-
-      {!rows ? (
-        <Skeleton rows={5} />
-      ) : rows.data.length === 0 ? (
-        <p className="empty">No accounts with that role yet.</p>
-      ) : (
-        <Table>
+      <TableContainer>
+        {!rows ? (
+          <Skeleton rows={6} />
+        ) : rows.data.length === 0 ? (
+          <EmptyState icon={<UserMultiple size={32} />} title="No accounts here">
+            There is nobody with this role yet.
+          </EmptyState>
+        ) : (
+          <Table aria-label="People">
             <TableHead>
               <TableRow>
                 <TableHeader>Name</TableHeader>
@@ -149,40 +135,88 @@ export default function PeoplePage() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {rows.data.map((u) => (
-                <TableRow key={u.id}>
-                  <TableCell>
-                    <strong>{u.name}</strong>
-                    <span className="sub">{u.email}</span>
-                  </TableCell>
-                  <TableCell>
-                    <Select id="s-6" size="sm"
-                      hideLabel labelText={`Role for ${u.name}`}
-                      value={u.role}
-                      disabled={u.id === me?.id}
-                      onChange={(e) => changeRole(u, e.target.value as Role)}
-                    >
-                      {ROLES.map((r) => (
-                        <option key={r.value} value={r.value}>
-                          {r.label}
-                        </option>
-                      ))}
-                    </Select>
-                  </TableCell>
-                  <TableCell>{new Date(u.created_at).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" })}</TableCell>
-                  <TableCell>
-                    {u.id !== me?.id && (
-                      <Button kind="danger--ghost" size="sm" onClick={() => remove(u)}>
-                        Delete
-                      </Button>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
+              {rows.data.map((u) => {
+                const r = ROLES.find((x) => x.value === u.role)!
+                const self = u.id === me?.id
+                return (
+                  <TableRow key={u.id}>
+                    <TableCell>
+                      <span className="cell-title">
+                        {u.name} {self && <Tag size="sm" type="cool-gray">You</Tag>}
+                      </span>
+                      <span className="sub">{u.email}</span>
+                    </TableCell>
+                    <TableCell>
+                      <Tag type={r.tag} size="md">{r.label}</Tag>
+                    </TableCell>
+                    <TableCell>{new Date(u.created_at).toLocaleDateString('en-MY', { day: 'numeric', month: 'short', year: 'numeric' })}</TableCell>
+                    <TableCell>
+                      <div className="row-actions">
+                        {!self && (
+                          <OverflowMenu flipped aria-label={`Actions for ${u.name}`} size="sm">
+                            <OverflowMenuItem itemText="Change role" onClick={() => setChanging({ user: u, role: u.role })} />
+                            <OverflowMenuItem itemText="Delete account" isDelete hasDivider onClick={() => remove(u)} />
+                          </OverflowMenu>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
             </TableBody>
           </Table>
-      )}
-      {rows && <Pager page={rows.current_page} last={rows.last_page} total={rows.total} onPage={setPage} />}
+        )}
+        {rows && rows.total > 0 && (
+          <TablePager
+            page={rows.current_page}
+            pageSize={size}
+            total={rows.total}
+            onChange={(p, s) => {
+              setPage(s !== size ? 1 : p)
+              setSize(s)
+            }}
+          />
+        )}
+      </TableContainer>
+
+      <Modal
+        open={adding}
+        size="sm"
+        modalHeading="Add an account"
+        primaryButtonText={busy ? 'Adding…' : 'Add account'}
+        primaryButtonDisabled={busy || !form.name || !form.email || form.password.length < 8}
+        secondaryButtonText="Cancel"
+        onRequestSubmit={create}
+        onRequestClose={() => setAdding(false)}
+      >
+        {formError && <Notice tone="error">{formError}</Notice>}
+        <div className="stack">
+          <TextInput id="p-name" labelText="Full name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+          <TextInput id="p-email" labelText="Email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+          <PasswordInput id="p-pass" labelText="Temporary password" helperText="At least 8 characters. They can change it after signing in." autoComplete="new-password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+          <Select id="p-role" labelText="Role" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value as Role })}>
+            {ROLES.map((r) => (
+              <SelectItem key={r.value} value={r.value} text={r.label} />
+            ))}
+          </Select>
+        </div>
+      </Modal>
+
+      <Modal
+        open={!!changing}
+        size="sm"
+        modalHeading={`Change role for ${changing?.user.name ?? ''}`}
+        primaryButtonText="Save role"
+        secondaryButtonText="Cancel"
+        onRequestSubmit={saveRole}
+        onRequestClose={() => setChanging(null)}
+      >
+        <Select id="c-role" labelText="Role" value={changing?.role ?? 'customer'} onChange={(e) => setChanging((c) => (c ? { ...c, role: e.target.value as Role } : c))}>
+          {ROLES.map((r) => (
+            <SelectItem key={r.value} value={r.value} text={r.label} />
+          ))}
+        </Select>
+      </Modal>
     </>
-  );
+  )
 }

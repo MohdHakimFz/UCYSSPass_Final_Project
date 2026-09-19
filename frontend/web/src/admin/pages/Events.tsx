@@ -1,150 +1,197 @@
-import { Link } from "react-router-dom";
-import { useState } from "react";
-import { Button, Search, Select, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@carbon/react";
-import { api, errorText, type EventItem, type EventStatus, type Paginated } from "@/lib/api";
-import { useFetch } from "@/lib/useFetch";
-import { Notice, Pager, Tag, formatWhen, Skeleton } from "@/dashboard/ui";
+import { useState } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
+import {
+  ContentSwitcher,
+  OverflowMenu,
+  OverflowMenuItem,
+  Switch,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableHeader,
+  TableRow,
+  TableToolbar,
+  TableToolbarContent,
+  TableToolbarSearch,
+} from '@carbon/react'
+import { Calendar } from '@carbon/icons-react'
+import { api, errorText, type EventItem, type EventStatus, type Paginated } from '@/lib/api'
+import { useFetch } from '@/lib/useFetch'
+import { useFeedback } from '@/dashboard/feedback'
+import { EmptyState, PageHeader, TablePager } from '@/dashboard/parts'
+import { Notice, Skeleton, StatusTag, formatWhen } from '@/dashboard/ui'
 
-const STATUSES: EventStatus[] = ["draft", "published", "cancelled", "completed"];
-const CATEGORY: Record<EventItem["category"], string> = {
-  ctf: "CTF",
-  bootcamp: "Bootcamp",
-  conference: "Conference",
-  workshop: "Workshop",
-};
+const CATEGORY: Record<EventItem['category'], string> = { ctf: 'CTF', bootcamp: 'Bootcamp', conference: 'Conference', workshop: 'Workshop' }
+const TABS: { key: '' | EventStatus; label: string }[] = [
+  { key: '', label: 'All' },
+  { key: 'published', label: 'Published' },
+  { key: 'draft', label: 'Draft' },
+  { key: 'cancelled', label: 'Cancelled' },
+  { key: 'completed', label: 'Completed' },
+]
 
 export default function EventsPage() {
-  const [page, setPage] = useState(1);
-  const [status, setStatus] = useState("");
-  const [search, setSearch] = useState("");
-  const [query, setQuery] = useState("");
-  const [note, setNote] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
+  const { toast, confirm } = useFeedback()
+  const [params, setParams] = useSearchParams()
+  const status = (params.get('status') ?? '') as '' | EventStatus
+  const [page, setPage] = useState(1)
+  const [size, setSize] = useState(10)
+  const [query, setQuery] = useState('')
 
-  const qs = new URLSearchParams({ page: String(page), per_page: "10", sort: "start_at", direction: "desc" });
-  if (status) qs.set("status", status);
-  if (query) qs.set("search", query);
-  const { data: rows, error: loadError, reload: load } = useFetch<Paginated<EventItem>>(`/events?${qs}`);
+  const qs = new URLSearchParams({ page: String(page), per_page: String(size), sort: 'start_at', direction: 'desc' })
+  if (status) qs.set('status', status)
+  if (query) qs.set('search', query)
+  const { data: rows, error, reload } = useFetch<Paginated<EventItem>>(`/events?${qs}`)
 
   async function setEventStatus(ev: EventItem, next: EventStatus) {
-    if (next === "cancelled" && !window.confirm(`Cancel ${ev.title}? Every active booking is cancelled and those attendees are emailed.`)) return;
-    setNote(null);
+    if (next === 'cancelled') {
+      const ok = await confirm({
+        title: `Cancel ${ev.title}?`,
+        body: 'Every active booking is cancelled, paid tickets are refunded, and the attendees are emailed. This cannot be undone.',
+        confirmLabel: 'Cancel the event',
+        danger: true,
+      })
+      if (!ok) return
+    }
     try {
-      const res = await api<EventItem & { cancelled_bookings?: number }>(`/events/${ev.id}`, { method: "PUT", body: { status: next } });
-      setNote({
-        tone: "ok",
-        text: res.cancelled_bookings
-          ? `${ev.title} is cancelled. ${res.cancelled_bookings} bookings were cancelled and the attendees emailed.`
-          : `${ev.title} is now ${next}.`,
-      });
-      await load();
+      const res = await api<EventItem & { cancelled_bookings?: number }>(`/events/${ev.id}`, { method: 'PUT', body: { status: next } })
+      toast({
+        kind: 'success',
+        title: res.cancelled_bookings ? `${ev.title} cancelled` : `${ev.title} is now ${next}`,
+        subtitle: res.cancelled_bookings ? `${res.cancelled_bookings} bookings were cancelled and the attendees emailed.` : undefined,
+      })
+      reload()
     } catch (err) {
-      setNote({ tone: "error", text: errorText(err) });
+      toast({ kind: 'error', title: 'Could not change the event', subtitle: errorText(err) })
     }
   }
 
   async function remove(ev: EventItem) {
-    if (!window.confirm(`Delete ${ev.title}? This can't be undone.`)) return;
-    setNote(null);
+    const ok = await confirm({ title: `Delete ${ev.title}?`, body: 'The event and its ticket tiers are removed for good.', confirmLabel: 'Delete', danger: true })
+    if (!ok) return
     try {
-      await api(`/events/${ev.id}`, { method: "DELETE" });
-      setNote({ tone: "ok", text: `${ev.title} deleted.` });
-      await load();
+      await api(`/events/${ev.id}`, { method: 'DELETE' })
+      toast({ kind: 'success', title: `${ev.title} deleted` })
+      reload()
     } catch (err) {
-      setNote({ tone: "error", text: errorText(err) });
+      toast({ kind: 'error', title: 'Could not delete the event', subtitle: errorText(err) })
     }
+  }
+
+  const changeTab = (key: string) => {
+    setPage(1)
+    setParams(key ? { status: key } : {})
   }
 
   return (
     <>
-      <div className="page-head">
-        <h1>Events</h1>
+      <PageHeader title="Events" description="Every event on the platform. Open one to see its sales, or publish, cancel or remove it here." />
+
+      <div className="chips">
+        <ContentSwitcher size="md" selectedIndex={Math.max(0, TABS.findIndex((t) => t.key === status))} onChange={({ index }: { index?: number }) => changeTab(TABS[index ?? 0].key)}>
+          {TABS.map((t) => (
+            <Switch key={t.label} name={t.key || 'all'} text={t.label} />
+          ))}
+        </ContentSwitcher>
       </div>
 
-      {note && <Notice tone={note.tone}>{note.text}</Notice>}
-      {loadError && <Notice tone="error">{loadError}</Notice>}
+      {error && <Notice tone="error">{error}</Notice>}
 
-      <form
-        className="toolbar"
-        onSubmit={(e) => {
-          e.preventDefault();
-          setPage(1);
-          setQuery(search);
-        }}
-      >
-        <Search size="lg"
-          placeholder="Search events by title"
-          labelText="Search events by title"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-        <Select id="s-1" size="sm"
-          hideLabel labelText="Filter by status"
-          value={status}
-          onChange={(e) => {
-            setPage(1);
-            setStatus(e.target.value);
-          }}
-          style={{ minWidth: 0 }}
-        >
-          <option value="">Any status</option>
-          {STATUSES.map((s) => (
-            <option key={s} value={s}>
-              {s[0].toUpperCase() + s.slice(1)}
-            </option>
-          ))}
-        </Select>
-        <Button kind="tertiary" size="md">Search</Button>
-      </form>
+      <TableContainer>
+        <TableToolbar aria-label="Event list tools">
+          <TableToolbarContent>
+            <TableToolbarSearch
+              persistent
+              placeholder="Search events by title"
+              onChange={(e: React.ChangeEvent<HTMLInputElement> | '', value?: string) => {
+                setPage(1)
+                setQuery(value ?? (e ? e.target.value : ''))
+              }}
+            />
+          </TableToolbarContent>
+        </TableToolbar>
 
-      {!rows ? (
-        <Skeleton rows={5} />
-      ) : rows.data.length === 0 ? (
-        <p className="empty">No events match. Organisers create events from their own portal.</p>
-      ) : (
-        <Table>
+        {!rows ? (
+          <Skeleton rows={6} />
+        ) : rows.data.length === 0 ? (
+          <EmptyState icon={<Calendar size={32} />} title="No events match">
+            Try another status or search. Organisers create events from their own dashboard.
+          </EmptyState>
+        ) : (
+          <Table aria-label="Events">
             <TableHead>
               <TableRow>
                 <TableHeader>Event</TableHeader>
                 <TableHeader>Starts</TableHeader>
+                <TableHeader>Seats held</TableHeader>
                 <TableHeader>Status</TableHeader>
                 <TableHeader />
               </TableRow>
             </TableHead>
             <TableBody>
-              {rows.data.map((ev) => (
-                <TableRow key={ev.id}>
-                  <TableCell>
-                    <Link to={`/admin/events/${ev.id}`}>
-                      <strong>{ev.title}</strong>
-                    </Link>
-                    <span className="sub">{CATEGORY[ev.category]}</span>
-                  </TableCell>
-                  <TableCell>{formatWhen(ev.start_at)}</TableCell>
-                  <TableCell>
-                    <Tag status={ev.status} />
-                  </TableCell>
-                  <TableCell>
-                    <Select id="s-2" size="sm"
-                      hideLabel labelText={`Status for ${ev.title}`}
-                      value={ev.status}
-                      onChange={(e) => setEventStatus(ev, e.target.value as EventStatus)}
-                    >
-                      {STATUSES.map((s) => (
-                        <option key={s} value={s}>
-                          {s[0].toUpperCase() + s.slice(1)}
-                        </option>
-                      ))}
-                    </Select>{" "}
-                    <Button kind="danger--ghost" size="sm" onClick={() => remove(ev)}>
-                      Delete
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {rows.data.map((ev) => {
+                const held = (ev.capacity ?? 0) - (ev.seats_remaining ?? 0)
+                return (
+                  <TableRow key={ev.id}>
+                    <TableCell>
+                      <Link className="cell-link cell-title" to={`/admin/events/${ev.id}`}>
+                        {ev.title}
+                      </Link>
+                      <span className="sub">
+                        {CATEGORY[ev.category]}
+                        {ev.venue ? `, ${ev.venue.name}` : ''}
+                      </span>
+                    </TableCell>
+                    <TableCell>{formatWhen(ev.start_at)}</TableCell>
+                    <TableCell style={{ minWidth: 150 }}>
+                      {ev.capacity ? (
+                        <>
+                          <span className="mini-bar">
+                            <i style={{ width: `${(held / ev.capacity) * 100}%` }} />
+                          </span>
+                          <span className="sub">
+                            {held} of {ev.capacity}
+                          </span>
+                        </>
+                      ) : (
+                        <span className="sub">No tickets yet</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <StatusTag status={ev.status} />
+                    </TableCell>
+                    <TableCell>
+                      <div className="row-actions">
+                        <OverflowMenu flipped aria-label={`Actions for ${ev.title}`} size="sm">
+                          <OverflowMenuItem itemText="Open" href={`/admin/events/${ev.id}`} />
+                          {ev.status !== 'published' && ev.status !== 'cancelled' && <OverflowMenuItem itemText="Publish" onClick={() => setEventStatus(ev, 'published')} />}
+                          {ev.status === 'published' && <OverflowMenuItem itemText="Move back to draft" onClick={() => setEventStatus(ev, 'draft')} />}
+                          {ev.status === 'published' && <OverflowMenuItem itemText="Mark as completed" onClick={() => setEventStatus(ev, 'completed')} />}
+                          {ev.status !== 'cancelled' && <OverflowMenuItem itemText="Cancel event" isDelete hasDivider onClick={() => setEventStatus(ev, 'cancelled')} />}
+                          <OverflowMenuItem itemText="Delete" isDelete onClick={() => remove(ev)} />
+                        </OverflowMenu>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
             </TableBody>
           </Table>
-      )}
-      {rows && <Pager page={rows.current_page} last={rows.last_page} total={rows.total} onPage={setPage} />}
+        )}
+        {rows && rows.total > 0 && (
+          <TablePager
+            page={rows.current_page}
+            pageSize={size}
+            total={rows.total}
+            onChange={(p, s) => {
+              setPage(s !== size ? 1 : p)
+              setSize(s)
+            }}
+          />
+        )}
+      </TableContainer>
     </>
-  );
+  )
 }

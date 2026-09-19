@@ -1,115 +1,116 @@
-import { useState } from "react";
-import { Button, Search, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TextInput } from "@carbon/react";
-import { api, errorText, type Paginated, type Venue } from "@/lib/api";
-import { useFetch } from "@/lib/useFetch";
-import { Notice, Pager, Skeleton } from "@/dashboard/ui";
+import { useState } from 'react'
+import {
+  Button,
+  Modal,
+  OverflowMenu,
+  OverflowMenuItem,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableHeader,
+  TableRow,
+  TableToolbar,
+  TableToolbarContent,
+  TableToolbarSearch,
+  TextInput,
+} from '@carbon/react'
+import { Add, Location } from '@carbon/icons-react'
+import { api, errorText, type Paginated, type Venue } from '@/lib/api'
+import { useFetch } from '@/lib/useFetch'
+import { useFeedback } from '@/dashboard/feedback'
+import { EmptyState, PageHeader, TablePager } from '@/dashboard/parts'
+import { Notice, Skeleton } from '@/dashboard/ui'
 
-type Draft = { id?: number; name: string; address: string; capacity: string };
-const BLANK: Draft = { name: "", address: "", capacity: "" };
+type Draft = { id?: number; name: string; address: string; capacity: string }
+const BLANK: Draft = { name: '', address: '', capacity: '' }
 
 export default function VenuesPage() {
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
-  const [query, setQuery] = useState("");
-  const [draft, setDraft] = useState<Draft | null>(null);
-  const [note, setNote] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
-  const [busy, setBusy] = useState(false);
+  const { toast, confirm } = useFeedback()
+  const [page, setPage] = useState(1)
+  const [size, setSize] = useState(10)
+  const [query, setQuery] = useState('')
+  const [draft, setDraft] = useState<Draft | null>(null)
+  const [busy, setBusy] = useState(false)
+  const [formError, setFormError] = useState<string | null>(null)
 
-  const qs = new URLSearchParams({ page: String(page), per_page: "10" });
-  if (query) qs.set("search", query);
-  const { data: rows, error: loadError, reload: load } = useFetch<Paginated<Venue>>(`/venues?${qs}`);
+  const qs = new URLSearchParams({ page: String(page), per_page: String(size) })
+  if (query) qs.set('search', query)
+  const { data: rows, error, reload } = useFetch<Paginated<Venue>>(`/venues?${qs}`)
 
-  async function save(e: React.FormEvent) {
-    e.preventDefault();
-    if (!draft) return;
-    setBusy(true);
-    setNote(null);
-    const body = { name: draft.name, address: draft.address, capacity: Number(draft.capacity) };
+  async function save() {
+    if (!draft) return
+    setBusy(true)
+    setFormError(null)
+    const body = { name: draft.name, address: draft.address, capacity: Number(draft.capacity) }
     try {
-      if (draft.id) await api(`/venues/${draft.id}`, { method: "PUT", body });
-      else await api("/venues", { method: "POST", body });
-      setNote({ tone: "ok", text: draft.id ? "Venue saved." : "Venue added." });
-      setDraft(null);
-      await load();
+      if (draft.id) await api(`/venues/${draft.id}`, { method: 'PUT', body })
+      else await api('/venues', { method: 'POST', body })
+      toast({ kind: 'success', title: draft.id ? 'Venue saved' : 'Venue added', subtitle: draft.name })
+      setDraft(null)
+      reload()
     } catch (err) {
-      setNote({ tone: "error", text: errorText(err) });
+      setFormError(errorText(err))
     } finally {
-      setBusy(false);
+      setBusy(false)
     }
   }
 
   async function remove(v: Venue) {
-    if (!window.confirm(`Delete ${v.name}? This can't be undone.`)) return;
-    setNote(null);
+    const ok = await confirm({ title: `Delete ${v.name}?`, body: 'A venue that still has events cannot be deleted.', confirmLabel: 'Delete', danger: true })
+    if (!ok) return
     try {
-      await api(`/venues/${v.id}`, { method: "DELETE" });
-      setNote({ tone: "ok", text: `${v.name} deleted.` });
-      await load();
+      await api(`/venues/${v.id}`, { method: 'DELETE' })
+      toast({ kind: 'success', title: `${v.name} deleted` })
+      reload()
     } catch (err) {
-      setNote({ tone: "error", text: errorText(err) });
+      toast({ kind: 'error', title: 'Could not delete the venue', subtitle: errorText(err) })
     }
   }
 
+  const set = (patch: Partial<Draft>) => setDraft((d) => (d ? { ...d, ...patch } : d))
+
   return (
     <>
-      <div className="page-head">
-        <h1>Venues</h1>
-        <Button onClick={() => setDraft({ ...BLANK })}>
-          Add venue
-        </Button>
-      </div>
+      <PageHeader
+        title="Venues"
+        description="The places events can be held. An event picks one of these, and its capacity is the ceiling for tickets."
+        actions={
+          <Button renderIcon={Add} onClick={() => { setFormError(null); setDraft({ ...BLANK }) }}>
+            Add venue
+          </Button>
+        }
+      />
 
-      {note && <Notice tone={note.tone}>{note.text}</Notice>}
-      {loadError && <Notice tone="error">{loadError}</Notice>}
+      {error && <Notice tone="error">{error}</Notice>}
 
-      {draft && (
-        <form className="pane" onSubmit={save}>
-          <h2>{draft.id ? "Edit venue" : "Add venue"}</h2>
-          <div className="form-grid">
-            <TextInput id="f-1" labelText="Name" required value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
-            <TextInput id="f-2" labelText="Address" required value={draft.address} onChange={(e) => setDraft({ ...draft, address: e.target.value })} />
-            <TextInput id="f-3" labelText="Capacity"
-                required
-                type="number"
-                min={1}
-                value={draft.capacity}
-                onChange={(e) => setDraft({ ...draft, capacity: e.target.value })}
-              />
-          </div>
-          <div className="form-actions">
-            <Button disabled={busy}>
-              {busy ? "Saving…" : "Save venue"}
-            </Button>
-            <Button type="button" kind="ghost" onClick={() => setDraft(null)}>
-              Cancel
-            </Button>
-          </div>
-        </form>
-      )}
+      <TableContainer>
+        <TableToolbar aria-label="Venue list tools">
+          <TableToolbarContent>
+            <TableToolbarSearch
+              persistent
+              placeholder="Search venues by name"
+              onChange={(e: React.ChangeEvent<HTMLInputElement> | '', value?: string) => {
+                setPage(1)
+                setQuery(value ?? (e ? e.target.value : ''))
+              }}
+            />
+          </TableToolbarContent>
+        </TableToolbar>
 
-      <form
-        className="toolbar"
-        onSubmit={(e) => {
-          e.preventDefault();
-          setPage(1);
-          setQuery(search);
-        }}
-      >
-        <Search size="lg"
-          placeholder="Search venues by name"
-          labelText="Search venues by name"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-        <Button kind="tertiary" size="md">Search</Button>
-      </form>
-
-      {!rows ? (
-        <Skeleton rows={5} />
-      ) : rows.data.length === 0 ? (
-        <p className="empty">{query ? `No venues match “${query}”.` : "No venues yet. Add the first one to start scheduling events."}</p>
-      ) : (
-        <Table>
+        {!rows ? (
+          <Skeleton rows={5} />
+        ) : rows.data.length === 0 ? (
+          <EmptyState
+            icon={<Location size={32} />}
+            title={query ? `No venues match “${query}”` : 'No venues yet'}
+            action={!query ? <Button renderIcon={Add} onClick={() => setDraft({ ...BLANK })}>Add the first venue</Button> : undefined}
+          >
+            {query ? 'Try a different name.' : 'Add a venue so organisers can schedule events.'}
+          </EmptyState>
+        ) : (
+          <Table aria-label="Venues">
             <TableHead>
               <TableRow>
                 <TableHeader>Venue</TableHeader>
@@ -121,27 +122,53 @@ export default function VenuesPage() {
               {rows.data.map((v) => (
                 <TableRow key={v.id}>
                   <TableCell>
-                    <strong>{v.name}</strong>
+                    <span className="cell-title">{v.name}</span>
                     <span className="sub">{v.address}</span>
                   </TableCell>
-                  <TableCell>{v.capacity}</TableCell>
+                  <TableCell>{v.capacity.toLocaleString()} seats</TableCell>
                   <TableCell>
-                    <Button
-                      kind="ghost" size="sm"
-                      onClick={() => setDraft({ id: v.id, name: v.name, address: v.address, capacity: String(v.capacity) })}
-                    >
-                      Edit
-                    </Button>{" "}
-                    <Button kind="danger--ghost" size="sm" onClick={() => remove(v)}>
-                      Delete
-                    </Button>
+                    <div className="row-actions">
+                      <OverflowMenu flipped aria-label={`Actions for ${v.name}`} size="sm">
+                        <OverflowMenuItem itemText="Edit" onClick={() => { setFormError(null); setDraft({ id: v.id, name: v.name, address: v.address, capacity: String(v.capacity) }) }} />
+                        <OverflowMenuItem itemText="Delete" isDelete hasDivider onClick={() => remove(v)} />
+                      </OverflowMenu>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
-      )}
-      {rows && <Pager page={rows.current_page} last={rows.last_page} total={rows.total} onPage={setPage} />}
+        )}
+        {rows && rows.total > 0 && (
+          <TablePager
+            page={rows.current_page}
+            pageSize={size}
+            total={rows.total}
+            onChange={(p, s) => {
+              setPage(s !== size ? 1 : p)
+              setSize(s)
+            }}
+          />
+        )}
+      </TableContainer>
+
+      <Modal
+        open={!!draft}
+        size="sm"
+        modalHeading={draft?.id ? 'Edit venue' : 'Add venue'}
+        primaryButtonText={busy ? 'Saving…' : 'Save venue'}
+        primaryButtonDisabled={busy || !draft?.name || !draft?.address || !draft?.capacity}
+        secondaryButtonText="Cancel"
+        onRequestSubmit={save}
+        onRequestClose={() => setDraft(null)}
+      >
+        {formError && <Notice tone="error">{formError}</Notice>}
+        <div className="stack">
+          <TextInput id="v-name" labelText="Name" value={draft?.name ?? ''} onChange={(e) => set({ name: e.target.value })} />
+          <TextInput id="v-address" labelText="Address" value={draft?.address ?? ''} onChange={(e) => set({ address: e.target.value })} />
+          <TextInput id="v-cap" labelText="Capacity" type="number" min={1} value={draft?.capacity ?? ''} onChange={(e) => set({ capacity: e.target.value })} />
+        </div>
+      </Modal>
     </>
-  );
+  )
 }
