@@ -28,7 +28,7 @@ class AdminStatsController extends Controller
             ->groupBy('day')
             ->pluck('total', 'day');
 
-        $manifest = Event::query()
+        $upcoming = Event::query()
             ->with('venue:id,name')
             ->withSum('ticketTypes as capacity', 'capacity')
             ->withSum('ticketTypes as seats_remaining', 'seats_remaining')
@@ -36,13 +36,20 @@ class AdminStatsController extends Controller
             ->where('end_at', '>=', now())
             ->orderBy('start_at')
             ->limit(8)
+            ->get();
+
+        // One query for the booking counts of all these events together, not one query per event.
+        $countsByEvent = Booking::query()
+            ->join('ticket_types', 'ticket_types.id', '=', 'bookings.ticket_type_id')
+            ->whereIn('ticket_types.event_id', $upcoming->pluck('id'))
+            ->selectRaw('ticket_types.event_id, bookings.status, COUNT(*) as total')
+            ->groupBy('ticket_types.event_id', 'bookings.status')
             ->get()
-            ->map(function (Event $event) {
-                $counts = Booking::query()
-                    ->whereHas('ticketType', fn ($q) => $q->where('event_id', $event->id))
-                    ->selectRaw('status, COUNT(*) as total')
-                    ->groupBy('status')
-                    ->pluck('total', 'status');
+            ->groupBy('event_id');
+
+        $manifest = $upcoming
+            ->map(function (Event $event) use ($countsByEvent) {
+                $counts = ($countsByEvent[$event->id] ?? collect())->pluck('total', 'status');
 
                 return [
                     'id' => $event->id,

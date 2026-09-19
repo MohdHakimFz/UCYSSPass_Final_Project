@@ -13,6 +13,7 @@ use App\Services\QrCodeApiService;
 use App\Services\QrTicketService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Response;
 
 class BookingController extends Controller
@@ -58,7 +59,7 @@ class BookingController extends Controller
             ->orderByDesc('booked_at')
             ->paginate($request->integer('per_page', 15));
 
-        $bookings->getCollection()->each(fn (Booking $booking) => $this->withWaitlistPosition($booking));
+        $this->withWaitlistPositions($bookings->getCollection());
 
         return response()->json($bookings);
     }
@@ -83,6 +84,30 @@ class BookingController extends Controller
         }
 
         return response()->json(['meeting_url' => $event->getRawOriginal('meeting_url'), 'platform' => $event->meeting_platform]);
+    }
+
+    /**
+     * The same numbers as withWaitlistPosition, for a whole page of bookings with one query
+     * instead of one query for every waitlisted row.
+     *
+     * @param  \Illuminate\Support\Collection<int, Booking>  $bookings
+     */
+    private function withWaitlistPositions($bookings): void
+    {
+        $waiting = $bookings->where('status', 'waitlisted');
+
+        if ($waiting->isEmpty()) {
+            return;
+        }
+
+        $ranked = Booking::query()
+            ->where('status', 'waitlisted')
+            ->whereIn('ticket_type_id', $waiting->pluck('ticket_type_id')->unique())
+            ->selectRaw('id, ROW_NUMBER() OVER (PARTITION BY ticket_type_id ORDER BY booked_at, id) AS position');
+
+        $positions = DB::query()->fromSub($ranked, 'ranked')->whereIn('id', $waiting->pluck('id'))->pluck('position', 'id');
+
+        $waiting->each(fn (Booking $booking) => $booking->setAttribute('waitlist_position', (int) $positions[$booking->id]));
     }
 
     /**
