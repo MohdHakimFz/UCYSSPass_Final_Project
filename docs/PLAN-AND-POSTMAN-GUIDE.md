@@ -15,6 +15,20 @@ Tarikh hantar: **12 Oktober 2026**. Rujukan markah: `SWC3633_SWC4443 - Project D
 
 | Bahagian | Status |
 | --- | --- |
+| Backend Laravel 12, Sanctum, PostgreSQL | Siap. **211** test PHPUnit lulus |
+| Web (customer, organiser, admin) | Siap. **41** ujian Playwright lulus |
+| App mobile (customer) | Siap dan boleh dibina, tetapi **belum diuji pada telefon sebenar** |
+| Koleksi Postman | **198 permintaan, 309 semakan, 0 kegagalan** |
+| Event physical, seat bernombor, tahan seat, bayaran sandbox, refund | Siap |
+| Event online, link meeting dilindungi, butang Join ikut platform | Siap |
+| Organiser publish sendiri, peta seat, kemas kini automatik | Siap |
+| Rebrand UCYSS, email peringatan (diuji dengan Resend sebenar) | Siap |
+| Rate limit global, indeks pangkalan data, bukti prestasi | Siap (`docs/performance/PERFORMANCE.md`) |
+| Tier khas ahli, pengumuman organiser, statistik kehadiran, kongsi WhatsApp, sijil PDF, data demo UCYSS, CI | Siap |
+| ERD, DDL, DML, dokumentasi API, nota laporan | Siap |
+| Laporan PDF, tangkapan skrin, video, dan deploy | **Belum** (kerja kau dan langkah terakhir) |
+
+--- | --- |
 | Backend Laravel 12, Sanctum, PostgreSQL | Siap. 144 test PHPUnit lulus |
 | Web (customer, organiser, admin) | Siap. 29 ujian Playwright lulus |
 | App mobile (customer) | Siap, tapi belum diuji semula pada telefon selepas perubahan minggu ni |
@@ -31,34 +45,34 @@ Susunan ikut keutamaan. `[ ]` = belum, tanda kalau dah siap.
 
 ### A. Fitur UCYSS (kecil, cepat)
 
-- [ ] **Rebrand ke UCYSS.** Nama paparan sahaja (logo taip, tajuk tab, email, tiket, app mobile). Nama dalaman dalam kod kekal `SentryPass`. Letak nama jenama pada satu tempat (config) supaya mudah tukar. *Anggaran: 1–2 jam.*
-- [ ] **Email peringatan** H-1 hari sebelum event (Resend + penjadual Laravel). Untuk event online, sertakan link meeting dalam email ini sahaja. *Anggaran: setengah hingga satu hari.*
-- [ ] **Add to calendar dalam email** (fail `.ics` lampiran atau pautan). Butang "Add to calendar" pada tiket sudah ada.
-- [ ] **Kemas Admin:** tag Online/Physical dan tapis mod dalam senarai event; log email tunjuk jenis "Reminder".
-- [ ] **Uji app mobile pada telefon sebenar:** butang Join, tiada zoom pada peta seat, senarai event yang muncul sendiri.
+- [x] **Rebrand ke UCYSS.** Nama paparan sahaja (logo taip, tajuk tab, email, tiket, app mobile). Nama dalaman dalam kod kekal `SentryPass`. Letak nama jenama pada satu tempat (config) supaya mudah tukar. *Anggaran: 1–2 jam.*
+- [x] **Email peringatan** H-1 hari sebelum event (Resend + penjadual Laravel). Untuk event online, sertakan link meeting dalam email ini sahaja. *Anggaran: setengah hingga satu hari.*
+- [x] **Add to calendar dalam email** (fail `.ics` lampiran atau pautan). Butang "Add to calendar" pada tiket sudah ada.
+- [x] **Kemas Admin:** tag Online/Physical dan tapis mod dalam senarai event; log email tunjuk jenis "Reminder".
+- [ ] **Uji app mobile pada telefon sebenar (kau):** butang Join, tiada zoom pada peta seat, senarai event yang muncul sendiri.
 
 ### B. Perkara yang rubrik tanda (jangan tinggalkan)
 
-- [ ] **JWT vs Sanctum.** PDF tulis "JWT Authentication". Sistem guna Sanctum (token dalam pangkalan data, boleh dibatalkan). Pilih satu: (1) kekalkan Sanctum dan terangkan sebabnya dalam laporan, atau (2) tanya pensyarah dulu. Jangan tukar diam-diam.
-- [ ] **Rate limit global** untuk seluruh API (sekarang hanya pada tempahan, bayaran, join, lupa password). Tambah had umum contohnya 60 permintaan seminit per pengguna atau IP.
-- [ ] **Bukti prestasi sebelum dan selepas** untuk bahagian "Debugging and Performance Optimisation": ukur masa senarai event dan senarai tempahan, tambah indeks atau kurangkan query, catat angka. Contoh yang sudah ada cerita: kunci seat (`lockForUpdate`), polling, cache Vite.
-- [ ] **Bahagian "Advanced features"** dalam laporan: middleware (auth, validation, error handling, logging), API key check-in, rate limit, Resend, QR API, pagination/filter/search/sort.
+- [x] **JWT vs Sanctum.** Jawapan bertulis ada dalam `docs/REPORT-NOTES.md`. Kalau nak selamat, tanya pensyarah. PDF tulis "JWT Authentication". Sistem guna Sanctum (token dalam pangkalan data, boleh dibatalkan). Pilih satu: (1) kekalkan Sanctum dan terangkan sebabnya dalam laporan, atau (2) tanya pensyarah dulu. Jangan tukar diam-diam.
+- [x] **Rate limit global** untuk seluruh API (sekarang hanya pada tempahan, bayaran, join, lupa password). Tambah had umum contohnya 60 permintaan seminit per pengguna atau IP.
+- [x] **Bukti prestasi sebelum dan selepas** untuk bahagian "Debugging and Performance Optimisation": ukur masa senarai event dan senarai tempahan, tambah indeks atau kurangkan query, catat angka. Contoh yang sudah ada cerita: kunci seat (`lockForUpdate`), polling, cache Vite.
+- [x] **Bahagian "Advanced features"** (teks siap dalam `docs/REPORT-NOTES.md`): middleware (auth, validation, error handling, logging), API key check-in, rate limit, Resend, QR API, pagination/filter/search/sort.
 
 ### C. Dokumen (dinilai sebagai hasil kumpulan, 40 markah)
 
-- [ ] **ERD** dikemas kini: jadual `seats`, `payments`, lajur baru `events.mode`, `meeting_url`, `meeting_platform`, `events.seated`, `bookings.seat_id`, `bookings.hold_expires_at`.
-- [ ] **Skrip DDL dan DML** (`docs/database/schema.sql`) ikut skema terkini, dengan **sekurang-kurangnya 5 rekod setiap jadual**.
-- [ ] **`docs/api-documentation.md`** ditambah: seat, bayaran, hold, refund, reset password, `/organiser/summary`, `/events/{id}/seat-map`, `/bookings/{id}/join`, mod online, peraturan draft.
+- [x] **ERD** dikemas kini: jadual `seats`, `payments`, lajur baru `events.mode`, `meeting_url`, `meeting_platform`, `events.seated`, `bookings.seat_id`, `bookings.hold_expires_at`.
+- [x] **Skrip DDL dan DML** (`docs/database/schema.sql`) ikut skema terkini, dengan **sekurang-kurangnya 5 rekod setiap jadual**.
+- [x] **`docs/api-documentation.md`** ditambah: seat, bayaran, hold, refund, reset password, `/organiser/summary`, `/events/{id}/seat-map`, `/bookings/{id}/join`, mod online, peraturan draft.
 - [x] **Koleksi Postman dikemas kini:** 198 permintaan, 309 semakan, 0 kegagalan. Lihat [3.9](#39-keadaan-koleksi-sedia-ada).
-- [ ] **README** dengan langkah pasang dan jalankan (sudah ada, semak selepas rebrand).
-- [ ] **Laporan PDF** ikut struktur PDF: System Overview, Database Design, API Documentation, API Testing, System Implementation, System Demonstration, Repository, Advanced Features, Debugging, Reflection.
-- [ ] **Tangkapan skrin Postman** (senarai di [3.8](#38-senarai-tangkapan-skrin-untuk-laporan)).
+- [x] **README** dengan langkah pasang dan jalankan (sudah ada, semak selepas rebrand).
+- [ ] **Laporan PDF (kau)** ikut struktur PDF: System Overview, Database Design, API Documentation, API Testing, System Implementation, System Demonstration, Repository, Advanced Features, Debugging, Reflection.
+- [ ] **Tangkapan skrin Postman (kau)** (senarai di [3.8](#38-senarai-tangkapan-skrin-untuk-laporan)).
 
 ### D. Kualiti
 
-- [ ] Tambah ujian e2e untuk aliran mobile (jika sempat), dan semak `npm run lint` tiada ralat.
-- [ ] Tukar `CHECKIN_API_KEY` daripada nilai lalai `dev-checkin-key-change-me` sebelum deploy.
-- [ ] Bersihkan data ujian dalam DB pembangunan (`@e2e.test`, `@postman.test`).
+- [x] `npm run lint` tiada ralat. **Ujian e2e untuk mobile belum ada** (app mobile diuji melalui type-check dan bundle).
+- [x] `CHECKIN_API_KEY` dalam `.env` kau sudah bukan nilai lalai. Nilai lalai dalam fail environment Postman kekal (tukar dalam Postman, jangan commit kunci sebenar).
+- [ ] Bersihkan data ujian dalam DB pembangunan bila-bila masa: `@e2e.test` (Playwright membersihkan sendiri), dan `migrate:fresh --seed` memberi data UCYSS yang bersih (ia memadam semua data, jadi buat bila kau bersedia).
 
 ### E. Deploy (bahagian [4](#4-pelan-deploy))
 
@@ -66,7 +80,7 @@ Susunan ikut keutamaan. `[ ]` = belum, tanda kalau dah siap.
 
 ### F. Yang ditangguh (bukan keperluan PDF)
 
-Pengesahan email, push notification, Wallet pass, tempahan kumpulan, pemindahan tiket, CI, e-cert, gateway bayaran sebenar (Billplz/ToyyibPay/FPX). Pengumuman organiser juga ditangguh, walaupun tersenarai sebagai idea 3 di bawah.
+Pengesahan email (menunggu domain Resend yang disahkan), push notification, Wallet pass, tempahan kumpulan, pemindahan tiket, gateway bayaran sebenar (Billplz/ToyyibPay/FPX), sijil PDF pada app mobile, dan ujian e2e mobile.
 
 ### Jadual cadangan
 
@@ -82,19 +96,17 @@ Pengesahan email, push notification, Wallet pass, tempahan kumpulan, pemindahan 
 
 ## 2. Idea tambahan
 
-Idea yang aku rasa memberi nilai untuk markah atau untuk UCYSS. Bukan wajib.
+Semua idea di bawah **sudah dibuat** kecuali yang ditanda.
 
-1. **Kod jemputan untuk ahli:** tier "Ahli UCYSS" yang hanya boleh ditempah oleh emel `@uptm.edu.my` (harga ahli lebih murah). Ini jawapan kepada soalan "hanya pelajar UPTM atau terbuka?".
-2. **Statistik kehadiran:** graf kehadiran ikut event (siapa daftar tapi tak hadir). Data sudah ada melalui `checked_in_at`. Berguna untuk laporan AJK.
-3. **Pengumuman organiser:** satu butang hantar email kepada semua yang sudah daftar (bila tukar bilik atau masa). Guna Resend yang sedia ada.
-4. **Link kongsi cantik untuk WhatsApp:** butang salin link dengan tajuk dan tarikh. Pratonton kad (Open Graph) perlukan pelayan; boleh dibuat di fasa deploy dengan halaman statik.
-5. **Sijil kehadiran (e-cert PDF):** kepada yang `attended`. Ini menyokong "PDF Generation API" yang disebut dalam PDF sebagai contoh third-party API.
-6. **Health check `/up`** dan halaman status untuk demo video.
-7. **Pemantauan ralat** (contohnya log ke fail berputar) supaya bahagian "Debugging" ada bukti sebenar.
-8. **Ujian Postman automatik dalam CI** (`newman` dalam GitHub Actions). Ini menunjukkan "meaningful collaboration" pada repositori.
-9. **Data demo yang cantik untuk video:** seeder khas UCYSS (contohnya 6 event: workshop online, CTF fizikal, seminar percuma), supaya paparan tak penuh nama rawak seperti "Naomi Cummerata V".
-
-Jujur: idea 1, 3, dan 9 (kod ahli, pengumuman, data demo) paling berbaloi dengan masa yang ada.
+1. **Tier khas ahli** (senarai ahli dikekalkan admin, tier "hanya ahli") — siap. Aku pilih senarai ahli yang dikawal admin, bukan emel `@uptm.edu.my`, kerana pengesahan emel belum ada dan sesiapa boleh daftar dengan emel itu.
+2. **Statistik kehadiran** (daftar berbanding hadir) — siap, pada dashboard organiser dan admin.
+3. **Pengumuman organiser** — siap: satu email kepada semua yang daftar, sejarah, dan had 10 seminit.
+4. **Link kongsi WhatsApp** — siap: butang WhatsApp, salin link, dan kongsi asli peranti. Pratonton kad (Open Graph) **belum**, sebab perlukan hos yang menghantar HTML berbeza kepada perangkak.
+5. **Sijil kehadiran (PDF)** — siap, dengan nombor sijil dan halaman semakan awam. Pada web sahaja.
+6. **Health check `/up`** — sudah ada dan digunakan oleh CI.
+7. **Pemantauan ralat** — log permintaan (`LogApiRequests`) sudah ada. Pemantauan luar (contohnya Sentry) belum.
+8. **Ujian Postman dalam CI** — siap (`.github/workflows/ci.yml`). Belum dijalankan pada GitHub kerana repositori belum ditolak ke sana.
+9. **Data demo UCYSS** — siap: `php artisan migrate:fresh --seed`.
 
 ---
 
@@ -177,10 +189,10 @@ Peranan: **Awam** (tanpa token), **C** customer, **O** organiser (hanya event se
 
 | Kaedah | URL | Siapa | Body / parameter | Berjaya | Ralat uji |
 | --- | --- | --- | --- | --- | --- |
-| GET | `/users?role=customer&page=1` | A | penapis `role` | 200 berpaginasi | 403 sebagai customer |
+| GET | `/users?role=customer&search=aina&member=1` | A | penapis `role`, `search` (nama atau emel), `member` (0 atau 1) | 200 berpaginasi | 403 sebagai customer |
 | POST | `/users` | A | `name`, `email`, `password`, `role` (`admin`,`organiser`,`customer`) | 201 | 422 `role` tak sah; 403 bukan admin |
 | GET | `/users/{id}` | A atau pemilik | | 200 | 403 akaun orang lain |
-| PUT | `/users/{id}` | A atau pemilik | `name`, `email`, `password` (sebahagian) | 200 | 422 emel dah ada. Cuba hantar `"role":"admin"`: **diabaikan** |
+| PUT | `/users/{id}` | A atau pemilik | `name`, `email`, `password` (sebahagian); admin sahaja: `role`, `is_member` | 200 | 422 emel dah ada. Cuba hantar `"role":"admin"` atau `"is_member":true` sebagai pemilik: **diabaikan** |
 | DELETE | `/users/{id}` | A | | 204 | 403 bukan admin |
 
 #### Venues
@@ -208,6 +220,8 @@ Venue **"Online"** dicipta automatik sekali bila event online pertama dibuat.
 | GET | `/events/{id}/stats` | O pemilik, A | | 200 pengisian, check-in, hasil | 403 |
 | GET | `/events/{id}/seat-map` | O pemilik, A | | 200 setiap seat dan pemegangnya | 403 orang lain |
 | GET | `/events/{id}/export` | O pemilik, A | | 200 CSV | 403 |
+| GET | `/events/{id}/announcements` | O pemilik, A | | 200 `{audience, data}` | 403 |
+| POST | `/events/{id}/announcements` | O pemilik, A | `subject` (maks 150), `message` (maks 2000) | 201; emel dihantar selepas respons | 422 tiada tetamu, event bukan published, atau medan kosong; 403; 429 selepas 10 seminit |
 
 Contoh **event physical**:
 
@@ -244,7 +258,7 @@ Jangkaan: respons ada `"meeting_platform": "meet"`. `category` mesti salah satu 
 | Kaedah | URL | Siapa | Body | Berjaya | Ralat uji |
 | --- | --- | --- | --- | --- | --- |
 | GET | `/events/{id}/ticket-types` | Awam | | 200 | |
-| POST | `/events/{id}/ticket-types` | O pemilik, A | `name`, `price` (≥ 0), `capacity` (≥ 0), `seats_per_row` (1–40, pilihan) | 201 | 403 organiser lain; 422 kapasiti negatif |
+| POST | `/events/{id}/ticket-types` | O pemilik, A | `name`, `price` (≥ 0), `capacity` (≥ 0), `seats_per_row` (1–40, pilihan), `members_only` (true/false, pilihan) | 201 | 403 organiser lain; 422 kapasiti negatif |
 | PUT | `/ticket-types/{id}` | O pemilik, A | medan sebahagian | 200 | 422 `seats_remaining` melebihi `capacity` |
 | DELETE | `/ticket-types/{id}` | O pemilik, A | | 204 | 403 |
 | GET | `/ticket-types/{id}/seats` | Awam | | 200 senarai `{id,row,number,label,taken}` (tidak menyebut siapa duduk) | |
@@ -259,6 +273,8 @@ Jangkaan: respons ada `"meeting_platform": "meet"`. `category` mesti salah satu 
 | PUT | `/bookings/{id}/cancel` | Pemilik, A | | 200. Ada `refund` (dibayar balik jika ≥ 24 jam sebelum mula). Membatalkan dua kali juga 200 (tiada perubahan) | 403 bukan tempahan sendiri |
 | POST | `/bookings/{id}/pay` | Pemilik | `method` (`card`,`fpx`,`ewallet`), `outcome` (`approve`,`decline`,`insufficient`, pilihan) | 200 jadi `confirmed` dengan QR | 402 bayaran ditolak; 409 tahan tamat atau sudah dibayar; 429 |
 | GET | `/bookings/{id}/qr-code` | Pemilik | | 200 imej PNG (QR API pihak ketiga) | 404 jika belum `confirmed`, atau sudah dibatalkan |
+| GET | `/bookings/{id}/certificate` | Pemilik, O pemilik event, A | | 200 PDF | 422 belum hadir atau event belum tamat; 403 |
+| GET | `/certificates/{id}/{code}` | Awam | | 200 `{valid, name, event, date}` | 404 kod salah (jawapan sama untuk semua sebab) |
 | POST | `/bookings/{id}/join` | Pemilik | | 200 `{meeting_url, platform}` dan tandakan `attended` | 403 bukan tempahan sendiri; 422 belum masa (15 min sebelum mula), atau bukan event online, atau bukan `confirmed` |
 | DELETE | `/bookings/{id}` | A | | 204 | 403 customer |
 | POST | `/bookings/{id}/checkin` | Pintu (`X-Api-Key`) atau O/A (Bearer) | `qr_token` | 200 jadi `attended` | 401 kunci salah; 422 tiket palsu (`Invalid or tampered ticket`); 409 sudah digunakan atau belum confirmed |
@@ -273,6 +289,7 @@ Dalam butiran tempahan online yang `confirmed`, medan `meeting` memberi `{platfo
 | --- | --- | --- | --- | --- |
 | GET | `/admin/stats` | A | 200 hasil, tempahan, aktiviti terkini | 403 bukan admin |
 | GET | `/organiser/summary` | O (sendiri), A (semua) | 200 | 403 customer |
+| GET | `/organiser/attendance` | O (sendiri), A (semua) | 200 `{events, registered, attended, rate}` | 403 customer |
 | GET | `/admin/notifications?type=confirmation` | A | 200 log email dengan respons Resend | 403 |
 | GET | `/admin/export/users` | A | 200 CSV | 403 |
 | GET | `/admin/export/bookings` | A | 200 CSV | 403 |
