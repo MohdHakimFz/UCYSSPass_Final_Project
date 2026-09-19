@@ -3,6 +3,7 @@ import { CaretLeft } from '@phosphor-icons/react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { api, ApiError, errorText, type Booking, type EventItem, type TicketType } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
+import SeatMap from '@/customer/fx/SeatMap'
 import { useFetch } from '@/lib/useFetch'
 import { CATEGORY_LABEL, Notice, formatWhen, Skeleton } from '@/customer/ui'
 
@@ -12,6 +13,7 @@ export default function EventDetail() {
   const navigate = useNavigate()
   const { data: event, error, reload } = useFetch<EventItem>(`/events/${id}`)
   const [busyId, setBusyId] = useState<number | null>(null)
+  const [picked, setPicked] = useState<number | null>(null)
   const [note, setNote] = useState<{ tone: 'ok' | 'error' | 'warn'; text: string } | null>(null)
 
   async function book(t: TicketType) {
@@ -106,9 +108,17 @@ export default function EventDetail() {
         {(event.ticket_types ?? []).length === 0 ? (
           <p className="empty">Tickets for this event aren&apos;t on sale yet.</p>
         ) : (
+          <>
+            <div className="detail-seatmap">
+              <SeatMap
+                blocks={event.ticket_types!.map((t) => ({ id: t.id, name: t.name, capacity: t.capacity, remaining: t.seats_remaining }))}
+                selectedId={picked ?? event.ticket_types![0].id}
+                onSelect={(id) => setPicked(Number(id))}
+              />
+            </div>
           <ul className="tiers">
             {event.ticket_types!.map((t) => (
-              <li key={t.id}>
+              <li key={t.id} data-active={(picked ?? event.ticket_types![0].id) === t.id || undefined}>
                 <div>
                   <h3>{t.name}</h3>
                   <p className="sub">
@@ -122,6 +132,7 @@ export default function EventDetail() {
               </li>
             ))}
           </ul>
+          </>
         )}
       </section>
     </>

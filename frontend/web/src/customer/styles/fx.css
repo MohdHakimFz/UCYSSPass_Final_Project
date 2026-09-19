@@ -1,0 +1,748 @@
+/* Motion and 3D: tilt with a moving shine, the page backdrop, the hero ticket, the marquee and the 3D seat map. */
+
+@property --h {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 10px;
+}
+
+/* ---------- Tilt with a shine that follows the pointer ---------- */
+
+.tilt {
+  --rx: 0deg;
+  --ry: 0deg;
+  --gx: 50%;
+  --gy: 50%;
+  position: relative;
+  transform: perspective(900px) rotateX(var(--rx)) rotateY(var(--ry));
+  transition: transform 520ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+.tilt[data-tilting="on"] {
+  transition: transform 90ms linear;
+}
+
+/* The white pool of light under the pointer. */
+.tilt::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  background: radial-gradient(circle at var(--gx) var(--gy), rgb(255 255 255 / 0.5), rgb(255 255 255 / 0.12) 30%, transparent 55%);
+  mix-blend-mode: soft-light;
+  opacity: 0;
+  transition: opacity 260ms ease;
+}
+
+/* A foil sheen that slides across as the angle changes. */
+.tilt::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: linear-gradient(
+    115deg,
+    transparent 22%,
+    rgb(255 120 80 / 0.28) 34%,
+    rgb(255 226 140 / 0.3) 44%,
+    rgb(120 220 255 / 0.28) 54%,
+    rgb(190 140 255 / 0.22) 62%,
+    transparent 74%
+  );
+  background-size: 260% 260%;
+  background-position: var(--gx) var(--gy);
+  mix-blend-mode: color-dodge;
+  opacity: 0;
+  transition: opacity 260ms ease;
+}
+
+.tilt[data-tilting="on"]::after {
+  opacity: 1;
+}
+
+.tilt[data-tilting="on"]::before {
+  opacity: 0.85;
+}
+
+.poster.tilt:hover {
+  transform: perspective(900px) rotateX(var(--rx)) rotateY(var(--ry)) scale(1.015);
+  box-shadow: 0 24px 40px -22px rgb(var(--shadow) / 0.6);
+}
+
+.ticket.tilt {
+  overflow: hidden;
+}
+
+/* Phones have no hover, so tilting things sway a little on their own until touched. */
+@media (hover: none) and (prefers-reduced-motion: no-preference) {
+  .tilt:not([data-tilting="on"]) {
+    animation: sway 7s ease-in-out infinite;
+  }
+
+  .tilt:not([data-tilting="on"])::before {
+    opacity: 0.6;
+    animation: sheen 7s ease-in-out infinite;
+  }
+}
+
+@keyframes sway {
+  0%,
+  100% {
+    transform: perspective(900px) rotateX(-3deg) rotateY(-4deg);
+  }
+  50% {
+    transform: perspective(900px) rotateX(3deg) rotateY(4deg);
+  }
+}
+
+@keyframes sheen {
+  0%,
+  100% {
+    background-position: 10% 30%;
+  }
+  50% {
+    background-position: 90% 70%;
+  }
+}
+
+/* ---------- Page backdrop ---------- */
+
+.home-main {
+  position: relative;
+  isolation: isolate;
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.bd-dots {
+  position: absolute;
+  inset: -80px;
+  background: radial-gradient(color-mix(in srgb, var(--ink) 26%, transparent) 1.4px, transparent 1.9px) 0 0 / 26px 26px;
+  -webkit-mask-image: radial-gradient(ellipse at 70% 30%, #000 0%, transparent 72%);
+  mask-image: radial-gradient(ellipse at 70% 30%, #000 0%, transparent 72%);
+  opacity: 0.55;
+}
+
+.bd-glow {
+  position: absolute;
+  width: 46vw;
+  height: 46vw;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.4;
+}
+
+.bd-glow-a {
+  top: -14vw;
+  right: -10vw;
+  background: var(--accent);
+}
+
+.bd-glow-b {
+  bottom: -18vw;
+  left: -14vw;
+  background: var(--steel);
+  opacity: 0.6;
+}
+
+.bd-spot {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(520px circle at var(--mx, 72vw) var(--my, 28vh), color-mix(in srgb, var(--accent) 26%, transparent), transparent 62%);
+}
+
+.bd-beam {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent) 30%, var(--accent) 70%, transparent);
+  box-shadow: 0 0 22px 4px color-mix(in srgb, var(--accent) 55%, transparent);
+  opacity: 0.5;
+}
+
+.bd-ticket {
+  position: absolute;
+  top: 100%;
+  border: 2px solid color-mix(in srgb, var(--ink) 22%, transparent);
+  background: color-mix(in srgb, var(--surface) 30%, transparent);
+  opacity: 0.6;
+}
+
+.bd-ticket i {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 24%;
+  border-left: 2px dashed color-mix(in srgb, var(--ink) 22%, transparent);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .bd-dots {
+    animation: dots-drift 60s linear infinite;
+  }
+
+  .bd-glow-a {
+    animation: glow-a 24s ease-in-out infinite alternate;
+  }
+
+  .bd-glow-b {
+    animation: glow-b 30s ease-in-out infinite alternate;
+  }
+
+  .bd-beam {
+    animation: beam 9s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  }
+
+  .bd-ticket {
+    animation: rise var(--dur) linear var(--delay) infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bd-ticket {
+    top: 30%;
+    transform: rotate(var(--rot));
+  }
+
+  .bd-beam {
+    display: none;
+  }
+}
+
+@keyframes dots-drift {
+  to {
+    transform: translate(26px, 26px);
+  }
+}
+
+@keyframes glow-a {
+  to {
+    transform: translate(-10vw, 12vh) scale(1.15);
+  }
+}
+
+@keyframes glow-b {
+  to {
+    transform: translate(12vw, -10vh) scale(1.1);
+  }
+}
+
+@keyframes beam {
+  0% {
+    transform: translateY(-4vh);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.55;
+  }
+  88% {
+    opacity: 0.55;
+  }
+  100% {
+    transform: translateY(104vh);
+    opacity: 0;
+  }
+}
+
+@keyframes rise {
+  from {
+    transform: translateY(0) rotate(var(--rot));
+  }
+  to {
+    transform: translateY(-125vh) rotate(calc(var(--rot) * -1));
+  }
+}
+
+/* ---------- Headline that rises line by line ---------- */
+
+.hero-copy h1 .line {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.08em;
+  margin-bottom: -0.08em;
+}
+
+.hero-copy h1 .line > span {
+  display: block;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero-copy h1 .line > span {
+    animation: line-up 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .hero-copy h1 .line:nth-child(2) > span {
+    animation-delay: 140ms;
+  }
+
+  .hero-copy h1 .line:nth-child(3) > span {
+    animation-delay: 280ms;
+  }
+}
+
+@keyframes line-up {
+  from {
+    transform: translateY(105%);
+  }
+}
+
+.hero-copy h1 em {
+  font-style: normal;
+  color: var(--accent);
+}
+
+/* ---------- Hero ticket ---------- */
+
+.hero-wall {
+  position: relative;
+}
+
+.hero-ticket-wrap {
+  position: absolute;
+  right: -3%;
+  bottom: -7%;
+  z-index: 6;
+  width: min(62%, 380px);
+}
+
+.hero-ticket {
+  display: grid;
+  grid-template-columns: 1fr 34%;
+  min-height: 150px;
+  color: #14181f;
+  background:
+    linear-gradient(135deg, #fff 0%, #f2f4f6 55%, #e3e7ec 100%);
+  box-shadow:
+    0 0 0 2px #14181f,
+    0 34px 50px -24px rgb(0 0 0 / 0.55),
+    0 0 60px -10px color-mix(in srgb, var(--accent) 60%, transparent);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero-ticket {
+    animation: hover-float 6.5s ease-in-out infinite;
+  }
+}
+
+@keyframes hover-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-2deg);
+  }
+  50% {
+    transform: translateY(-14px) rotate(1deg);
+  }
+}
+
+.ht-main {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 16px 14px;
+  min-width: 0;
+}
+
+.ht-kind {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent-press);
+}
+
+.ht-main strong {
+  font-size: clamp(1rem, 1.6vw, 1.35rem);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  font-variation-settings: "wdth" 88;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+}
+
+.ht-when {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.ht-sign {
+  margin-top: auto;
+  padding-top: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border-top: 2px dashed rgb(20 24 31 / 0.35);
+}
+
+.ht-stub {
+  display: grid;
+  place-items: center;
+  padding: 12px;
+  border-left: 2px dashed #14181f;
+  background: linear-gradient(160deg, #14181f, #232b36);
+}
+
+.ht-qr {
+  display: grid;
+  grid-template-columns: repeat(var(--cells), 1fr);
+  gap: 2px;
+  width: 100%;
+  max-width: 84px;
+  aspect-ratio: 1;
+  padding: 6px;
+  background: #fff;
+}
+
+.ht-qr i {
+  background: transparent;
+}
+
+.ht-qr i[data-on] {
+  background: #14181f;
+}
+
+/* ---------- Marquee ---------- */
+
+.marquee {
+  overflow: hidden;
+  border-block: 2px solid var(--ink);
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+}
+
+.marquee-track span {
+  flex: none;
+  padding: 14px 28px;
+  font-size: clamp(1.4rem, 3vw, 2.4rem);
+  font-weight: 900;
+  font-variation-settings: "wdth" 62;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.marquee-track span::after {
+  content: "/";
+  margin-left: 28px;
+  opacity: 0.5;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .marquee-track {
+    animation: marquee 38s linear infinite;
+  }
+
+  .marquee:hover .marquee-track {
+    animation-play-state: paused;
+  }
+}
+
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* ---------- 3D seat map ---------- */
+
+.seatmap {
+  position: relative;
+  margin: 0 0 32px;
+  padding: 28px 20px 64px;
+  overflow: hidden;
+  color: #edeff2;
+  background:
+    radial-gradient(ellipse at 50% 0%, #1b2330 0%, #0d1015 70%);
+  box-shadow: inset 0 0 0 2px #14181f;
+  perspective: 1600px;
+  perspective-origin: 50% 8%;
+}
+
+.seatmap-scene {
+  --turn: 0deg;
+  max-width: 940px;
+  margin: 0 auto -4%;
+  transform: rotateX(42deg) rotateZ(var(--turn));
+  transform-origin: 50% 0;
+  transform-style: preserve-3d;
+  transition: transform 500ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.seatmap[data-lit] .seatmap-scene {
+  transition: transform 120ms linear;
+}
+
+.seatmap-stage {
+  margin: 0 auto 26px;
+  width: 62%;
+  padding: 10px 0;
+  text-align: center;
+  font-weight: 900;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  font-size: 12px;
+  color: #14181f;
+  background: var(--accent);
+  transform: translateZ(2px);
+  box-shadow: 0 0 40px 6px color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+.seatmap-blocks {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 18px;
+  transform-style: preserve-3d;
+}
+
+.seatmap-block {
+  display: block;
+  width: 100%;
+  padding: 14px 14px 16px;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  background: rgb(255 255 255 / 0.03);
+  border: 2px solid rgb(255 255 255 / 0.14);
+  transform-style: preserve-3d;
+  transition: border-color 200ms ease, background-color 200ms ease, box-shadow 200ms ease;
+}
+
+.seatmap-block:hover {
+  border-color: rgb(255 255 255 / 0.4);
+}
+
+.seatmap-block[data-active] {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  box-shadow: 0 0 34px -4px color-mix(in srgb, var(--accent) 60%, transparent);
+}
+
+.seatmap-name {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.seatmap-name em {
+  font-style: normal;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.seatmap-block[data-soldout] .seatmap-name em {
+  color: #a3adba;
+}
+
+.seatmap-seats {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), 1fr);
+  gap: 7px;
+  transform-style: preserve-3d;
+}
+
+.seat {
+  --h: 4px;
+  position: relative;
+  display: block;
+  aspect-ratio: 1;
+  background: #2c3644;
+  transform: translateZ(var(--h));
+  transform-style: preserve-3d;
+  transition: --h 220ms cubic-bezier(0.16, 1, 0.3, 1), background-color 200ms ease, box-shadow 200ms ease;
+}
+
+/* The front face that makes each seat a block instead of a flat square. */
+.seat::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: var(--h);
+  background: color-mix(in srgb, currentColor 0%, #151a22);
+  transform-origin: top;
+  transform: rotateX(-90deg);
+}
+
+.seat[data-free] {
+  --h: 12px;
+  background: linear-gradient(140deg, #ff9a78, var(--accent) 55%, #c94c2c);
+  box-shadow: 0 0 16px -2px color-mix(in srgb, var(--accent) 70%, transparent);
+}
+
+.seat[data-free]::before {
+  background: #a53c22;
+}
+
+.seat[data-free]:hover {
+  --h: 30px;
+  background: linear-gradient(140deg, #ffd0bd, #ff8d68 60%, var(--accent));
+  box-shadow: 0 0 30px 4px color-mix(in srgb, var(--accent) 85%, transparent);
+}
+
+/* The flashlight: a pool of light that follows the cursor over the whole room. */
+.seatmap-light {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(220px circle at var(--px, -400px) var(--py, -400px), rgb(255 214 190 / 0.34), rgb(255 160 120 / 0.12) 45%, transparent 72%);
+  mix-blend-mode: screen;
+  opacity: 0;
+  transition: opacity 240ms ease;
+}
+
+.seatmap[data-lit] .seatmap-light {
+  opacity: 1;
+}
+
+.seatmap::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 80px;
+  pointer-events: none;
+  background: linear-gradient(transparent, #0d1015 85%);
+}
+
+.seatmap figcaption {
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  bottom: 14px;
+  z-index: 2;
+  font-size: 13px;
+  color: #a3adba;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .seatmap[data-seen] .seat {
+    animation: seat-in 700ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: calc(var(--i) * 14ms);
+  }
+
+  .seatmap[data-seen] .seatmap-stage {
+    animation: stage-in 800ms ease both;
+  }
+
+  .seatmap:not([data-lit]) .seat[data-free] {
+    animation: seat-in 700ms cubic-bezier(0.16, 1, 0.3, 1) both, seat-breathe 3.6s ease-in-out infinite;
+    animation-delay: calc(var(--i) * 14ms), calc(var(--i) * 90ms);
+  }
+}
+
+@keyframes seat-in {
+  from {
+    transform: translateZ(-40px);
+    opacity: 0;
+  }
+}
+
+@keyframes seat-breathe {
+  50% {
+    box-shadow: 0 0 26px 2px color-mix(in srgb, var(--accent) 80%, transparent);
+  }
+}
+
+@keyframes stage-in {
+  from {
+    opacity: 0;
+    transform: translateZ(2px) scaleX(0.4);
+  }
+}
+
+.seats-demo {
+  padding-block: 0 120px;
+}
+
+.seats-demo-head {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: 48px;
+  align-items: end;
+  margin-bottom: 32px;
+}
+
+.seats-demo-head h2 {
+  font-size: clamp(2rem, 4.2vw, 3.6rem);
+  font-variation-settings: "wdth" 84;
+  letter-spacing: -0.03em;
+}
+
+.seats-demo-head p {
+  color: var(--ink-soft);
+  max-width: 48ch;
+}
+
+.detail-seatmap {
+  margin-top: 8px;
+}
+
+.tiers li[data-active] {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  box-shadow: inset 4px 0 0 var(--accent);
+}
+
+@media (max-width: 1024px) {
+  .hero-ticket-wrap {
+    right: 0;
+    bottom: -14%;
+  }
+
+  .seats-demo-head {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 720px) {
+  .hero-ticket-wrap {
+    width: min(74%, 300px);
+    bottom: -18%;
+  }
+
+  .hero-ticket {
+    min-height: 120px;
+  }
+
+  .seats-demo {
+    padding-inline: 16px;
+  }
+
+  .seatmap {
+    padding-inline: 12px;
+  }
+
+  .seatmap-seats {
+    gap: 5px;
+  }
+
+  .bd-glow {
+    width: 80vw;
+    height: 80vw;
+  }
+}

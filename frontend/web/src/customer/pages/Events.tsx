@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { type Category, type EventItem, type Paginated } from '@/lib/api'
 import { useFetch } from '@/lib/useFetch'
+import Tilt from '@/shared/Tilt'
 import { CATEGORY_LABEL, Notice } from '@/customer/ui'
 
 const CATEGORIES = Object.keys(CATEGORY_LABEL) as Category[]
@@ -45,7 +46,8 @@ const priceText = (ev: EventItem) =>
 function Poster({ ev, i, size }: { ev: EventItem; i: number; size: string }) {
   const d = new Date(ev.start_at)
   return (
-    <Link
+    <Tilt
+      as={Link}
       to={`/events/${ev.id}`}
       className="poster"
       data-cat={ev.category}
@@ -67,7 +69,7 @@ function Poster({ ev, i, size }: { ev: EventItem; i: number; size: string }) {
         <span>{priceText(ev)}</span>
         <span>{seatState(ev)}</span>
       </div>
-    </Link>
+    </Tilt>
   )
 }
 

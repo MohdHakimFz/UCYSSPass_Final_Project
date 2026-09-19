@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api, apiBlobUrl, errorText, type Booking, type Paginated } from '@/lib/api'
 import { useFetch } from '@/lib/useFetch'
+import Tilt from '@/shared/Tilt'
 import { CATEGORY_LABEL, Notice, Skeleton, Tag, formatWhen } from '@/customer/ui'
 import { downloadIcs } from '@/lib/ics'
 
@@ -112,7 +113,7 @@ export default function Passes() {
               const canShow = !!b.qr_token && (b.status === 'confirmed' || b.status === 'attended')
               const canCancel = b.status === 'pending' || b.status === 'confirmed' || b.status === 'waitlisted'
               return (
-                <li key={b.id} className="ticket" data-status={b.status}>
+                <Tilt as="li" key={b.id} className="ticket" data-status={b.status} max={7}>
                   <div className="ticket-main">
                     <h2>{ev?.title ?? 'Event'}</h2>
                     <p className="sub">{ev ? `${CATEGORY_LABEL[ev.category]} · ${ev.venue?.name ?? 'Venue to be announced'}` : ''}</p>
@@ -157,7 +158,7 @@ export default function Passes() {
                     <Tag status={b.status} />
                     <span className="sub">{b.ticket_type?.name}</span>
                   </div>
-                </li>
+                </Tilt>
               )
             })}
           </ul>

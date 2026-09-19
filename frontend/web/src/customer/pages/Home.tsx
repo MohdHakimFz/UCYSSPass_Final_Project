@@ -15,6 +15,10 @@ import {
 import { type Category, type EventItem, type Paginated } from '@/lib/api'
 import { useFetch } from '@/lib/useFetch'
 import { CATEGORY_LABEL } from '@/customer/ui'
+import Tilt from '@/shared/Tilt'
+import Backdrop from '@/customer/fx/Backdrop'
+import HeroTicket from '@/customer/fx/HeroTicket'
+import SeatMap from '@/customer/fx/SeatMap'
 
 const CATEGORIES = Object.keys(CATEGORY_LABEL) as Category[]
 
@@ -77,13 +81,13 @@ function HeroPoster({ cat, ev, size }: { cat: Category; ev?: EventItem; size: st
     </>
   )
   return ev ? (
-    <Link to={`/events/${ev.id}`} className="poster hero-poster" data-cat={cat} data-size={size}>
+    <Tilt as={Link} to={`/events/${ev.id}`} className="poster hero-poster" data-cat={cat} data-size={size}>
       {inner}
-    </Link>
+    </Tilt>
   ) : (
-    <div className="poster hero-poster" data-cat={cat} data-size={size} aria-hidden="true">
+    <Tilt className="poster hero-poster" data-cat={cat} data-size={size} aria-hidden="true">
       {inner}
-    </div>
+    </Tilt>
   )
 }
 
@@ -96,14 +100,22 @@ export default function Home() {
     return { cat: ev?.category ?? cat, ev }
   })
 
+  const lead = picks[0].ev
+
   return (
     <>
+      <Backdrop />
       <section className="hero">
         <div className="hero-copy">
           <h1>
-            Security events,
-            <br />
-            booked in seconds.
+            <span className="line">
+              <span>Security events,</span>
+            </span>
+            <span className="line">
+              <span>
+                booked in <em>seconds.</em>
+              </span>
+            </span>
           </h1>
           <p>
             SentryPass is where CTFs, bootcamps, conferences and workshops sell seats. You get a signed QR pass on your
@@ -123,8 +135,20 @@ export default function Home() {
           <HeroPoster {...picks[1]} size="b" />
           <HeroPoster {...picks[2]} size="c" />
           <HeroPoster {...picks[3]} size="d" />
+          <HeroTicket
+            title={lead?.title ?? 'Your next event'}
+            when={lead ? new Date(lead.start_at).toLocaleDateString('en-MY', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Signed QR pass'}
+          />
         </div>
       </section>
+
+      <div className="marquee" aria-hidden="true">
+        <div className="marquee-track">
+          {[0, 1].flatMap((n) =>
+            ['CTF', 'Bootcamp', 'Conference', 'Workshop', 'Signed QR passes', 'Live waitlist', 'One seat, one buyer'].map((w) => <span key={`${n}-${w}`}>{w}</span>),
+          )}
+        </div>
+      </div>
 
       <div className="facts">
         <ul>
@@ -203,6 +227,20 @@ export default function Home() {
         </div>
       </Reveal>
 
+      <Reveal className="seats-demo">
+        <div className="seats-demo-head">
+          <h2>Watch the room fill up, seat by seat.</h2>
+          <p>Every event shows its ticket tiers as a room. Free seats glow, taken ones go dark, and the picture updates as people book. Move your cursor over it.</p>
+        </div>
+        <SeatMap
+          blocks={[
+            { id: 'front', name: 'Front row', capacity: 36, remaining: 9 },
+            { id: 'floor', name: 'General admission', capacity: 84, remaining: 47 },
+          ]}
+          caption="A sample room. On an event page this shows the real numbers."
+        />
+      </Reveal>
+
       <Reveal className="cats">
         <div className="cats-head">
           <h2>Four kinds of events.</h2>
@@ -210,7 +248,7 @@ export default function Home() {
         </div>
         <div className="cats-grid">
           {CATEGORIES.map((c) => (
-            <Link key={c} to={`/events?category=${c}`} className="poster cat-poster" data-cat={c}>
+            <Tilt as={Link} key={c} to={`/events?category=${c}`} className="poster cat-poster" data-cat={c}>
               <div className="poster-art" aria-hidden="true" />
               <div className="poster-body">
                 <h3>{CATEGORY_LABEL[c]}</h3>
@@ -219,7 +257,7 @@ export default function Home() {
                   See events <ArrowRight weight="bold" aria-hidden="true" />
                 </span>
               </div>
-            </Link>
+            </Tilt>
           ))}
         </div>
       </Reveal>

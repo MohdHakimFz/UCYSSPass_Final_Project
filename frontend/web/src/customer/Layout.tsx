@@ -4,8 +4,9 @@ import { HOME } from '@/lib/roles'
 import ThemeSheet from '@/shared/ThemeSheet'
 import posterCss from './styles/poster.css?inline'
 import homeCss from './styles/home.css?inline'
+import fxCss from './styles/fx.css?inline'
 
-const CSS = `${posterCss}\n${homeCss}`
+const CSS = `${posterCss}\n${homeCss}\n${fxCss}`
 
 /** The public site: home, events, sign-in, and the customer's own passes and profile. */
 export default function Layout() {
