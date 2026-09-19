@@ -177,6 +177,7 @@ export default function Passes() {
                     {b.payment?.status === 'paid' && <p className="sub">Paid RM {Number(b.payment.amount).toFixed(2)}</p>}
                     {b.payment?.status === 'refunded' && <p className="sub">Refunded RM {Number(b.payment.refunded_amount).toFixed(2)}</p>}
                     {b.status === 'attended' && b.checked_in_at && <p className="ticket-note">Checked in {formatWhen(b.checked_in_at)}.</p>}
+                    {b.status === 'attended' && !b.certificate_ready && b.ticket_type?.event?.end_at && <p className="ticket-note">Your certificate is ready once the event ends ({formatWhen(b.ticket_type.event.end_at)}).</p>}
 
                     {online && b.meeting && <p className="ticket-note">{b.meeting.open ? 'The meeting is open. Join from here.' : `The link opens ${formatWhen(b.meeting.opens_at)}.`}</p>}
 
