@@ -236,4 +236,14 @@ class OnlineEventTest extends TestCase
         $this->assertFalse($ids('mode=physical')->contains($online->id));
         $this->assertTrue($ids('mode=nonsense')->contains($online->id), 'an unknown mode is ignored, not an error');
     }
+
+    public function test_a_new_event_answers_with_every_column_including_the_defaults(): void
+    {
+        $res = $this->actingAs($this->organiser(), 'sanctum')->postJson('/api/events', [
+            'venue_id' => $this->venue()->id, 'title' => 'Plain', 'category' => 'ctf',
+            'start_at' => now()->addDays(3)->toIso8601String(), 'end_at' => now()->addDays(3)->addHours(2)->toIso8601String(),
+        ])->assertCreated();
+
+        $res->assertJsonPath('mode', 'physical')->assertJsonPath('seated', false)->assertJsonPath('status', 'draft');
+    }
 }

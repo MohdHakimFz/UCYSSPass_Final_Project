@@ -65,7 +65,8 @@ class EventController extends Controller
             ? ($data['organiser_id'] ?? $request->user()->id)
             : $request->user()->id;
 
-        $event = Event::create($this->withModeDefaults($data));
+        // refresh() so the answer has every column, including the ones the database filled in (mode, seated, status).
+        $event = Event::create($this->withModeDefaults($data))->refresh();
 
         return response()->json($event->makeVisible('meeting_url'), 201);
     }

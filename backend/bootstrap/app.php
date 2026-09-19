@@ -49,6 +49,17 @@ return Application::configure(basePath: dirname(__DIR__))
             $e->getHeaders()
         ));
 
+        // An error we raised on purpose with abort(): say what it is and nothing else, even with APP_DEBUG on.
+        $exceptions->render(function (HttpExceptionInterface $e, Request $request) {
+            if (! ($request->is('api/*') || $request->expectsJson())) {
+                return null;
+            }
+
+            $message = $e->getMessage() ?: (\Symfony\Component\HttpFoundation\Response::$statusTexts[$e->getStatusCode()] ?? 'Error');
+
+            return response()->json(['message' => $message], $e->getStatusCode(), $e->getHeaders());
+        });
+
         // Anything else unexpected: never leak traces/paths to API clients (details stay in the log).
         $exceptions->render(function (Throwable $e, Request $request) {
             if (! ($request->is('api/*') || $request->expectsJson())) {

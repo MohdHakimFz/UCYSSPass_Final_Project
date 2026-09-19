@@ -102,4 +102,4 @@ docker compose exec -T pgsql psql -U sail -d ddl_check -v ON_ERROR_STOP=1 < ../d
 docker compose exec -T pgsql psql -U sail -d postgres -c "DROP DATABASE ddl_check"
 ```
 
-`pg_dump` adds a few header lines (`\restrict`, `SET ...`); remove them for a script that loads cleanly in any client.
+The committed `schema.sql` already has the header lines that `pg_dump` adds (`\restrict`, `\unrestrict` and `SET ...`) removed, so it loads in any client. Remove them from a fresh export the same way.
