@@ -71,15 +71,39 @@ export default function SeatMap({
   const zoomRef = useRef(1)
 
   // Zoom keeps whatever is in the middle of the view in the middle, so you zoom into the part you are looking at.
-  const applyZoom = useCallback((next: number) => {
+  const applyZoom = useCallback((next: number, at?: { x: number; y: number }) => {
     const vp = viewport.current
     const z = clampZoom(next)
-    const centre = vp && vp.scrollWidth ? (vp.scrollLeft + vp.clientWidth / 2) / vp.scrollWidth : 0.5
+    const before = zoomRef.current
+    if (z === before) return
+
+    // Zooming with the cursor: remember which seat (or tier) is under it and how far from the cursor it sits,
+    // so after the room grows that same spot is still under the cursor.
+    const anchor = at ? document.elementFromPoint(at.x, at.y)?.closest<HTMLElement>('.seat, .seatmap-block') : null
+    const rect = anchor?.getBoundingClientRect()
+    const from = rect && at ? { dx: rect.left + rect.width / 2 - at.x, dy: rect.top + rect.height / 2 - at.y } : null
+
+    // Otherwise zoom about the middle of the view.
+    const offsetX = (vp?.clientWidth ?? 0) / 2
+    const ratioX = vp && vp.scrollWidth ? (vp.scrollLeft + offsetX) / vp.scrollWidth : 0.5
+
     zoomRef.current = z
     setZoomState(z)
-    requestAnimationFrame(() => {
-      if (vp) vp.scrollLeft = centre * vp.scrollWidth - vp.clientWidth / 2
-    })
+
+    // Two frames: the first lets React draw the new size, the second lets the panel resize to fit it.
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => {
+        if (!vp) return
+        if (anchor && from && at) {
+          const now = anchor.getBoundingClientRect()
+          const scale = z / before
+          vp.scrollLeft += now.left + now.width / 2 - (at.x + from.dx * scale)
+          window.scrollBy(0, now.top + now.height / 2 - (at.y + from.dy * scale))
+        } else {
+          vp.scrollLeft = ratioX * vp.scrollWidth - offsetX
+        }
+      }),
+    )
   }, [])
 
   // The room is drawn in perspective, so its near rows look wider and lower than the box it sits in. Keep the
@@ -124,10 +148,13 @@ export default function SeatMap({
       const [a, b] = [...touches.values()]
       return Math.hypot(a.x - b.x, a.y - b.y)
     }
+    // The scroll wheel zooms while the cursor is over the room. At the limits it lets the page scroll instead,
+    // so scrolling down from the fitted view carries on down the page and you are never stuck inside the map.
     const wheel = (e: WheelEvent) => {
-      if (!e.ctrlKey) return
+      const zoomingIn = e.deltaY < 0
+      if (!e.ctrlKey && ((zoomingIn && zoomRef.current >= MAX_ZOOM) || (!zoomingIn && zoomRef.current <= MIN_ZOOM))) return
       e.preventDefault()
-      applyZoom(zoomRef.current * (e.deltaY < 0 ? 1.12 : 1 / 1.12))
+      applyZoom(zoomRef.current * Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0015)), { x: e.clientX, y: e.clientY })
     }
     const down = (e: PointerEvent) => {
       if (e.pointerType === 'touch') {
@@ -324,8 +351,8 @@ export default function SeatMap({
         {pick
           ? chosen
             ? `Seat ${chosen.label} is yours to book. Tap it again to change your mind.`
-            : 'Pick any glowing seat. Dark seats are taken.'
-          : (caption ?? 'Live availability. Free seats glow; the organiser assigns your exact seat.')}
+            : 'Pick any glowing seat. Dark seats are taken. Scroll the mouse wheel over the room to zoom.'
+          : (caption ?? 'Live availability. Free seats glow; the organiser assigns your exact seat. Scroll to zoom.')}
       </figcaption>
     </figure>
   )
