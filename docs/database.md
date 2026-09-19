@@ -70,7 +70,7 @@ PostgreSQL does not index a foreign key by itself, so the migration `2026_09_20_
 There are two ways to get data:
 
 1. **`sample-data.sql`**: a small, readable set with fixed ids, for the report and for loading into any PostgreSQL database.
-2. **`php artisan migrate:fresh --seed`**: larger, random, infosec-themed data from the seeders and factories.
+2. **`php artisan migrate:fresh --seed`**: a UCYSS programme from `UcyssDemoSeeder` (8 events, 40 students, 119 bookings, 37 payments, 32 seats). Dates are counted from the day you seed. The rows in the email log say honestly that no email was sent.
 
 | Table | Rows in `sample-data.sql` | Mix |
 | --- | --- | --- |

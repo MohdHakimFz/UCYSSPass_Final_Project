@@ -43,7 +43,7 @@ docker compose exec laravel.test php artisan migrate:fresh --seed
 
 `vendor/` sits on a named volume because reading it through the Windows bind mount made every request take 8-20 seconds.
 
-Seeded accounts (password `password` for all): `admin@sentrypass.test` (admin), `customer@sentrypass.test` (customer). Organiser accounts are seeded with random emails; list them with `select email from users where role = 'organiser'`.
+Seeded accounts (password `password` for all): `admin@sentrypass.test` (admin), `aisyah@ucyss.test` and `farid@ucyss.test` (organisers), `customer@sentrypass.test` (a demo customer) and 40 named students such as `adam.iskandar@ucyss.test`. The seed is a small UCYSS programme: two online sessions, a seated CTF, a paid bootcamp with a waitlist, a free career talk, a draft, a cancelled event and a finished one. Dates are counted from the day you seed, so the events are always coming up. (`migrate:fresh` erases the database first.)
 
 Optional `.env` settings: `RESEND_API_KEY` (real confirmation emails; without it notifications are recorded as skipped) and `CHECKIN_API_KEY` (shared key for scanning devices sending `X-Api-Key`).
 
