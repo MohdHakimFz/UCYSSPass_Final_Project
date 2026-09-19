@@ -99,7 +99,8 @@ function Shell() {
 
   return (
     <NavigationContainer theme={theme}>
-      <StatusBar style={isDark ? 'light' : 'dark'} />
+      {/* The headers are dark in both themes, so the clock and battery are light. Screens without a header set their own. */}
+      <StatusBar style="light" />
       <Screens />
     </NavigationContainer>
   )

@@ -4,6 +4,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { CaretLeft } from 'phosphor-react-native'
 import { api, errorText } from '../lib/api'
+import { StatusBar } from 'expo-status-bar'
 import KeyboardScreen from '../components/KeyboardScreen'
 import { PosterArt } from '../components/PosterArt'
 import { Button, Field, Notice } from '../components/ui'
@@ -13,7 +14,7 @@ import type { RootParamList } from '../../App'
 
 // Two steps: ask for a six-digit code by email, then enter it with a new password.
 export default function ForgotPasswordScreen({ navigation }: NativeStackScreenProps<RootParamList, 'ForgotPassword'>) {
-  const { colors } = useTheme()
+  const { colors, isDark } = useTheme()
   const s = useStyles(makeStyles)
   const insets = useSafeAreaInsets()
   const [step, setStep] = useState<'email' | 'code'>('email')
@@ -54,6 +55,7 @@ export default function ForgotPasswordScreen({ navigation }: NativeStackScreenPr
 
   return (
     <KeyboardScreen style={{ flex: 1, backgroundColor: colors.concrete }} contentContainerStyle={{ flexGrow: 1 }}>
+      <StatusBar style={isDark ? 'light' : 'dark'} />
         <View style={[s.poster, { paddingTop: insets.top + 12 }]}>
           <PosterArt category="workshop" />
           <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={() => navigation.goBack()} hitSlop={12} style={{ alignSelf: 'flex-start' }}>

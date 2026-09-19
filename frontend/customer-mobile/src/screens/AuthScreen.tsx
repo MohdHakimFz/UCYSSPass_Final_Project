@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { CaretLeft } from 'phosphor-react-native'
 import { errorText } from '../lib/api'
 import { useAuth } from '../lib/auth'
+import { StatusBar } from 'expo-status-bar'
 import KeyboardScreen from '../components/KeyboardScreen'
 import { PosterArt } from '../components/PosterArt'
 import { Button, Field, Notice } from '../components/ui'
@@ -48,6 +49,8 @@ export default function AuthScreen({ navigation, route }: NativeStackScreenProps
 
   return (
     <KeyboardScreen style={{ flex: 1, backgroundColor: colors.concrete }} contentContainerStyle={{ flexGrow: 1 }}>
+      {/* The sign-in poster is dark, the sign-up poster is orange */}
+      <StatusBar style={isLogin ? 'light' : 'dark'} />
         <View style={[s.poster, { paddingTop: insets.top + 12 }]}>
           <PosterArt category={isLogin ? 'bootcamp' : 'ctf'} />
           <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={() => navigation.goBack()} hitSlop={12} style={s.back}>
