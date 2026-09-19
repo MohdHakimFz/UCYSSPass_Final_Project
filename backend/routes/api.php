@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AdminNotificationController;
 use App\Http\Controllers\Api\AdminStatsController;
 use App\Http\Controllers\Api\ExportController;
+use App\Http\Controllers\Api\OrganiserSummaryController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BookingController;
 use App\Http\Controllers\Api\EventController;
@@ -65,6 +66,7 @@ Route::middleware('auth:sanctum')->group(function () {
 // Admin dashboard analytics, email log and exports.
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/admin/stats', AdminStatsController::class);
+    Route::get('/organiser/summary', OrganiserSummaryController::class);
     Route::get('/admin/notifications', AdminNotificationController::class);
     Route::get('/admin/export/users', [ExportController::class, 'users']);
     Route::get('/admin/export/bookings', [ExportController::class, 'bookings']);

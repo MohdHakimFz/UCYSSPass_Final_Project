@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\Event;
+use App\Models\Payment;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -57,7 +58,44 @@ class AdminStatsController extends Controller
                 ];
             });
 
+        $money = Payment::query()
+            ->whereIn('status', ['paid', 'refunded'])
+            ->selectRaw('COALESCE(SUM(amount), 0) as gross, COALESCE(SUM(refunded_amount), 0) as refunded, COUNT(*) as payments')
+            ->first();
+
+        $moneyPerDay = Payment::query()
+            ->whereIn('status', ['paid', 'refunded'])
+            ->where('paid_at', '>=', now()->subDays(13)->startOfDay())
+            ->selectRaw('DATE(paid_at) as day, COALESCE(SUM(amount - refunded_amount), 0) as total')
+            ->groupBy('day')
+            ->pluck('total', 'day');
+
+        $recent = Booking::query()
+            ->with(['customer:id,name', 'ticketType:id,event_id,name', 'ticketType.event:id,title'])
+            ->orderByDesc('id')
+            ->limit(8)
+            ->get()
+            ->map(fn (Booking $b) => [
+                'id' => $b->id,
+                'customer' => $b->customer?->name,
+                'event' => $b->ticketType?->event?->title,
+                'event_id' => $b->ticketType?->event_id,
+                'tier' => $b->ticketType?->name,
+                'status' => $b->status,
+                'at' => $b->updated_at,
+            ]);
+
         return response()->json([
+            'revenue' => [
+                'gross' => (float) $money->gross,
+                'refunded' => (float) $money->refunded,
+                'net' => (float) $money->gross - (float) $money->refunded,
+                'payments' => (int) $money->payments,
+            ],
+            'revenue_per_day' => $days->map(fn ($day) => ['day' => $day, 'total' => (float) ($moneyPerDay[$day] ?? 0)])->values(),
+            'pending_holds' => Booking::where('status', 'pending')->whereNotNull('hold_expires_at')->where('hold_expires_at', '>', now())->count(),
+            'draft_events' => Event::where('status', 'draft')->count(),
+            'recent_activity' => $recent,
             'users_by_role' => User::query()->select('role', DB::raw('COUNT(*) as total'))->groupBy('role')->pluck('total', 'role'),
             'events_by_status' => Event::query()->select('status', DB::raw('COUNT(*) as total'))->groupBy('status')->pluck('total', 'status'),
             'events_by_category' => Event::query()->select('category', DB::raw('COUNT(*) as total'))->groupBy('category')->pluck('total', 'category'),

@@ -7,6 +7,7 @@ use App\Http\Requests\Event\StoreEventRequest;
 use App\Http\Requests\Event\UpdateEventRequest;
 use App\Models\Booking;
 use App\Models\Event;
+use App\Models\Payment;
 use App\Services\BookingService;
 use App\Services\SeatingService;
 use Illuminate\Http\JsonResponse;
@@ -141,7 +142,19 @@ class EventController extends Controller
                 'checked_in_at' => $b->checked_in_at,
             ]);
 
+        $money = Payment::query()
+            ->whereIn('booking_id', Booking::whereIn('ticket_type_id', $tierIds)->select('id'))
+            ->whereIn('status', ['paid', 'refunded'])
+            ->selectRaw('COALESCE(SUM(amount), 0) as gross, COALESCE(SUM(refunded_amount), 0) as refunded')
+            ->first();
+
         return response()->json([
+            'revenue' => [
+                'gross' => (float) $money->gross,
+                'refunded' => (float) $money->refunded,
+                'net' => (float) $money->gross - (float) $money->refunded,
+            ],
+            'pending_holds' => (int) Booking::whereIn('ticket_type_id', $tierIds)->where('status', 'pending')->whereNotNull('hold_expires_at')->where('hold_expires_at', '>', now())->count(),
             'capacity' => $capacity,
             'seats_remaining' => (int) $tiers->sum('seats_remaining'),
             'held' => $held,
