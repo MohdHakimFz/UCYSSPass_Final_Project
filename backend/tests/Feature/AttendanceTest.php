@@ -105,4 +105,14 @@ class AttendanceTest extends TestCase
 
         $this->assertSame($few, $count());
     }
+
+    public function test_an_event_that_is_running_now_is_counted_before_it_ends(): void
+    {
+        $organiser = $this->organiser();
+        $event = $this->finished($organiser, confirmed: 1, attended: 2);
+        $event->update(['start_at' => now()->subHour(), 'end_at' => now()->addHour()]);
+
+        $this->actingAs($organiser)->getJson('/api/organiser/attendance')
+            ->assertOk()->assertJsonPath('events.0.id', $event->id)->assertJsonPath('events.0.attended', 2)->assertJsonPath('events.0.registered', 3);
+    }
 }

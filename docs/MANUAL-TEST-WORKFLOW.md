@@ -167,7 +167,7 @@ Organiser, halaman event yang dipublish dan sudah ada tempahan, bahagian **Annou
 
 Perlukan event yang **sudah tamat** dengan tetamu yang hadir. Cara cepat: guna event "Cloud Security Fundamentals" daripada data demo (`migrate:fresh --seed`), atau ubah tarikh event dalam borang organiser ke masa lalu selepas check-in.
 
-- [ ] **Statistik.** Halaman **My events** (organiser) dan **Overview** (admin) ada panel **Attendance**: "X of Y who registered came (Z%)". 📸
+- [ ] **Statistik.** Halaman **My events** (organiser) dan **Overview** (admin) ada panel **Attendance** (untuk event yang sudah bermula, termasuk yang sedang berjalan): "X of Y who registered came (Z%)". 📸
 - [ ] **Sijil.** Customer yang hadir: pada My passes ada **Download certificate**; ia memuat turun PDF dengan nama, event, tarikh, dan nombor sijil. 📸
 - [ ] **Semak sijil.** Buka alamat yang tercetak pada sijil (`/verify/...`) dalam pelayar lain, tanpa log masuk: "This certificate is genuine". Ubah huruf terakhir kod: "We could not confirm this certificate".
 - [ ] **Tak hadir.** Customer yang tak hadir tiada butang sijil.

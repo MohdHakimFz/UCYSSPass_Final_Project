@@ -503,7 +503,7 @@ Authenticate with a Bearer token (organiser who owns the event, or admin) **or**
 | Method | Path | Auth | Description |
 | --- | --- | --- | --- |
 | GET | `/organiser/summary` | Organiser (own events), Admin (all) | Counts and revenue for the organiser's dashboard. `403` for a customer. |
-| GET | `/organiser/attendance` | Organiser (own events), Admin (all) | Who registered and who actually came, for the latest finished events. `403` for a customer. |
+| GET | `/organiser/attendance` | Organiser (own events), Admin (all) | Who registered and who actually came, for the latest events that have started. `403` for a customer. |
 | GET | `/admin/stats` | Admin | Revenue, seats, holds, recent activity and breakdowns. |
 | GET | `/admin/notifications` | Admin | Email log, newest first. `?type=confirmation\|waitlist_promoted\|cancelled\|reminder\|announcement`. Each row includes the raw `provider_response`. |
 | GET | `/admin/export/users` | Admin | All users as CSV. |
@@ -519,7 +519,7 @@ Authenticate with a Bearer token (organiser who owns the event, or admin) **or**
 }
 ```
 
-`GET /organiser/attendance` `200` lists up to the 8 latest events that have ended (published or completed, not drafts), with the people who **registered** (confirmed or checked in) and the ones who **attended** (checked in, or joined an online meeting):
+`GET /organiser/attendance` `200` lists up to the 8 latest events that have started (finished or running now) (published or completed, not drafts), with the people who **registered** (confirmed or checked in) and the ones who **attended** (checked in, or joined an online meeting):
 
 ```json
 {

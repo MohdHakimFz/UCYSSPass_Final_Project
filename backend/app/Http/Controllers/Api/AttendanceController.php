@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 class AttendanceController extends Controller
 {
     /**
-     * Who registered and who actually came, for the latest events that have already finished.
+     * Who registered and who actually came, for the latest events that have already started: finished ones and ones running now.
      * An organiser sees their own events, an admin sees all; a customer has no use for it.
      */
     public function __invoke(Request $request): JsonResponse
@@ -20,14 +20,14 @@ class AttendanceController extends Controller
 
         $events = Event::query()
             ->whereIn('status', ['published', 'completed'])
-            ->where('end_at', '<', now())
+            ->where('start_at', '<=', now())
             ->when($user->role === 'organiser', fn ($query) => $query->where('organiser_id', $user->id))
             // Both numbers come from one query for all the events, not one query per event.
             ->withCount([
                 'bookings as registered' => fn ($query) => $query->whereIn('bookings.status', ['confirmed', 'attended']),
                 'bookings as attended' => fn ($query) => $query->where('bookings.status', 'attended'),
             ])
-            ->orderByDesc('end_at')
+            ->orderByDesc('start_at')
             ->limit(8)
             ->get(['id', 'title', 'mode', 'category', 'start_at', 'end_at']);
 

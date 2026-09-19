@@ -5,7 +5,7 @@ import { EmptyState } from '@/dashboard/parts'
 import { Skeleton, formatWhen } from '@/dashboard/ui'
 import { UserFollow } from '@carbon/icons-react'
 
-/** Who registered and who really came, for the latest events that have finished. */
+/** Who registered and who really came, for the latest events that have started. */
 export default function AttendancePanel({ base }: { base: '/organiser' | '/admin' }) {
   const { data } = useFetch<Attendance>('/organiser/attendance')
 
@@ -23,8 +23,8 @@ export default function AttendancePanel({ base }: { base: '/organiser' | '/admin
       {!data ? (
         <Skeleton rows={3} />
       ) : data.events.length === 0 ? (
-        <EmptyState icon={<UserFollow size={32} />} title="No finished events yet">
-          Once an event has ended, you will see how many of the people who registered actually came.
+        <EmptyState icon={<UserFollow size={32} />} title="No events have started yet">
+          Once an event has started, you will see how many of the people who registered actually came.
         </EmptyState>
       ) : (
         <ul className="attendance-list">
