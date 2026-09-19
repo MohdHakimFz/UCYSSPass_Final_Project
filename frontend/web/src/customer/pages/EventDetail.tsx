@@ -5,7 +5,7 @@ import { api, ApiError, errorText, type Booking, type EventItem, type SeatInfo, 
 import { useAuth } from '@/lib/auth'
 import SeatMap from '@/customer/fx/SeatMap'
 import Checkout from '@/customer/Checkout'
-import { useFetch } from '@/lib/useFetch'
+import { useFetch, useLiveTick } from '@/lib/useFetch'
 import { CATEGORY_LABEL, Notice, formatWhen, Skeleton } from '@/customer/ui'
 
 export default function EventDetail() {
@@ -18,6 +18,7 @@ export default function EventDetail() {
   const [seats, setSeats] = useState<Record<string, SeatInfo[]>>({})
   const [seatPick, setSeatPick] = useState<{ tierId: number; seat: SeatInfo } | null>(null)
   const [seatsKey, setSeatsKey] = useState(0)
+  const live = useLiveTick()
   const [checkout, setCheckout] = useState<{ booking: Booking; tier: TicketType } | null>(null)
 
   // Numbered seats: load every tier's seats (free or taken) so the room shows the real thing.
@@ -32,8 +33,18 @@ export default function EventDetail() {
     return () => {
       live = false
     }
-  }, [seated, tierIds, seatsKey])
+  }, [seated, tierIds, seatsKey, live])
   const [note, setNote] = useState<{ tone: 'ok' | 'error' | 'warn'; text: string } | null>(null)
+
+  // Someone else took the seat while it was picked: let go of it and say so.
+  useEffect(() => {
+    if (!seatPick) return
+    const fresh = seats[String(seatPick.tierId)]?.find((s) => s.id === seatPick.seat.id)
+    if (fresh?.taken) {
+      setSeatPick(null)
+      setNote({ tone: 'warn', text: `Seat ${seatPick.seat.label} was just taken. Pick another one.` })
+    }
+  }, [seats, seatPick])
 
   async function book(t: TicketType) {
     if (!user) {

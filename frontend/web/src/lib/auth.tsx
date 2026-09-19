@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react'
-import { api, tokenStore, type User } from './api'
+import { api, ApiError, tokenStore, type User } from './api'
 
 type AuthState = {
   user: User | null
@@ -19,7 +19,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const check = tokenStore.get()
       ? api<User>('/auth/me')
           .then(setUser)
-          .catch(() => tokenStore.clear())
+          .catch((e) => {
+            // Only a refused token ends the session; a dropped connection should not sign anyone out.
+            if (e instanceof ApiError && e.status === 401) tokenStore.clear()
+          })
       : Promise.resolve()
     check.finally(() => setLoading(false))
   }, [])

@@ -43,6 +43,11 @@ class BookingService
         $notificationsToDispatch = [];
 
         $booking = DB::transaction(function () use ($customer, $ticketType, $seatId, &$notificationsToDispatch) {
+            $event = $ticketType->event()->first();
+            if (! $event || $event->status !== 'published' || $event->end_at->isPast()) {
+                throw new BookingConflictException('This event is not open for booking.');
+            }
+
             $hasActiveBooking = Booking::where('customer_id', $customer->id)
                 ->where('ticket_type_id', $ticketType->id)
                 ->whereIn('status', self::ACTIVE_STATUSES)

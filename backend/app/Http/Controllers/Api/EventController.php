@@ -36,6 +36,7 @@ class EventController extends Controller
             ->when($request->filled('category'), fn ($query) => $query->where('category', $request->string('category')))
             ->when($request->filled('venue_id'), fn ($query) => $query->where('venue_id', $request->integer('venue_id')))
             ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')))
+            ->when(! $this->mayListDrafts($request), fn ($query) => $query->where('status', '!=', 'draft'))
             ->when($request->filled('max_price'), fn ($query) => $query->whereHas(
                 'ticketTypes',
                 fn ($query) => $query->where('price', '<=', $request->input('max_price'))
@@ -69,9 +70,27 @@ class EventController extends Controller
     /**
      * Show a single event including its ticket types.
      */
-    public function show(Event $event): JsonResponse
+    public function show(Request $request, Event $event): JsonResponse
     {
+        // A draft is the organiser's work in progress: nobody else can open it, even with the address.
+        abort_if($event->status === 'draft' && ! $this->mayOpenDraft($request, $event), 404);
+
         return response()->json($event->load('venue', 'ticketTypes'));
+    }
+
+    /** Drafts are listed only for admins, or for an organiser asking for their own events. */
+    private function mayListDrafts(Request $request): bool
+    {
+        $user = $request->user('sanctum');
+
+        return $user && ($user->role === 'admin' || ($user->role === 'organiser' && $request->integer('organiser_id') === $user->id));
+    }
+
+    private function mayOpenDraft(Request $request, Event $event): bool
+    {
+        $user = $request->user('sanctum');
+
+        return $user && ($user->role === 'admin' || $user->id === $event->organiser_id);
     }
 
     /**

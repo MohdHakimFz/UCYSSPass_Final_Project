@@ -30,11 +30,12 @@ const toLocalInput = (iso: string) => {
 }
 
 export default function EventEditor() {
+  const { toast } = useFeedback()
   const { id } = useParams()
   const isNew = id === 'new'
   const navigate = useNavigate()
-  const { data: event, error: loadError, reload } = useFetch<EventItem>(isNew ? null : `/events/${id}`)
-  const { data: venues } = useFetch<Paginated<Venue>>('/venues?per_page=100')
+  const { data: event, error: loadError, reload } = useFetch<EventItem>(isNew ? null : `/events/${id}`, { every: 0 })
+  const { data: venues } = useFetch<Paginated<Venue>>('/venues?per_page=100', { every: 0 })
   const { data: stats, reload: reloadStats } = useFetch<EventStats>(isNew ? null : `/events/${id}/stats`)
   const [actionNote, setActionNote] = useState<string | null>(null)
 
@@ -53,6 +54,17 @@ export default function EventEditor() {
     }
   }
 
+  async function setStatus(next: EventStatus) {
+    setActionNote(null)
+    try {
+      await api(`/events/${id}`, { method: 'PUT', body: { status: next } })
+      toast({ kind: 'success', title: next === 'published' ? 'Event is live' : 'Event is back in draft', subtitle: next === 'published' ? 'Customers can see it and book right now.' : 'Customers can no longer see it.' })
+      reload()
+    } catch (err) {
+      setActionNote(errorText(err))
+    }
+  }
+
   if (!isNew && !event && !loadError) return <p className="loading">Loading event…</p>
   if (loadError) return <Notice tone="error">{loadError}</Notice>
 
@@ -63,6 +75,13 @@ export default function EventEditor() {
         title={isNew ? 'Create event' : event!.title}
         status={!isNew && <StatusTag status={event!.status} />}
         description={isNew ? 'Fill in the details, save, then add ticket tiers so people can book.' : undefined}
+        actions={
+          !isNew && event!.status === 'draft' ? (
+            <Button onClick={() => setStatus('published')}>Publish event</Button>
+          ) : !isNew && event!.status === 'published' ? (
+            <Button kind="tertiary" onClick={() => setStatus('draft')}>Move back to draft</Button>
+          ) : undefined
+        }
       />
 
       {actionNote && <Notice tone="error">{actionNote}</Notice>}
@@ -86,7 +105,7 @@ export default function EventEditor() {
       {stats && <StatsPanel stats={stats} />}
 
       <EventForm
-        key={event?.id ?? 'new'}
+        key={`${event?.id ?? 'new'}-${event?.status}`}
         event={event}
         venues={venues?.data ?? null}
         onSaved={(saved) => (isNew ? navigate(`/organiser/events/${saved.id}`, { replace: true }) : reloadAll())}

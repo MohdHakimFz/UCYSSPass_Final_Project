@@ -1,7 +1,9 @@
 import { Link } from 'react-router-dom'
 import { Button, OverflowMenu, OverflowMenuItem, Table, TableBody, TableCell, TableContainer, TableHead, TableHeader, TableRow } from '@carbon/react'
 import { Add, Calendar, Ticket, CheckmarkOutline, Currency } from '@carbon/icons-react'
+import { api, errorText } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
+import { useFeedback } from '@/dashboard/feedback'
 import { useFetch } from '@/lib/useFetch'
 import type { EventItem, OrganiserSummary, Paginated } from '@/lib/api'
 import { CATEGORY_LABEL, Notice, StatusTag, formatWhen, Skeleton } from '@/dashboard/ui'
@@ -10,8 +12,19 @@ import { EmptyState, PageHeader, StatTile, money } from '@/dashboard/parts'
 export default function MyEvents() {
   const { user } = useAuth()
   const mine = user?.role === 'organiser' ? `&organiser_id=${user.id}` : ''
-  const { data, error } = useFetch<Paginated<EventItem>>(`/events?per_page=50&sort=start_at&direction=desc${mine}`)
+  const { toast } = useFeedback()
+  const { data, error, reload } = useFetch<Paginated<EventItem>>(`/events?per_page=50&sort=start_at&direction=desc${mine}`)
   const { data: sum } = useFetch<OrganiserSummary>('/organiser/summary')
+
+  async function setStatus(ev: EventItem, next: 'published' | 'draft') {
+    try {
+      await api(`/events/${ev.id}`, { method: 'PUT', body: { status: next } })
+      toast({ kind: 'success', title: next === 'published' ? `${ev.title} is live` : `${ev.title} is back in draft` })
+      reload()
+    } catch (err) {
+      toast({ kind: 'error', title: 'Could not change the event', subtitle: errorText(err) })
+    }
+  }
 
   return (
     <>
@@ -96,6 +109,8 @@ export default function MyEvents() {
                       <div className="row-actions">
                         <OverflowMenu flipped aria-label={`Actions for ${ev.title}`} size="sm">
                           <OverflowMenuItem itemText="Manage" href={`/organiser/events/${ev.id}`} />
+                          {ev.status === 'draft' && <OverflowMenuItem itemText="Publish" onClick={() => setStatus(ev, 'published')} />}
+                          {ev.status === 'published' && <OverflowMenuItem itemText="Move back to draft" onClick={() => setStatus(ev, 'draft')} />}
                           <OverflowMenuItem itemText="Check-in" href="/organiser/check-in" />
                         </OverflowMenu>
                       </div>
