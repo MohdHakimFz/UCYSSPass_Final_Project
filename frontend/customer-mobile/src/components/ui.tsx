@@ -3,6 +3,7 @@ import { ActivityIndicator, Animated, Pressable, StyleSheet, Text, TextInput, Vi
 import { CheckCircle, Eye, EyeSlash, Warning, WarningCircle } from 'phosphor-react-native'
 import { colors, fonts } from '../theme'
 import type { BookingStatus } from '../lib/api'
+import { useRevealFocusedField } from './KeyboardScreen'
 
 export function Button({
   title,
@@ -45,6 +46,7 @@ export function Field({ label, hint, ...props }: { label: string; hint?: string 
   // Password fields get a show/hide toggle so people can check what they typed on a small keyboard.
   const isPassword = !!props.secureTextEntry
   const [hidden, setHidden] = useState(true)
+  const reveal = useRevealFocusedField()
 
   return (
     <View style={{ gap: 6 }}>
@@ -56,6 +58,10 @@ export function Field({ label, hint, ...props }: { label: string; hint?: string 
           style={[s.input, isPassword && { paddingRight: 52 }]}
           autoCapitalize="none"
           {...props}
+          onFocus={(e) => {
+            reveal()
+            props.onFocus?.(e)
+          }}
           secureTextEntry={isPassword ? hidden : false}
         />
         {isPassword && (

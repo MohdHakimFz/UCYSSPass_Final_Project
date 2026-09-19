@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { ScrollView, StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, Text, View } from 'react-native'
 import { api, errorText } from '../lib/api'
 import { useAuth } from '../lib/auth'
+import KeyboardScreen from '../components/KeyboardScreen'
 import { Button, Field, Notice } from '../components/ui'
 import { colors, fonts } from '../theme'
 
@@ -50,7 +51,7 @@ export default function ProfileScreen() {
   }
 
   return (
-    <ScrollView style={{ backgroundColor: colors.concrete }} contentContainerStyle={s.pad} keyboardShouldPersistTaps="handled">
+    <KeyboardScreen style={{ backgroundColor: colors.concrete }} contentContainerStyle={s.pad}>
       <Text style={s.h2}>Your details</Text>
       {detailsNote && <Notice tone={detailsNote.tone} text={detailsNote.text} />}
       <Field label="Full name" value={details.name} onChangeText={(name) => setDetails({ ...details, name })} autoCapitalize="words" autoComplete="name" />
@@ -65,7 +66,7 @@ export default function ProfileScreen() {
       <Field label="New password" value={pw.password} onChangeText={(password) => setPw({ ...pw, password })} secureTextEntry autoComplete="new-password" />
       <Field label="Confirm new password" value={pw.password_confirmation} onChangeText={(password_confirmation) => setPw({ ...pw, password_confirmation })} secureTextEntry autoComplete="new-password" />
       <Button title="Change password" onPress={savePassword} busy={busy === 'pw'} />
-    </ScrollView>
+    </KeyboardScreen>
   )
 }
 

@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { Pressable, StyleSheet, Text, View } from 'react-native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { CaretLeft } from 'phosphor-react-native'
 import { api, errorText } from '../lib/api'
+import KeyboardScreen from '../components/KeyboardScreen'
 import { PosterArt } from '../components/PosterArt'
 import { Button, Field, Notice } from '../components/ui'
 import { colors, fonts } from '../theme'
@@ -49,8 +50,7 @@ export default function ForgotPasswordScreen({ navigation }: NativeStackScreenPr
   }
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.concrete }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
+    <KeyboardScreen style={{ flex: 1, backgroundColor: colors.concrete }} contentContainerStyle={{ flexGrow: 1 }}>
         <View style={[s.poster, { paddingTop: insets.top + 12 }]}>
           <PosterArt category="workshop" />
           <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={() => navigation.goBack()} hitSlop={12} style={{ alignSelf: 'flex-start' }}>
@@ -98,8 +98,7 @@ export default function ForgotPasswordScreen({ navigation }: NativeStackScreenPr
             </>
           )}
         </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+    </KeyboardScreen>
   )
 }
 
