@@ -86,14 +86,14 @@ export default function EventDetailScreen({ route }: NativeStackScreenProps<Root
       </View>
       <Text style={s.h1}>{event.title}</Text>
       <Text style={s.sub}>
-        {CATEGORY_LABEL[event.category]}, {formatWhen(event.start_at)}, {event.venue?.name ?? 'Venue to be announced'}
+        {CATEGORY_LABEL[event.category]}, {formatWhen(event.start_at)}, {event.mode === 'online' ? 'Online meeting' : (event.venue?.name ?? 'Venue to be announced')}
       </Text>
       <View style={{ alignSelf: 'flex-start' }}>
         <Button
           title="Share this event"
           variant="quiet"
           onPress={() =>
-            Share.share({ message: `${event.title} · ${formatWhen(event.start_at)} · ${event.venue?.name ?? 'Venue to be announced'}` }).catch(() => undefined)
+            Share.share({ message: `${event.title} · ${formatWhen(event.start_at)} · ${event.mode === 'online' ? 'Online meeting' : (event.venue?.name ?? 'Venue to be announced')}` }).catch(() => undefined)
           }
         />
       </View>

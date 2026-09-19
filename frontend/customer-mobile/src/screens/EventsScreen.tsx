@@ -145,7 +145,7 @@ export default function EventsScreen() {
             </View>
             <View style={s.posterBody}>
               <Text style={[s.title, { color: tone.ink, fontSize: featured ? 26 : 20 }]}>{ev.title}</Text>
-              <Text style={[s.sub, { color: tone.ink }]}>{ev.venue?.name ?? 'Venue to be announced'}</Text>
+              <Text style={[s.sub, { color: tone.ink }]}>{ev.mode === 'online' ? 'Online meeting' : (ev.venue?.name ?? 'Venue to be announced')}</Text>
               <View style={s.posterFoot}>
                 <Text style={[s.price, { color: tone.ink }]}>
                   {ev.from_price != null ? (Number(ev.from_price) === 0 ? 'Free' : `From RM ${Number(ev.from_price).toFixed(0)}`) : 'Not on sale'}

@@ -109,6 +109,8 @@ export type Booking = {
   seat?: { id: number; row_label: string; number: number; label: string } | null
   customer?: { id: number; name: string; email: string }
   waitlist_position?: number
+  /** For a confirmed guest of an online event. The link itself is only given by the join call. */
+  meeting?: { platform: MeetingPlatform | null; opens_at: string; ends_at: string; open: boolean } | null
   ticket_type?: {
     id: number
     name: string
@@ -117,6 +119,7 @@ export type Booking = {
       id: number
       title: string
       category: Category
+      mode?: EventMode
       start_at: string
       end_at: string
       venue?: { id: number; name: string; address?: string }

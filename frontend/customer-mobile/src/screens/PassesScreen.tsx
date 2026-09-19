@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import * as Brightness from 'expo-brightness'
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake'
-import { Alert, FlatList, Image, Modal, RefreshControl, StyleSheet, Text, View } from 'react-native'
+import { Alert, FlatList, Image, Linking, Modal, RefreshControl, StyleSheet, Text, View } from 'react-native'
 import { api, CATEGORY_LABEL, errorText, fetchQrDataUri, type Booking, type Paginated } from '../lib/api'
 import { addToCalendar } from '../lib/calendar'
 import { loadCache, saveCache } from '../lib/offline'
@@ -78,6 +78,34 @@ function PassModal({ booking, onClose, onCalendar }: { booking: Booking; onClose
         </View>
       </View>
     </Modal>
+  )
+}
+
+const PLATFORM: Record<string, string> = { zoom: 'Zoom', meet: 'Google Meet', teams: 'Microsoft Teams', other: 'the meeting' }
+
+/** Joins the online meeting: the server gives the link only once the meeting is open, and counts the tap as attending. */
+function JoinButton({ booking, onDone, onError }: { booking: Booking; onDone: () => void; onError: (text: string) => void }) {
+  const [busy, setBusy] = useState(false)
+  const m = booking.meeting
+  if (!m) return null
+
+  async function join() {
+    setBusy(true)
+    try {
+      const res = await api<{ meeting_url: string }>(`/bookings/${booking.id}/join`, { method: 'POST' })
+      await Linking.openURL(res.meeting_url)
+      onDone()
+    } catch (err) {
+      onError(errorText(err))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return m.open ? (
+    <Button title={`Join on ${PLATFORM[m.platform ?? 'other']}`} busy={busy} onPress={join} />
+  ) : (
+    <Button title={`Opens ${formatWhen(m.opens_at)}`} disabled onPress={() => undefined} />
   )
 }
 
@@ -168,6 +196,7 @@ export default function PassesScreen() {
         renderItem={({ item: b }) => {
           const ev = b.ticket_type?.event
           const start = ev ? new Date(ev.start_at) : null
+          const online = ev?.mode === 'online'
           const canShow = showable(b)
           const holding = b.status === 'pending' && !!b.hold_expires_at
           const canCancel = !offline && (b.status === 'pending' || b.status === 'confirmed' || b.status === 'waitlisted')
@@ -177,7 +206,7 @@ export default function PassesScreen() {
                 <Text style={s.title}>{ev?.title ?? 'Event'}</Text>
                 {ev && (
                   <Text style={s.sub}>
-                    {CATEGORY_LABEL[ev.category]} · {ev.venue?.name ?? 'Venue to be announced'}
+                    {CATEGORY_LABEL[ev.category]} · {ev.mode === 'online' ? 'Online meeting' : (ev.venue?.name ?? 'Venue to be announced')}
                   </Text>
                 )}
                 {ev && <Text style={s.sub}>{formatWhen(ev.start_at)}</Text>}
@@ -191,10 +220,14 @@ export default function PassesScreen() {
                     You&apos;ll be confirmed if a seat opens.
                   </Text>
                 )}
-                {(canShow || canCancel) && (
+                {online && b.meeting && (
+                  <Text style={s.note}>{b.meeting.open ? 'The meeting is open. Join from here.' : `The link opens ${formatWhen(b.meeting.opens_at)}.`}</Text>
+                )}
+                {(canShow || canCancel || (online && !!b.meeting)) && (
                   <View style={{ flexDirection: 'row', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
                     {holding && <Button title="Pay now" onPress={() => setPaying(b)} />}
-                    {canShow && <Button title="Show pass" onPress={() => setShown(b)} />}
+                    {online && b.meeting && <JoinButton booking={b} onDone={reload} onError={(text) => setNote({ tone: 'error', text })} />}
+                    {canShow && !online && <Button title="Show pass" onPress={() => setShown(b)} />}
                     {canCancel && <Button title="Cancel booking" variant="danger" onPress={() => cancel(b)} />}
                   </View>
                 )}

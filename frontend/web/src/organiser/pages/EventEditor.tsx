@@ -88,6 +88,10 @@ export default function EventEditor() {
 
       {actionNote && <Notice tone="error">{actionNote}</Notice>}
 
+      {!isNew && event?.status === 'draft' && (
+        <Notice tone="warn">This event is a draft, so customers cannot see it yet. Add at least one ticket tier, then press Publish event.</Notice>
+      )}
+
       {!isNew && (
         <div className="form-actions" style={{ marginBottom: 24 }}>
           <Button kind="tertiary" size="md" renderIcon={Copy} onClick={duplicate}>
@@ -183,7 +187,7 @@ function EventForm({
       setNote({
         tone: 'ok',
         text: !event
-          ? 'Event created. Add ticket tiers next.'
+          ? 'Event created as a draft. Add ticket tiers next, then publish it so customers can see it.'
           : saved.cancelled_bookings
             ? `Event cancelled. ${saved.cancelled_bookings} bookings were cancelled and the attendees emailed.`
             : 'Event saved.',

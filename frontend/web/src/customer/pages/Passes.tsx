@@ -71,6 +71,43 @@ function PassDialog({ booking, onClose }: { booking: Booking; onClose: () => voi
   )
 }
 
+const PLATFORM: Record<string, string> = { zoom: 'Zoom', meet: 'Google Meet', teams: 'Microsoft Teams', other: 'the meeting' }
+
+/** Opens the online meeting: the server only hands over the link once the meeting is open, and counts the click as attending. */
+function JoinButton({ booking, onDone, onError }: { booking: Booking; onDone: () => void; onError: (text: string) => void }) {
+  const [busy, setBusy] = useState(false)
+  const m = booking.meeting
+  if (!m) return null
+  const where = PLATFORM[m.platform ?? 'other']
+
+  async function join() {
+    // The tab has to open during the click, or the browser blocks it; the link is filled in when it arrives.
+    const tab = window.open('about:blank', '_blank')
+    setBusy(true)
+    try {
+      const res = await api<{ meeting_url: string }>(`/bookings/${booking.id}/join`, { method: 'POST' })
+      if (tab) tab.location.href = res.meeting_url
+      else window.location.assign(res.meeting_url)
+      onDone()
+    } catch (err) {
+      tab?.close()
+      onError(errorText(err))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return m.open ? (
+    <button className="btn" disabled={busy} onClick={join}>
+      {busy ? 'Opening…' : `Join on ${where}`}
+    </button>
+  ) : (
+    <button className="btn" disabled title={`The meeting opens at ${formatWhen(m.opens_at)}`}>
+      Opens {formatWhen(m.opens_at)}
+    </button>
+  )
+}
+
 export default function Passes() {
   const { data, error, reload } = useFetch<Paginated<Booking>>('/bookings?per_page=50')
   const [shown, setShown] = useState<Booking | null>(null)
@@ -120,6 +157,7 @@ export default function Passes() {
             {data.data.map((b) => {
               const ev = b.ticket_type?.event
               const start = ev ? new Date(ev.start_at) : null
+              const online = ev?.mode === 'online'
               const canShow = !!b.qr_token && (b.status === 'confirmed' || b.status === 'attended')
               const canCancel = b.status === 'pending' || b.status === 'confirmed' || b.status === 'waitlisted'
               const holding = b.status === 'pending' && !!b.hold_expires_at
@@ -127,7 +165,7 @@ export default function Passes() {
                 <Tilt as="li" key={b.id} className="ticket" data-status={b.status} max={7}>
                   <div className="ticket-main">
                     <h2>{ev?.title ?? 'Event'}</h2>
-                    <p className="sub">{ev ? `${CATEGORY_LABEL[ev.category]} · ${ev.venue?.name ?? 'Venue to be announced'}` : ''}</p>
+                    <p className="sub">{ev ? `${CATEGORY_LABEL[ev.category]} · ${ev.mode === 'online' ? 'Online meeting' : (ev.venue?.name ?? 'Venue to be announced')}` : ''}</p>
                     {ev && <p className="sub">{formatWhen(ev.start_at)}</p>}
                     {b.seat && <p className="seat-badge">Seat {b.seat.label}</p>}
 
@@ -142,6 +180,8 @@ export default function Passes() {
                     {b.payment?.status === 'refunded' && <p className="sub">Refunded RM {Number(b.payment.refunded_amount).toFixed(2)}</p>}
                     {b.status === 'attended' && b.checked_in_at && <p className="ticket-note">Checked in {formatWhen(b.checked_in_at)}.</p>}
 
+                    {online && b.meeting && <p className="ticket-note">{b.meeting.open ? 'The meeting is open. Join from here.' : `The link opens ${formatWhen(b.meeting.opens_at)}.`}</p>}
+
                     {(canShow || canCancel) && (
                       <div className="ticket-actions">
                         {holding && (
@@ -149,7 +189,8 @@ export default function Passes() {
                             Pay now
                           </button>
                         )}
-                        {canShow && (
+                        {online && b.meeting && <JoinButton booking={b} onDone={reload} onError={(text) => setNote({ tone: 'error', text })} />}
+                        {canShow && !online && (
                           <button className="btn" onClick={() => setShown(b)}>
                             Show pass
                           </button>

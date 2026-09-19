@@ -62,7 +62,7 @@ function Poster({ ev, i, size }: { ev: EventItem; i: number; size: string }) {
       <div className="poster-body">
         <h2>{ev.title}</h2>
         <p>
-          {CATEGORY_LABEL[ev.category]}, {ev.venue?.name ?? 'venue to be announced'}
+          {CATEGORY_LABEL[ev.category]}, {ev.mode === 'online' ? 'online meeting' : (ev.venue?.name ?? 'venue to be announced')}
         </p>
       </div>
       <div className="poster-foot">

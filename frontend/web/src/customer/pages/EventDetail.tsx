@@ -127,7 +127,13 @@ export default function EventDetail() {
         <div className="detail-info">
           <h1>{event.title}</h1>
           <p className="detail-meta">
-            {CATEGORY_LABEL[event.category]} at {event.venue?.name ?? 'a venue to be announced'}
+            {event.mode === 'online' ? `${CATEGORY_LABEL[event.category]}, online meeting` : `${CATEGORY_LABEL[event.category]} at ${event.venue?.name ?? 'a venue to be announced'}`}
+            {event.mode === 'online' && (
+              <>
+                <br />
+                <span className="online-note">The meeting link appears on your pass once your ticket is confirmed.</span>
+              </>
+            )}
             <br />
             {formatWhen(event.start_at)}
           </p>

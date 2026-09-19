@@ -132,6 +132,7 @@ export type EventItem = {
   start_at: string
   end_at: string
   status: 'draft' | 'published' | 'cancelled' | 'completed'
+  mode?: 'physical' | 'online'
   seated?: boolean
   venue?: { id: number; name: string }
   from_price?: string | null
@@ -154,10 +155,12 @@ export type Booking = {
   payment?: { id: number; amount: string; method: 'card' | 'fpx' | 'ewallet'; status: 'paid' | 'failed' | 'refunded'; reference: string | null; refunded_amount: string } | null
   refund?: { refunded: boolean; amount: string } | null
   waitlist_position?: number
+  /** For a confirmed guest of an online event. The link itself is only given by the join call. */
+  meeting?: { platform: 'zoom' | 'meet' | 'teams' | 'other' | null; opens_at: string; ends_at: string; open: boolean } | null
   ticket_type?: {
     id: number
     name: string
     price: string
-    event?: { id: number; title: string; category: Category; start_at: string; end_at: string; venue?: { id: number; name: string } }
+    event?: { id: number; title: string; category: Category; mode?: 'physical' | 'online'; start_at: string; end_at: string; venue?: { id: number; name: string } }
   }
 }
