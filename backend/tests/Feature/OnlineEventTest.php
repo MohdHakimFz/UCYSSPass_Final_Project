@@ -124,4 +124,78 @@ class OnlineEventTest extends TestCase
         $this->actingAs($this->customer(), 'sanctum')->postJson('/api/bookings', ['ticket_type_id' => $tier->id])
             ->assertCreated()->assertJsonPath('status', 'confirmed')->assertJsonPath('seat', null);
     }
+
+    /** A confirmed guest of an online event that starts in $startsInMinutes. */
+    private function guest(int $startsInMinutes, string $status = 'confirmed'): array
+    {
+        $event = Event::factory()->create([
+            'organiser_id' => $this->organiser()->id, 'venue_id' => Venue::online()->id, 'status' => 'published', 'mode' => 'online',
+            'meeting_url' => 'https://zoom.us/j/999', 'meeting_platform' => 'zoom',
+            'start_at' => now()->addMinutes($startsInMinutes), 'end_at' => now()->addMinutes($startsInMinutes + 90),
+        ]);
+        $customer = $this->customer();
+        $booking = $this->book($customer, $this->tier(seats: 3, event: $event));
+        $booking->update(['status' => $status]);
+
+        return [$customer, $booking];
+    }
+
+    public function test_a_guest_sees_when_the_meeting_opens_but_never_the_link_in_their_booking(): void
+    {
+        [$customer, $booking] = $this->guest(120);
+
+        $res = $this->actingAs($customer, 'sanctum')->getJson('/api/bookings')->assertOk();
+
+        $res->assertJsonPath('data.0.meeting.platform', 'zoom')->assertJsonPath('data.0.meeting.open', false);
+        $this->assertStringNotContainsString('zoom.us/j/999', $res->getContent());
+        $this->assertStringNotContainsString('zoom.us/j/999', $this->actingAs($customer, 'sanctum')->getJson("/api/bookings/{$booking->id}")->getContent());
+    }
+
+    public function test_joining_before_the_meeting_opens_is_refused(): void
+    {
+        [$customer, $booking] = $this->guest(120);
+
+        $this->actingAs($customer, 'sanctum')->postJson("/api/bookings/{$booking->id}/join")->assertUnprocessable();
+        $this->assertSame('confirmed', $booking->fresh()->status);
+    }
+
+    public function test_joining_when_it_is_open_returns_the_link_and_counts_as_attending(): void
+    {
+        [$customer, $booking] = $this->guest(10);
+
+        $this->actingAs($customer, 'sanctum')->getJson('/api/bookings')->assertJsonPath('data.0.meeting.open', true);
+        $this->actingAs($customer, 'sanctum')->postJson("/api/bookings/{$booking->id}/join")
+            ->assertOk()->assertJsonPath('meeting_url', 'https://zoom.us/j/999');
+
+        $this->assertSame('attended', $booking->fresh()->status);
+        $this->assertNotNull($booking->fresh()->checked_in_at);
+        $this->actingAs($customer, 'sanctum')->postJson("/api/bookings/{$booking->id}/join")->assertOk();
+    }
+
+    public function test_nobody_else_can_join_with_someone_elses_booking(): void
+    {
+        [, $booking] = $this->guest(10);
+
+        $this->actingAs($this->customer(), 'sanctum')->postJson("/api/bookings/{$booking->id}/join")->assertForbidden();
+        $this->actingAs($this->admin(), 'sanctum')->postJson("/api/bookings/{$booking->id}/join")->assertForbidden();
+    }
+
+    public function test_a_waitlisted_or_cancelled_booking_has_no_meeting(): void
+    {
+        foreach (['waitlisted', 'cancelled', 'pending'] as $status) {
+            [$customer, $booking] = $this->guest(10, $status);
+
+            $this->actingAs($customer, 'sanctum')->getJson('/api/bookings')->assertJsonPath('data.0.meeting', null);
+            $this->actingAs($customer, 'sanctum')->postJson("/api/bookings/{$booking->id}/join")->assertUnprocessable();
+        }
+    }
+
+    public function test_a_physical_booking_has_no_meeting(): void
+    {
+        $tier = $this->tier(seats: 2, event: $this->publishedEvent());
+        $customer = $this->customer();
+        $this->book($customer, $tier);
+
+        $this->actingAs($customer, 'sanctum')->getJson('/api/bookings')->assertJsonPath('data.0.meeting', null);
+    }
 }

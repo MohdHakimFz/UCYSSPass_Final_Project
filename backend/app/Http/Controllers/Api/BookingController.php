@@ -40,7 +40,7 @@ class BookingController extends Controller
             ->with([
                 'customer:id,name,email',
                 'ticketType:id,event_id,name,price',
-                'ticketType.event:id,title,category,start_at,end_at,venue_id',
+                'ticketType.event:id,title,category,start_at,end_at,venue_id,status,mode,meeting_platform',
                 'ticketType.event.venue:id,name',
                 'seat:id,row_label,number',
                 'payment',
@@ -61,6 +61,28 @@ class BookingController extends Controller
         $bookings->getCollection()->each(fn (Booking $booking) => $this->withWaitlistPosition($booking));
 
         return response()->json($bookings);
+    }
+
+    /**
+     * A guest joins their online meeting. Only the booking's own customer, only while it is confirmed
+     * and only once the meeting is open; the click counts as attending, and the link comes back here and nowhere else.
+     */
+    public function join(Request $request, Booking $booking): JsonResponse
+    {
+        abort_unless($booking->customer_id === $request->user()->id, 403, 'This is not your booking.');
+
+        $meeting = $booking->meeting;
+        abort_if($meeting === null, 422, 'This booking has no online meeting to join.');
+        abort_unless($meeting['open'], 422, 'The meeting opens '.config('sentrypass.meeting_open_minutes').' minutes before it starts.');
+
+        $event = $booking->ticketType->event;
+        abort_if(blank($event->getRawOriginal('meeting_url')), 422, 'The organiser has not added a meeting link yet.');
+
+        if ($booking->status === 'confirmed') {
+            $booking->update(['status' => 'attended', 'checked_in_at' => now()]);
+        }
+
+        return response()->json(['meeting_url' => $event->getRawOriginal('meeting_url'), 'platform' => $event->meeting_platform]);
     }
 
     /**

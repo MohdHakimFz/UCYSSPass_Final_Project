@@ -56,6 +56,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/bookings/{booking}', [BookingController::class, 'show']);
     Route::get('/bookings/{booking}/qr-code', [BookingController::class, 'qrCode']);
     Route::put('/bookings/{booking}/cancel', [BookingController::class, 'cancel']);
+    Route::post('/bookings/{booking}/join', [BookingController::class, 'join'])->middleware('throttle:30,1');
     Route::post('/bookings/{booking}/pay', [BookingController::class, 'pay'])->middleware('throttle:20,1');
     Route::delete('/bookings/{booking}', [BookingController::class, 'destroy']);
 
