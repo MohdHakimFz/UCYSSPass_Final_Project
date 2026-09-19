@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { AccessibilityInfo, Animated, Easing, Pressable, StyleSheet, Text, View } from 'react-native'
+import { AccessibilityInfo, Animated, Easing, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { ArrowsIn, MagnifyingGlassMinus, MagnifyingGlassPlus } from 'phosphor-react-native'
 import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg'
 import { subscribeTilt } from '../../lib/motion'
 import { colors, fonts } from '../../theme'
@@ -18,6 +19,9 @@ export type SeatPick = {
 const MAX_SEATS = 60
 const COLS = 10
 const GAP = 5
+const MIN_ZOOM = 1
+const MAX_ZOOM = 3
+const clampZoom = (z: number) => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, z))
 
 function hash(n: number) {
   let h = Math.imul(n ^ 0x9e3779b9, 0x85ebca6b)
@@ -58,6 +62,8 @@ export default function SeatMap3D({
   caption?: string
 }) {
   const [width, setWidth] = useState(0)
+  const [zoom, setZoom] = useState(1)
+  const pinch = useRef<{ dist: number; zoom: number } | null>(null)
   const [still, setStill] = useState(false)
   const rise = useRef(new Animated.Value(0)).current
   const lightX = useRef(new Animated.Value(0)).current
@@ -107,7 +113,9 @@ export default function SeatMap3D({
     return () => loop.stop()
   }, [lightX, lightY, width, still])
 
-  const seat = width ? (width - 32 - GAP * (COLS - 1) - 24) / COLS : 0
+  // Zooming makes the room wider than the panel; it then scrolls sideways.
+  const contentW = Math.max(0, width - 32) * zoom
+  const seat = width ? (contentW - GAP * (COLS - 1) - 24) / COLS : 0
   const layouts = useMemo(() => blocks.map((b, i) => seatsFor(b, i)), [blocks])
   const glow = Math.max(width, 240) * 0.7
   const chosenLabel = pick?.value ? pick.seats[String(pick.value.tierId)]?.find((x) => x.id === pick.value!.seatId)?.label : null
@@ -124,16 +132,30 @@ export default function SeatMap3D({
         Animated.timing(lightOn, { toValue: 1, duration: 150, useNativeDriver: true }).start()
       }}
       onTouchMove={(e) => {
+        const t = e.nativeEvent.touches
+        if (t.length === 2) {
+          const dist = Math.hypot(t[0].pageX - t[1].pageX, t[0].pageY - t[1].pageY)
+          if (!pinch.current) pinch.current = { dist, zoom }
+          else {
+            const next = clampZoom(pinch.current.zoom * (dist / pinch.current.dist))
+            // Only re-draw the room when the zoom has really changed, so pinching stays smooth.
+            if (Math.abs(next - zoom) > 0.04) setZoom(next)
+          }
+          return
+        }
         lightX.setValue(e.nativeEvent.locationX)
         lightY.setValue(e.nativeEvent.locationY)
       }}
       onTouchEnd={() => {
+        pinch.current = null
         touching.current = false
         Animated.timing(lightOn, { toValue: 0.7, duration: 500, useNativeDriver: true }).start()
       }}
     >
+      <ScrollView horizontal scrollEnabled={zoom > 1} nestedScrollEnabled showsHorizontalScrollIndicator={zoom > 1} contentContainerStyle={{ width: contentW || undefined }}>
       <Animated.View
         style={{
+          width: contentW || undefined,
           opacity: rise,
           transform: [{ translateY: rise.interpolate({ inputRange: [0, 1], outputRange: [24, 0] }) }, { perspective: 700 }, { rotateX: pick ? '18deg' : '28deg' }, { rotateY: pick ? '0deg' : lean.interpolate({ inputRange: [-1, 1], outputRange: ['-12deg', '12deg'] }) }, { scale: 0.96 }],
         }}
@@ -156,7 +178,7 @@ export default function SeatMap3D({
               }
           const rows = real ? rowsOf(real) : []
           const perRow = rows.length ? Math.max(...rows.map(([, r]) => r.length)) : 1
-          const realSize = width ? Math.min(46, (width - 32 - 24 - 18 - GAP * perRow) / perRow) : 0
+          const realSize = width ? Math.min(46 * zoom, (contentW - 24 - 18 - GAP * perRow) / perRow) : 0
           return (
             <Wrapper key={b.id} {...wrapperProps} style={[s.block, active && s.blockActive]}>
               <View style={s.blockHead}>
@@ -195,6 +217,20 @@ export default function SeatMap3D({
           )
         })}
       </Animated.View>
+      </ScrollView>
+
+      <View style={s.zoomBar}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Zoom out" disabled={zoom <= MIN_ZOOM} onPress={() => setZoom((z) => clampZoom(z / 1.3))} style={[s.zoomBtn, zoom <= MIN_ZOOM && { opacity: 0.35 }]} hitSlop={4}>
+          <MagnifyingGlassMinus size={20} weight="bold" color="#edeff2" />
+        </Pressable>
+        <Text style={s.zoomText}>{Math.round(zoom * 100)}%</Text>
+        <Pressable accessibilityRole="button" accessibilityLabel="Zoom in" disabled={zoom >= MAX_ZOOM} onPress={() => setZoom((z) => clampZoom(z * 1.3))} style={[s.zoomBtn, zoom >= MAX_ZOOM && { opacity: 0.35 }]} hitSlop={4}>
+          <MagnifyingGlassPlus size={20} weight="bold" color="#edeff2" />
+        </Pressable>
+        <Pressable accessibilityRole="button" accessibilityLabel="Fit the whole room" disabled={zoom === 1} onPress={() => setZoom(1)} style={[s.zoomBtn, zoom === 1 && { opacity: 0.35 }]} hitSlop={4}>
+          <ArrowsIn size={20} weight="bold" color="#edeff2" />
+        </Pressable>
+      </View>
 
       {width > 0 && (
         <Animated.View
@@ -269,6 +305,9 @@ const c = {
 }
 
 const s = StyleSheet.create({
+  zoomBar: { position: 'absolute', top: 8, right: 8, flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(13,16,21,0.88)', borderWidth: 2, borderColor: 'rgba(255,255,255,0.18)' },
+  zoomBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
+  zoomText: { minWidth: 44, textAlign: 'center', fontFamily: fonts.heavy, fontSize: 12, color: '#a3adba' },
   glow: { shadowColor: '#e4623f', shadowOpacity: 0.9, shadowRadius: 6, shadowOffset: { width: 0, height: 0 } },
   glowPicked: { shadowColor: '#ffffff', shadowOpacity: 1, shadowRadius: 10, shadowOffset: { width: 0, height: 0 } },
   rowLabel: { width: 18, textAlign: 'center', fontFamily: fonts.heavy, fontSize: 12, color: '#a3adba' },

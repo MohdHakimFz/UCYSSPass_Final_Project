@@ -933,3 +933,86 @@ span.seat {
   font-size: 14px;
   color: #14181f;
 }
+
+
+/* ---------- Zoom ---------- */
+
+/* The perspective moves onto the scrolling viewport so the room can be wider than the panel and pan sideways. */
+.seatmap {
+  perspective: none;
+}
+
+.seatmap-viewport {
+  /* The camera backs off as the room grows, so zooming in enlarges the room without bending it. */
+  perspective: calc(var(--zoom, 1) * 1600px);
+  perspective-origin: 50% 8%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  touch-action: pan-x pan-y;
+  scrollbar-width: thin;
+  scrollbar-color: #3a4658 transparent;
+}
+
+.seatmap-viewport[data-zoomed] {
+  cursor: grab;
+}
+
+.seatmap-viewport[data-dragging] {
+  cursor: grabbing;
+  user-select: none;
+}
+
+.seatmap-scene {
+  --base: 940px;
+  width: calc(var(--zoom, 1) * min(100%, var(--base)));
+  max-width: none;
+}
+
+.seatmap[data-pick] .seatmap-scene {
+  --base: 640px;
+  max-width: none;
+}
+
+.seatmap-zoom {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  background: rgb(13 16 21 / 0.85);
+  border: 2px solid rgb(255 255 255 / 0.18);
+}
+
+.seatmap-zoom button {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  color: #edeff2;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.seatmap-zoom button:hover:not(:disabled) {
+  background: var(--accent);
+  color: #14181f;
+}
+
+.seatmap-zoom button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.seatmap-zoom span {
+  min-width: 46px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: #a3adba;
+}

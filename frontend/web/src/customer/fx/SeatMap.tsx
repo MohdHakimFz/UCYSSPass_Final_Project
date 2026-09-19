@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { ArrowsIn, MagnifyingGlassMinus, MagnifyingGlassPlus } from '@phosphor-icons/react'
 import { enableMotion, subscribeTilt } from '@/shared/motion'
 import type { SeatInfo } from '@/lib/api'
 
@@ -13,6 +14,9 @@ export type SeatPick = {
 
 const MAX_SEATS = 84
 const COLS = 10
+const MIN_ZOOM = 1
+const MAX_ZOOM = 3.5
+const clampZoom = (z: number) => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, z))
 
 // Which seats look taken is spread out the same way every time, so a block never reshuffles between renders.
 function hash(n: number) {
@@ -61,7 +65,79 @@ export default function SeatMap({
   caption?: string
 }) {
   const room = useRef<HTMLDivElement>(null)
+  const viewport = useRef<HTMLDivElement>(null)
   const [seen, setSeen] = useState(false)
+  const [zoom, setZoomState] = useState(1)
+  const zoomRef = useRef(1)
+
+  // Zoom keeps whatever is in the middle of the view in the middle, so you zoom into the part you are looking at.
+  const applyZoom = useCallback((next: number) => {
+    const vp = viewport.current
+    const z = clampZoom(next)
+    const centre = vp && vp.scrollWidth ? (vp.scrollLeft + vp.clientWidth / 2) / vp.scrollWidth : 0.5
+    zoomRef.current = z
+    setZoomState(z)
+    requestAnimationFrame(() => {
+      if (vp) vp.scrollLeft = centre * vp.scrollWidth - vp.clientWidth / 2
+    })
+  }, [])
+
+  // Ctrl + wheel (and a trackpad pinch), two-finger pinch on a phone, and drag-to-pan with a mouse when zoomed in.
+  useEffect(() => {
+    const vp = viewport.current
+    if (!vp) return
+    const touches = new Map<number, { x: number; y: number }>()
+    let pinchStart: { dist: number; zoom: number } | null = null
+    let drag: { x: number; left: number } | null = null
+
+    const spread = () => {
+      const [a, b] = [...touches.values()]
+      return Math.hypot(a.x - b.x, a.y - b.y)
+    }
+    const wheel = (e: WheelEvent) => {
+      if (!e.ctrlKey) return
+      e.preventDefault()
+      applyZoom(zoomRef.current * (e.deltaY < 0 ? 1.12 : 1 / 1.12))
+    }
+    const down = (e: PointerEvent) => {
+      if (e.pointerType === 'touch') {
+        touches.set(e.pointerId, { x: e.clientX, y: e.clientY })
+        if (touches.size === 2) pinchStart = { dist: spread(), zoom: zoomRef.current }
+      } else if (e.button === 0 && zoomRef.current > 1 && !(e.target as HTMLElement).closest('.seat')) {
+        drag = { x: e.clientX, left: vp.scrollLeft }
+        vp.dataset.dragging = 'on'
+      }
+    }
+    const move = (e: PointerEvent) => {
+      if (touches.has(e.pointerId)) {
+        touches.set(e.pointerId, { x: e.clientX, y: e.clientY })
+        if (touches.size === 2 && pinchStart) applyZoom(pinchStart.zoom * (spread() / pinchStart.dist))
+      } else if (drag) {
+        vp.scrollLeft = drag.left - (e.clientX - drag.x)
+      }
+    }
+    const up = (e: PointerEvent) => {
+      touches.delete(e.pointerId)
+      if (touches.size < 2) pinchStart = null
+      drag = null
+      delete vp.dataset.dragging
+    }
+
+    vp.addEventListener('wheel', wheel, { passive: false })
+    vp.addEventListener('pointerdown', down)
+    vp.addEventListener('pointermove', move)
+    vp.addEventListener('pointerup', up)
+    vp.addEventListener('pointercancel', up)
+    vp.addEventListener('pointerleave', up)
+    return () => {
+      vp.removeEventListener('wheel', wheel)
+      vp.removeEventListener('pointerdown', down)
+      vp.removeEventListener('pointermove', move)
+      vp.removeEventListener('pointerup', up)
+      vp.removeEventListener('pointercancel', up)
+      vp.removeEventListener('pointerleave', up)
+    }
+  }, [applyZoom])
 
   useEffect(() => {
     const el = room.current
@@ -117,6 +193,19 @@ export default function SeatMap({
 
   return (
     <figure className="seatmap" ref={room} data-seen={seen || undefined} data-pick={pick ? '' : undefined}>
+      <div className="seatmap-zoom" role="group" aria-label="Zoom the seat map">
+        <button type="button" onClick={() => applyZoom(zoom / 1.3)} disabled={zoom <= MIN_ZOOM} aria-label="Zoom out">
+          <MagnifyingGlassMinus size={18} weight="bold" aria-hidden="true" />
+        </button>
+        <span aria-live="polite">{Math.round(zoom * 100)}%</span>
+        <button type="button" onClick={() => applyZoom(zoom * 1.3)} disabled={zoom >= MAX_ZOOM} aria-label="Zoom in">
+          <MagnifyingGlassPlus size={18} weight="bold" aria-hidden="true" />
+        </button>
+        <button type="button" onClick={() => applyZoom(1)} disabled={zoom === 1} aria-label="Fit the whole room">
+          <ArrowsIn size={18} weight="bold" aria-hidden="true" />
+        </button>
+      </div>
+      <div className="seatmap-viewport" ref={viewport} data-zoomed={zoom > 1 || undefined} style={{ ['--zoom' as string]: zoom }}>
       <div className="seatmap-scene" aria-hidden={pick ? undefined : true}>
         <div className="seatmap-stage" aria-hidden="true">
           Stage
@@ -198,6 +287,7 @@ export default function SeatMap({
             )
           })}
         </div>
+      </div>
       </div>
       <div className="seatmap-light" aria-hidden="true" />
       <figcaption>
