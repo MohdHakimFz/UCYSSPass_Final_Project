@@ -4,11 +4,14 @@ import { api, errorText } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import KeyboardScreen from '../components/KeyboardScreen'
 import { Button, Field, Notice } from '../components/ui'
-import { colors, fonts } from '../theme'
+import { fonts, type Palette } from '../theme'
+import { useStyles, useTheme } from '../lib/themeMode'
 
 type Note = { tone: 'ok' | 'error'; text: string } | null
 
 export default function ProfileScreen() {
+  const { colors } = useTheme()
+  const s = useStyles(makeStyles)
   const { user, refresh } = useAuth()
   const [details, setDetails] = useState({ name: user?.name ?? '', email: user?.email ?? '' })
   const [pw, setPw] = useState({ current_password: '', password: '', password_confirmation: '' })
@@ -70,7 +73,7 @@ export default function ProfileScreen() {
   )
 }
 
-const s = StyleSheet.create({
+const makeStyles = (colors: Palette) => StyleSheet.create({
   pad: { padding: 20, gap: 16 },
   h2: { fontFamily: fonts.heavy, fontSize: 20, color: colors.ink },
   rule: { height: 3, backgroundColor: colors.ink, marginVertical: 12 },

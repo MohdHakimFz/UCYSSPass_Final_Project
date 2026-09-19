@@ -7,12 +7,13 @@ import { useFetch } from '../lib/useFetch'
 import { Empty, Notice, Skeleton } from '../components/ui'
 import { PosterArt, POSTER } from '../components/PosterArt'
 import Tilt3D from '../components/fx/Tilt3D'
-import { colors, fonts } from '../theme'
+import { fonts, type Palette } from '../theme'
+import { useStyles, useTheme } from '../lib/themeMode'
 import type { RootParamList } from '../../App'
 
 const CATEGORIES = Object.keys(CATEGORY_LABEL) as Category[]
 
-function seatState(ev: EventItem) {
+function seatState(ev: EventItem, colors: Palette) {
   if (!ev.capacity) return { text: 'Not on sale yet', color: colors.inkSoft }
   const left = ev.seats_remaining ?? 0
   if (left === 0) return { text: 'Sold out · waitlist', color: colors.held }
@@ -21,6 +22,8 @@ function seatState(ev: EventItem) {
 }
 
 function Chip({ label, on, onPress }: { label: string; on: boolean; onPress: () => void }) {
+  const { colors } = useTheme()
+  const s = useStyles(makeStyles)
   return (
     <Pressable
       onPress={onPress}
@@ -43,6 +46,8 @@ function ChipStrip({ children }: { children: React.ReactNode }) {
 }
 
 export default function EventsScreen() {
+  const { colors } = useTheme()
+  const s = useStyles(makeStyles)
   const navigation = useNavigation<NativeStackNavigationProp<RootParamList>>()
   const [search, setSearch] = useState('')
   const [query, setQuery] = useState('')
@@ -126,7 +131,7 @@ export default function EventsScreen() {
       }
       renderItem={({ item: ev, index: i }) => {
         const d = new Date(ev.start_at)
-        const seats = seatState(ev)
+        const seats = seatState(ev, colors)
         const tone = POSTER[ev.category]
         const featured = i === 0
         return (
@@ -163,14 +168,14 @@ export default function EventsScreen() {
   )
 }
 
-const s = StyleSheet.create({
+const makeStyles = (colors: Palette) => StyleSheet.create({
   h1: { fontFamily: fonts.heavy, fontSize: 28, lineHeight: 32, color: colors.ink },
   search: {
     minHeight: 48,
     borderWidth: 2,
     borderColor: colors.ink,
     borderRadius: 0,
-    backgroundColor: '#fff',
+    backgroundColor: colors.field,
     paddingHorizontal: 12,
     fontFamily: fonts.regular,
     fontSize: 16,

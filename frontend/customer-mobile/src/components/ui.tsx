@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { ActivityIndicator, Animated, Pressable, StyleSheet, Text, TextInput, View, type TextInputProps } from 'react-native'
 import { CheckCircle, Eye, EyeSlash, Warning, WarningCircle } from 'phosphor-react-native'
-import { colors, fonts } from '../theme'
+import { fonts, type Palette } from '../theme'
+import { useStyles, useTheme } from '../lib/themeMode'
 import type { BookingStatus } from '../lib/api'
 import { useRevealFocusedField } from './KeyboardScreen'
 
@@ -18,6 +19,8 @@ export function Button({
   disabled?: boolean
   busy?: boolean
 }) {
+  const { colors } = useTheme()
+  const s = useStyles(makeStyles)
   return (
     <Pressable
       accessibilityRole="button"
@@ -34,15 +37,17 @@ export function Button({
       ]}
     >
       {busy ? (
-        <ActivityIndicator color={colors.ink} />
+        <ActivityIndicator color={variant === 'primary' ? colors.onAccent : colors.ink} />
       ) : (
-        <Text style={[s.btnText, variant === 'danger' && { color: colors.revoked }, variant === 'dark' && { color: colors.paper }]}>{title}</Text>
+        <Text style={[s.btnText, variant === 'quiet' && { color: colors.ink }, variant === 'danger' && { color: colors.revoked }, variant === 'dark' && { color: colors.paper }]}>{title}</Text>
       )}
     </Pressable>
   )
 }
 
 export function Field({ label, hint, ...props }: { label: string; hint?: string } & TextInputProps) {
+  const { colors } = useTheme()
+  const s = useStyles(makeStyles)
   // Password fields get a show/hide toggle so people can check what they typed on a small keyboard.
   const isPassword = !!props.secureTextEntry
   const [hidden, setHidden] = useState(true)
@@ -81,15 +86,15 @@ export function Field({ label, hint, ...props }: { label: string; hint?: string 
   )
 }
 
-const TONE: Record<BookingStatus, { dot: string; label: string }> = {
-  confirmed: { dot: colors.cleared, label: 'Confirmed' },
-  waitlisted: { dot: colors.badge, label: 'Waitlisted' },
-  pending: { dot: colors.badge, label: 'Pending' },
-  cancelled: { dot: colors.revoked, label: 'Cancelled' },
-  attended: { dot: colors.ink, label: 'Checked in' },
-}
-
 export function StatusTag({ status }: { status: BookingStatus }) {
+  const { colors } = useTheme()
+  const TONE: Record<BookingStatus, { dot: string; label: string }> = {
+    confirmed: { dot: colors.cleared, label: 'Confirmed' },
+    waitlisted: { dot: colors.badge, label: 'Waitlisted' },
+    pending: { dot: colors.badge, label: 'Pending' },
+    cancelled: { dot: colors.revoked, label: 'Cancelled' },
+    attended: { dot: colors.ink, label: 'Checked in' },
+  }
   const t = TONE[status]
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -100,13 +105,15 @@ export function StatusTag({ status }: { status: BookingStatus }) {
 }
 
 function NoticeIcon({ tone }: { tone: 'ok' | 'error' | 'warn' }) {
+  const { colors } = useTheme()
   const color = tone === 'ok' ? colors.cleared : tone === 'error' ? colors.revoked : colors.held
   const Icon = tone === 'ok' ? CheckCircle : tone === 'error' ? WarningCircle : Warning
   return <Icon size={20} color={color} weight="bold" />
 }
 
 export function Notice({ tone, text }: { tone: 'ok' | 'error' | 'warn'; text: string }) {
-  const bg = tone === 'ok' ? '#DCEFE8' : tone === 'error' ? '#F3DCDA' : '#F3ECD7'
+  const { colors } = useTheme()
+  const bg = tone === 'ok' ? colors.okBg : tone === 'error' ? colors.errorBg : colors.warnBg
   return (
     <View accessibilityRole="alert" style={{ flexDirection: 'row', gap: 12, backgroundColor: bg, padding: 12, borderRadius: 0, alignItems: 'flex-start' }}>
       <View style={{ marginTop: 1 }}>
@@ -118,6 +125,7 @@ export function Notice({ tone, text }: { tone: 'ok' | 'error' | 'warn'; text: st
 }
 
 export function Empty({ text }: { text: string }) {
+  const { colors } = useTheme()
   return (
     <View style={{ padding: 24, backgroundColor: colors.paper, borderTopWidth: 3, borderTopColor: colors.ink }}>
       <Text style={{ fontFamily: fonts.regular, color: colors.inkSoft, fontSize: 16 }}>{text}</Text>
@@ -127,6 +135,7 @@ export function Empty({ text }: { text: string }) {
 
 // Placeholder rows while a list loads, so the screen keeps its shape instead of jumping.
 export function Skeleton({ rows = 3, height = 84 }: { rows?: number; height?: number }) {
+  const { colors } = useTheme()
   const pulse = useRef(new Animated.Value(0.55)).current
 
   useEffect(() => {
@@ -143,7 +152,7 @@ export function Skeleton({ rows = 3, height = 84 }: { rows?: number; height?: nu
   return (
     <View accessibilityLabel="Loading" style={{ gap: 12 }}>
       {Array.from({ length: rows }, (_, i) => (
-        <Animated.View key={i} style={{ height, borderRadius: 0, backgroundColor: '#D5DCE2', opacity: pulse }} />
+        <Animated.View key={i} style={{ height, borderRadius: 0, backgroundColor: colors.skeleton, opacity: pulse }} />
       ))}
     </View>
   )
@@ -153,13 +162,13 @@ export function formatWhen(iso: string) {
   return new Date(iso).toLocaleString('en-MY', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
 }
 
-const s = StyleSheet.create({
+const makeStyles = (colors: Palette) => StyleSheet.create({
   btn: { minHeight: 48, paddingHorizontal: 18, alignItems: 'center', justifyContent: 'center', borderRadius: 0, borderWidth: 2, borderColor: colors.ink },
   btnPrimary: { backgroundColor: colors.badge },
   btnQuiet: { backgroundColor: 'transparent' },
   btnDark: { backgroundColor: colors.ink },
   btnDanger: { backgroundColor: 'transparent', borderColor: 'transparent' },
-  btnText: { fontFamily: fonts.semibold, fontSize: 16, color: colors.ink },
+  btnText: { fontFamily: fonts.semibold, fontSize: 16, color: colors.onAccent },
   label: { fontFamily: fonts.semibold, fontSize: 14, color: colors.ink },
   hint: { fontFamily: fonts.regular, fontSize: 13, color: colors.inkSoft },
   eye: { position: 'absolute', right: 0, top: 0, bottom: 0, width: 48, alignItems: 'center', justifyContent: 'center' },
@@ -168,7 +177,7 @@ const s = StyleSheet.create({
     borderWidth: 2,
     borderColor: colors.ink,
     borderRadius: 0,
-    backgroundColor: '#fff',
+    backgroundColor: colors.field,
     paddingHorizontal: 12,
     fontFamily: fonts.regular,
     fontSize: 16,

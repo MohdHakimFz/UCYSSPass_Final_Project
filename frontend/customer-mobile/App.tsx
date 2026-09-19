@@ -8,7 +8,8 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { useFonts, Archivo_400Regular, Archivo_600SemiBold, Archivo_800ExtraBold } from '@expo-google-fonts/archivo'
 import { AuthProvider, useAuth } from './src/lib/auth'
-import { colors, fonts } from './src/theme'
+import { fonts } from './src/theme'
+import { ThemeProvider, useTheme } from './src/lib/themeMode'
 import EventsScreen from './src/screens/EventsScreen'
 import EventDetailScreen from './src/screens/EventDetailScreen'
 import PassesScreen from './src/screens/PassesScreen'
@@ -31,14 +32,13 @@ export type RootParamList = {
 const Stack = createNativeStackNavigator<RootParamList>()
 const Tab = createBottomTabNavigator()
 
-const theme = { ...DefaultTheme, colors: { ...DefaultTheme.colors, background: colors.concrete, primary: colors.ink } }
-
 function Tabs() {
+  const { colors } = useTheme()
   return (
     <Tab.Navigator
       screenOptions={{
-        headerStyle: { backgroundColor: colors.ink },
-        headerTintColor: colors.paper,
+        headerStyle: { backgroundColor: colors.bar },
+        headerTintColor: colors.onBar,
         headerTitleStyle: { fontFamily: fonts.heavy },
         tabBarActiveTintColor: colors.ink,
         tabBarInactiveTintColor: colors.inkSoft,
@@ -56,6 +56,7 @@ function Tabs() {
 // The app is for signed-in people. Signed out, the only screens are Welcome, Sign in and Sign up.
 function Screens() {
   const { user, loading } = useAuth()
+  const { colors } = useTheme()
 
   if (loading) {
     return (
@@ -68,8 +69,8 @@ function Screens() {
   return (
     <Stack.Navigator
       screenOptions={{
-        headerStyle: { backgroundColor: colors.ink },
-        headerTintColor: colors.paper,
+        headerStyle: { backgroundColor: colors.bar },
+        headerTintColor: colors.onBar,
         headerTitleStyle: { fontFamily: fonts.heavy },
       }}
     >
@@ -91,25 +92,37 @@ function Screens() {
   )
 }
 
+// Inside the ThemeProvider, so the navigation colours and the status bar follow light, dark or auto.
+function Shell() {
+  const { colors, isDark } = useTheme()
+  const theme = { ...DefaultTheme, dark: isDark, colors: { ...DefaultTheme.colors, background: colors.concrete, card: colors.bar, text: colors.ink, border: colors.line, primary: colors.ink } }
+
+  return (
+    <NavigationContainer theme={theme}>
+      <StatusBar style={isDark ? 'light' : 'dark'} />
+      <Screens />
+    </NavigationContainer>
+  )
+}
+
 export default function App() {
   const [loaded] = useFonts({ Archivo_400Regular, Archivo_600SemiBold, Archivo_800ExtraBold })
 
   if (!loaded) {
     return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.concrete }}>
-        <ActivityIndicator color={colors.ink} />
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#E7EAEE' }}>
+        <ActivityIndicator color="#14181F" />
       </View>
     )
   }
 
   return (
     <SafeAreaProvider>
-      <AuthProvider>
-        <NavigationContainer theme={theme}>
-          <StatusBar style="dark" />
-          <Screens />
-        </NavigationContainer>
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <Shell />
+        </AuthProvider>
+      </ThemeProvider>
     </SafeAreaProvider>
   )
 }

@@ -7,11 +7,14 @@ import { api, errorText } from '../lib/api'
 import KeyboardScreen from '../components/KeyboardScreen'
 import { PosterArt } from '../components/PosterArt'
 import { Button, Field, Notice } from '../components/ui'
-import { colors, fonts } from '../theme'
+import { fonts, type Palette } from '../theme'
+import { useStyles, useTheme } from '../lib/themeMode'
 import type { RootParamList } from '../../App'
 
 // Two steps: ask for a six-digit code by email, then enter it with a new password.
 export default function ForgotPasswordScreen({ navigation }: NativeStackScreenProps<RootParamList, 'ForgotPassword'>) {
+  const { colors } = useTheme()
+  const s = useStyles(makeStyles)
   const insets = useSafeAreaInsets()
   const [step, setStep] = useState<'email' | 'code'>('email')
   const [f, setF] = useState({ email: '', code: '', password: '', password_confirmation: '' })
@@ -102,7 +105,7 @@ export default function ForgotPasswordScreen({ navigation }: NativeStackScreenPr
   )
 }
 
-const s = StyleSheet.create({
+const makeStyles = (colors: Palette) => StyleSheet.create({
   poster: { minHeight: 200, paddingHorizontal: 20, paddingBottom: 24, justifyContent: 'space-between', overflow: 'hidden' },
   title: { fontFamily: fonts.heavy, fontSize: 36, lineHeight: 38, letterSpacing: -1, color: colors.ink },
   form: { padding: 20, gap: 16 },

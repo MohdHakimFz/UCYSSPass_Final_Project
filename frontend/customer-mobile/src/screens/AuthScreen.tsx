@@ -8,11 +8,14 @@ import { useAuth } from '../lib/auth'
 import KeyboardScreen from '../components/KeyboardScreen'
 import { PosterArt } from '../components/PosterArt'
 import { Button, Field, Notice } from '../components/ui'
-import { colors, fonts } from '../theme'
+import { fonts, lightColors, type Palette } from '../theme'
+import { useStyles, useTheme } from '../lib/themeMode'
 import type { RootParamList } from '../../App'
 
 // One screen for both, with a different poster, heading and fields. Signing in or up lands you in the app.
 export default function AuthScreen({ navigation, route }: NativeStackScreenProps<RootParamList, 'Login' | 'Register'>) {
+  const { colors } = useTheme()
+  const s = useStyles(makeStyles)
   const isLogin = route.name === 'Login'
   const { signIn, register } = useAuth()
   const insets = useSafeAreaInsets()
@@ -48,9 +51,9 @@ export default function AuthScreen({ navigation, route }: NativeStackScreenProps
         <View style={[s.poster, { paddingTop: insets.top + 12 }]}>
           <PosterArt category={isLogin ? 'bootcamp' : 'ctf'} />
           <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={() => navigation.goBack()} hitSlop={12} style={s.back}>
-            <CaretLeft size={26} weight="bold" color={isLogin ? colors.paper : colors.ink} />
+            <CaretLeft size={26} weight="bold" color={isLogin ? lightColors.paper : lightColors.ink} />
           </Pressable>
-          <Text style={[s.title, { color: isLogin ? colors.paper : colors.ink }]}>{isLogin ? 'Welcome back.' : 'Create your account.'}</Text>
+          <Text style={[s.title, { color: isLogin ? lightColors.paper : lightColors.ink }]}>{isLogin ? 'Welcome back.' : 'Create your account.'}</Text>
         </View>
 
         <View style={s.form}>
@@ -95,7 +98,7 @@ export default function AuthScreen({ navigation, route }: NativeStackScreenProps
   )
 }
 
-const s = StyleSheet.create({
+const makeStyles = (colors: Palette) => StyleSheet.create({
   poster: { minHeight: 200, paddingHorizontal: 20, paddingBottom: 24, justifyContent: 'space-between', overflow: 'hidden' },
   back: { alignSelf: 'flex-start', paddingVertical: 4 },
   title: { fontFamily: fonts.heavy, fontSize: 36, lineHeight: 38, letterSpacing: -1 },

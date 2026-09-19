@@ -168,13 +168,13 @@ Organiser, halaman event yang dipublish dan sudah ada tempahan, bahagian **Annou
 
 Perlukan event dengan seorang yang **hadir** dan seorang yang **tempah tetapi tak hadir**. Cara sendiri (data tak hilang): (1) buat event online percuma bermula 10 minit lagi, dengan meeting link, publish; (2) customer A dan customer B tempah; (3) A tekan **Join** sehingga jadi **Checked in**; B tidak berbuat apa-apa; (4) organiser ubah **tarikh tamat** event ke masa lalu (mula lebih awal daripada tamat), simpan. (Cara pantas: `migrate:fresh --seed` menyediakan event demo, tetapi **memadam semua data**.)
 
-- [ ] **Sedang berlangsung.** Sebelum event tamat: panel **Attendance** (organiser: **My events**; admin: **Overview**) sudah menyenaraikan event itu, dengan "X of Y came" dan tanda biru **Happening now**. Tiada bilangan "did not attend" lagi (tetamu masih boleh sampai).
-- [ ] **Selepas tamat.** Selepas tarikh tamat diubah: baris event menunjukkan peratus, "X of Y came" dan teks merah **"N did not attend"**. Tajuk panel: "X of Y who registered came (Z%), N did not attend". Nama event panjang dipotong dengan "..." dan baris tak melekat di tepi. 📸
-- [ ] **Tag tak hadir.** Admin (halaman event dan **Bookings**) dan organiser (halaman event): tetamu yang **Confirmed** pada event yang sudah tamat menunjukkan tag **Did not attend** (bukan "Confirmed"); yang hadir kekal **Checked in**. Pada "How it's going": ayat "1 confirmed guest did not attend", segmen bar merah dan legend "Did not attend". 📸
-- [ ] **Sijil belum tersedia.** Customer yang **Checked in** tetapi event belum tamat: tiada butang sijil, hanya nota "Your certificate is ready once the event ends (...)".
-- [ ] **Sijil.** Selepas event tamat: pada **My passes** muncul **Download certificate**. PDF (A4 landscape) ada jalur header UCYSS, nama peserta, tajuk event, tarikh, tempat, penganjur, tandatangan penganjur, meterai "UCYSS VERIFIED", tarikh dikeluarkan dan nombor sijil. 📸
-- [ ] **Semak sijil.** Buka alamat yang tercetak pada sijil (`/verify/...`) dalam pelayar lain, tanpa log masuk: "This certificate is genuine". Ubah huruf terakhir kod: "We could not confirm this certificate".
-- [ ] **Tak hadir tiada sijil.** Customer B (tak hadir): tiada butang sijil, dan tiket menunjukkan status **Confirmed**.
+- [works] **Sedang berlangsung.** Sebelum event tamat: panel **Attendance** (organiser: **My events**; admin: **Overview**) sudah menyenaraikan event itu, dengan "X of Y came" dan tanda biru **Happening now**. Tiada bilangan "did not attend" lagi (tetamu masih boleh sampai).
+- [works] **Selepas tamat.** Selepas tarikh tamat diubah: baris event menunjukkan peratus, "X of Y came" dan teks merah **"N did not attend"**. Tajuk panel: "X of Y who registered came (Z%), N did not attend". Nama event panjang dipotong dengan "..." dan baris tak melekat di tepi. 📸
+- [works] **Tag tak hadir.** Admin (halaman event dan **Bookings**) dan organiser (halaman event): tetamu yang **Confirmed** pada event yang sudah tamat menunjukkan tag **Did not attend** (bukan "Confirmed"); yang hadir kekal **Checked in**. Pada "How it's going": ayat "1 confirmed guest did not attend", segmen bar merah dan legend "Did not attend". 📸
+- [works] **Sijil belum tersedia.** Customer yang **Checked in** tetapi event belum tamat: tiada butang sijil, hanya nota "Your certificate is ready once the event ends (...)".
+- [works] **Sijil.** Selepas event tamat: pada **My passes** muncul **Download certificate**. PDF (A4 landscape) ada jalur header UCYSS, nama peserta, tajuk event, tarikh, tempat, penganjur, tandatangan penganjur, meterai "UCYSS VERIFIED", tarikh dikeluarkan dan nombor sijil. 📸
+- [works] **Semak sijil.** Buka alamat yang tercetak pada sijil (`/verify/...`) dalam pelayar lain, tanpa log masuk: "This certificate is genuine". Ubah huruf terakhir kod: "We could not confirm this certificate".
+- [works] **Tak hadir tiada sijil.** Customer B (tak hadir): tiada butang sijil, dan tiket menunjukkan status **Confirmed**.
 
 ## 12. Kongsi
 
@@ -196,9 +196,9 @@ Log masuk sebagai admin.
 
 ## 13b. Tema cerah, gelap atau auto (laman customer)
 
-- [ ] **Suis tema.** Di header laman awam (Events, My passes, log masuk) ada suis **Auto / Light / Dark**. **Dark**: seluruh laman bertukar gelap. **Light**: cerah, walaupun sistem operasi kau gelap.
-- [ ] **Diingati.** Refresh halaman: pilihan kekal. **Auto** kembali mengikut tetapan sistem (tukar tetapan Windows/telefon dan laman ikut).
-- [ ] **Dashboard tak terjejas.** Log masuk sebagai organiser/admin: dashboard guna suis bulan/matahari sendiri.
+- [works] **Suis tema.** Di header laman awam (Events, My passes, log masuk) ada suis **Auto / Light / Dark**. **Dark**: seluruh laman bertukar gelap. **Light**: cerah, walaupun sistem operasi kau gelap.
+- [works] **Diingati.** Refresh halaman: pilihan kekal. **Auto** kembali mengikut tetapan sistem (tukar tetapan Windows/telefon dan laman ikut).
+- [works] **Dashboard tak terjejas.** Log masuk sebagai organiser/admin: dashboard guna suis bulan/matahari sendiri.
 
 ## 14. Kemas kini langsung (tanpa refresh)
 
@@ -218,8 +218,8 @@ Pastikan `EXPO_PUBLIC_API_URL` betul (atau telefon dan komputer pada rangkaian y
 - [works] Peta seat 3D **tanpa butang zoom**; pilih seat dan tempah.
 - [works] Bayar tiket berbayar (tahan seat dengan kiraan detik).
 - [works] Tiket online: butang **Join on ...** (kelabu sebelum masa, aktif 15 minit sebelum).
-- [ ] Tier "Members only" tak boleh ditempah oleh bukan ahli.
-- [ ] Tiket tiada isyarat: QR masih dibuka (disimpan dalam telefon).
+- [works] Tier "Members only" tak boleh ditempah oleh bukan ahli.
+- [works] Tiket tiada isyarat: QR masih dibuka (disimpan dalam telefon).
 
 ## 16. Ujian automatik (jalankan sekali untuk bukti)
 

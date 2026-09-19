@@ -8,10 +8,13 @@ import SeatMap3D from '../components/fx/SeatMap3D'
 import Checkout from '../components/Checkout'
 import { Button, Empty, Notice, Skeleton, formatWhen } from '../components/ui'
 import { PosterArt, POSTER } from '../components/PosterArt'
-import { colors, fonts } from '../theme'
+import { fonts, type Palette } from '../theme'
+import { useStyles, useTheme } from '../lib/themeMode'
 import type { RootParamList } from '../../App'
 
 export default function EventDetailScreen({ route }: NativeStackScreenProps<RootParamList, 'EventDetail'>) {
+  const { colors } = useTheme()
+  const s = useStyles(makeStyles)
   const { id } = route.params
   const { user } = useAuth()
   const { data: event, error, reload } = useFetch<EventItem>(`/events/${id}`)
@@ -177,7 +180,7 @@ export default function EventDetailScreen({ route }: NativeStackScreenProps<Root
   )
 }
 
-const s = StyleSheet.create({
+const makeStyles = (colors: Palette) => StyleSheet.create({
   hero: { height: 200, overflow: 'hidden', justifyContent: 'flex-end', padding: 16 },
   heroDay: { fontFamily: fonts.heavy, fontSize: 96, lineHeight: 96, letterSpacing: -3 },
   heroMonth: { fontFamily: fonts.heavy, fontSize: 15, letterSpacing: 2 },

@@ -6,13 +6,15 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { PosterArt } from '../components/PosterArt'
 import HeroTicket from '../components/fx/HeroTicket'
 import { Button } from '../components/ui'
-import { colors, fonts } from '../theme'
+import { fonts, type Palette } from '../theme'
+import { useStyles } from '../lib/themeMode'
 import type { RootParamList } from '../../App'
 
 const PERIOD = 48
 
 // The first thing anyone sees: what UCYSS is, and two clear ways in.
 export default function WelcomeScreen({ navigation }: NativeStackScreenProps<RootParamList, 'Welcome'>) {
+  const s = useStyles(makeStyles)
   const insets = useSafeAreaInsets()
   const drift = useRef(new Animated.Value(0)).current
   const enter = useRef(new Animated.Value(0)).current
@@ -56,14 +58,14 @@ export default function WelcomeScreen({ navigation }: NativeStackScreenProps<Roo
   )
 }
 
-const s = StyleSheet.create({
+const makeStyles = (colors: Palette) => StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.accent, overflow: 'hidden' },
   // Bigger than the screen by one tile on each side, so sliding it never shows an edge.
   field: { position: 'absolute', top: -PERIOD, left: -PERIOD, right: 0, bottom: 0 },
   top: { paddingHorizontal: 24 },
-  brand: { fontFamily: fonts.heavy, fontSize: 22, letterSpacing: -0.5, color: colors.ink },
+  brand: { fontFamily: fonts.heavy, fontSize: 22, letterSpacing: -0.5, color: colors.onAccent },
   middle: { flex: 1, justifyContent: 'center', paddingHorizontal: 24 },
-  title: { fontFamily: fonts.heavy, fontSize: 40, lineHeight: 42, letterSpacing: -1.4, color: colors.ink },
-  lede: { fontFamily: fonts.semibold, fontSize: 15, lineHeight: 21, color: colors.ink },
+  title: { fontFamily: fonts.heavy, fontSize: 40, lineHeight: 42, letterSpacing: -1.4, color: colors.onAccent },
+  lede: { fontFamily: fonts.semibold, fontSize: 15, lineHeight: 21, color: colors.onAccent },
   actions: { paddingHorizontal: 24, gap: 10 },
 })

@@ -1,6 +1,7 @@
 import { StyleSheet, View } from 'react-native'
 import Svg, { Circle, Defs, Line, Pattern, Rect } from 'react-native-svg'
-import { colors } from '../theme'
+// Always the light set: the posters keep their own look in both themes.
+import { lightColors as colors } from '../theme'
 import type { Category } from '../lib/api'
 
 // Each category gets a colour block with a pattern drawn in code, so posters need no image files.

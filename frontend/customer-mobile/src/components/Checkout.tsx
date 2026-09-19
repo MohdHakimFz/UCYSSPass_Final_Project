@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { Bank, CheckCircle, CreditCard, Wallet } from 'phosphor-react-native'
 import { api, ApiError, errorText, type Booking } from '../lib/api'
-import { colors, fonts } from '../theme'
+import { fonts, type Palette } from '../theme'
+import { useStyles, useTheme } from '../lib/themeMode'
 import { Button, Notice } from './ui'
 
 type Method = 'card' | 'fpx' | 'ewallet'
@@ -39,6 +40,8 @@ export default function Checkout({
   /** The booking changed (paid, released or expired). */
   onFinished: () => void
 }) {
+  const { colors } = useTheme()
+  const s = useStyles(makeStyles)
   const [left, setLeft] = useState(booking.hold_seconds_left ?? 0)
   const [method, setMethod] = useState<Method>('card')
   const [outcome, setOutcome] = useState<Outcome>('approve')
@@ -184,7 +187,7 @@ export default function Checkout({
   )
 }
 
-const s = StyleSheet.create({
+const makeStyles = (colors: Palette) => StyleSheet.create({
   scrim: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(13,16,21,0.6)' },
   sheet: { maxHeight: '92%', backgroundColor: colors.paper, borderTopWidth: 3, borderTopColor: colors.ink },
   body: { padding: 20, gap: 12 },

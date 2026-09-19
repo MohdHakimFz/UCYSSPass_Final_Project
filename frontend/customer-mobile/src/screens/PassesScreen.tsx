@@ -9,12 +9,14 @@ import { useFetch } from '../lib/useFetch'
 import Tilt3D from '../components/fx/Tilt3D'
 import Checkout from '../components/Checkout'
 import { Button, Empty, Notice, Skeleton, StatusTag, formatWhen } from '../components/ui'
-import { colors, fonts } from '../theme'
+import { fonts, type Palette } from '../theme'
+import { useStyles, useTheme } from '../lib/themeMode'
 
 const showable = (b: Booking) => !!b.qr_token && (b.status === 'confirmed' || b.status === 'attended')
 
 // A QR code is fetched once and kept on the phone, so the pass still opens with no signal at the venue.
 function QrImage({ bookingId }: { bookingId: number }) {
+  const s = useStyles(makeStyles)
   const [uri, setUri] = useState<string | null>(null)
   const [failed, setFailed] = useState(false)
 
@@ -47,6 +49,7 @@ function QrImage({ bookingId }: { bookingId: number }) {
 
 // At the door the pass needs the whole screen and nothing else competing with it.
 function PassModal({ booking, onClose, onCalendar }: { booking: Booking; onClose: () => void; onCalendar: () => void }) {
+  const s = useStyles(makeStyles)
   const ev = booking.ticket_type?.event
 
   // While the pass is open: full brightness and no screen timeout, both put back on close.
@@ -113,6 +116,8 @@ function JoinButton({ booking, onDone, onError }: { booking: Booking; onDone: ()
 }
 
 export default function PassesScreen() {
+  const { colors } = useTheme()
+  const s = useStyles(makeStyles)
   const { data, error, reload, refresh, refreshing } = useFetch<Paginated<Booking>>('/bookings?per_page=50')
   const [cached, setCached] = useState<Booking[] | null>(null)
   const [shown, setShown] = useState<Booking | null>(null)
@@ -269,9 +274,9 @@ export default function PassesScreen() {
   )
 }
 
-const s = StyleSheet.create({
+const makeStyles = (colors: Palette) => StyleSheet.create({
   passSeat: { fontFamily: fonts.heavy, fontSize: 30, letterSpacing: -1, color: colors.ink },
-  seatBadge: { alignSelf: 'flex-start', marginTop: 6, paddingHorizontal: 8, paddingVertical: 3, fontFamily: fonts.heavy, fontSize: 14, color: colors.ink, backgroundColor: colors.accent, overflow: 'hidden' },
+  seatBadge: { alignSelf: 'flex-start', marginTop: 6, paddingHorizontal: 8, paddingVertical: 3, fontFamily: fonts.heavy, fontSize: 14, color: colors.onAccent, backgroundColor: colors.accent, overflow: 'hidden' },
   center: { flex: 1, backgroundColor: colors.concrete, padding: 24, gap: 14, justifyContent: 'center' },
   h1: { fontFamily: fonts.heavy, fontSize: 28, lineHeight: 32, color: colors.ink },
   title: { fontFamily: fonts.heavy, fontSize: 18, color: colors.ink },
@@ -280,7 +285,7 @@ const s = StyleSheet.create({
   ticket: { backgroundColor: colors.paper, borderRadius: 0 },
   ticketMain: { padding: 18, gap: 4 },
   tear: { height: 20, justifyContent: 'center' },
-  tearLine: { marginHorizontal: 14, borderTopWidth: 2, borderStyle: 'dashed', borderColor: '#B3BEC8' },
+  tearLine: { marginHorizontal: 14, borderTopWidth: 2, borderStyle: 'dashed', borderColor: colors.tearLine },
   notch: { position: 'absolute', top: 0, width: 20, height: 20, borderRadius: 0, backgroundColor: colors.concrete },
   ticketStub: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, paddingHorizontal: 18, paddingBottom: 16, paddingTop: 2, flexWrap: 'wrap' },
   stubDate: { fontFamily: fonts.heavy, fontSize: 18, color: colors.ink },

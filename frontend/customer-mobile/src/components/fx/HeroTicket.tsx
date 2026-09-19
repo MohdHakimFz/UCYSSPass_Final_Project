@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { Animated, Easing, StyleSheet, Text, View } from 'react-native'
-import { colors, fonts } from '../../theme'
+// Always the light set: these pieces keep their own look in both themes.
+import { lightColors as colors, fonts } from '../../theme'
 import Tilt3D from './Tilt3D'
 
 const CELLS = 9

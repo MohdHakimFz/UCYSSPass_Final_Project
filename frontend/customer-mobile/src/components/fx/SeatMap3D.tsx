@@ -2,7 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { AccessibilityInfo, Animated, Easing, Pressable, StyleSheet, Text, View } from 'react-native'
 import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg'
 import { subscribeTilt } from '../../lib/motion'
-import { colors, fonts } from '../../theme'
+// Always the light set: these pieces keep their own look in both themes.
+import { lightColors as colors, fonts } from '../../theme'
 
 import type { SeatInfo } from '../../lib/api'
 
