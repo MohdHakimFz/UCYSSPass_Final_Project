@@ -3,6 +3,7 @@ import { ScrollView, Share, StyleSheet, Text, View } from 'react-native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { api, ApiError, CATEGORY_LABEL, errorText, type Booking, type EventItem, type TicketType } from '../lib/api'
 import { useFetch } from '../lib/useFetch'
+import SeatMap3D from '../components/fx/SeatMap3D'
 import { Button, Empty, Notice, Skeleton, formatWhen } from '../components/ui'
 import { PosterArt, POSTER } from '../components/PosterArt'
 import { colors, fonts } from '../theme'
@@ -12,6 +13,7 @@ export default function EventDetailScreen({ route }: NativeStackScreenProps<Root
   const { id } = route.params
   const { data: event, error, reload } = useFetch<EventItem>(`/events/${id}`)
   const [busyId, setBusyId] = useState<number | null>(null)
+  const [picked, setPicked] = useState<number | null>(null)
   const [note, setNote] = useState<{ tone: 'ok' | 'error' | 'warn'; text: string } | null>(null)
 
   async function book(t: TicketType) {
@@ -74,9 +76,15 @@ export default function EventDetailScreen({ route }: NativeStackScreenProps<Root
       {(event.ticket_types ?? []).length === 0 ? (
         <Empty text="Tickets for this event aren't on sale yet." />
       ) : (
+        <>
+        <SeatMap3D
+          blocks={event.ticket_types!.map((t) => ({ id: t.id, name: t.name, capacity: t.capacity, remaining: t.seats_remaining }))}
+          selectedId={picked ?? event.ticket_types![0].id}
+          onSelect={(id) => setPicked(Number(id))}
+        />
         <View style={{ backgroundColor: colors.paper, borderTopWidth: 3, borderTopColor: colors.ink }}>
           {event.ticket_types!.map((t) => (
-            <View key={t.id} style={s.tier}>
+            <View key={t.id} style={[s.tier, (picked ?? event.ticket_types![0].id) === t.id && { backgroundColor: 'rgba(228,98,63,0.12)', borderLeftWidth: 4, borderLeftColor: colors.accent }]}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <View style={{ flex: 1 }}>
                   <Text style={s.tierName}>{t.name}</Text>
@@ -93,6 +101,7 @@ export default function EventDetailScreen({ route }: NativeStackScreenProps<Root
             </View>
           ))}
         </View>
+        </>
       )}
     </ScrollView>
   )

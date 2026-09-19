@@ -6,6 +6,7 @@ import { api, CATEGORY_LABEL, errorText, fetchQrDataUri, type Booking, type Pagi
 import { addToCalendar } from '../lib/calendar'
 import { loadCache, saveCache } from '../lib/offline'
 import { useFetch } from '../lib/useFetch'
+import Tilt3D from '../components/fx/Tilt3D'
 import { Button, Empty, Notice, Skeleton, StatusTag, formatWhen } from '../components/ui'
 import { colors, fonts } from '../theme'
 
@@ -163,7 +164,7 @@ export default function PassesScreen() {
           const canShow = showable(b)
           const canCancel = !offline && (b.status === 'pending' || b.status === 'confirmed' || b.status === 'waitlisted')
           return (
-            <View style={[s.ticket, b.status === 'cancelled' && { opacity: 0.7 }]}>
+            <Tilt3D max={7} style={[s.ticket, b.status === 'cancelled' && { opacity: 0.7 }]}>
               <View style={s.ticketMain}>
                 <Text style={s.title}>{ev?.title ?? 'Event'}</Text>
                 {ev && (
@@ -201,7 +202,7 @@ export default function PassesScreen() {
                 <StatusTag status={b.status} />
                 <Text style={s.sub}>{b.ticket_type?.name}</Text>
               </View>
-            </View>
+            </Tilt3D>
           )
         }}
       />

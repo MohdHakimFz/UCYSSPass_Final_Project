@@ -6,6 +6,7 @@ import { CATEGORY_LABEL, type Category, type EventItem, type Paginated } from '.
 import { useFetch } from '../lib/useFetch'
 import { Empty, Notice, Skeleton } from '../components/ui'
 import { PosterArt, POSTER } from '../components/PosterArt'
+import Tilt3D from '../components/fx/Tilt3D'
 import { colors, fonts } from '../theme'
 import type { RootParamList } from '../../App'
 
@@ -127,6 +128,7 @@ export default function EventsScreen() {
         const tone = POSTER[ev.category]
         const featured = i === 0
         return (
+          <Tilt3D max={6}>
           <Pressable
             onPress={() => navigation.navigate('EventDetail', { id: ev.id })}
             accessibilityRole="button"
@@ -152,6 +154,7 @@ export default function EventsScreen() {
               </View>
             </View>
           </Pressable>
+          </Tilt3D>
         )
       }}
     />
