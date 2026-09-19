@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { AccessibilityInfo, Animated, Easing, StyleSheet, View, type GestureResponderEvent, type StyleProp, type ViewStyle } from 'react-native'
 import Svg, { Defs, LinearGradient, RadialGradient, Rect, Stop } from 'react-native-svg'
-import { DeviceMotion } from 'expo-sensors'
+import { motionAvailable, subscribeTilt } from '../../lib/motion'
 
 type Box = { x: number; y: number; w: number; h: number }
 const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n))
@@ -19,6 +19,8 @@ export default function Tilt3D({ children, max = 9, style }: { children: ReactNo
   const box = useRef<Box | null>(null)
   const [size, setSize] = useState({ w: 0, h: 0 })
   const [still, setStill] = useState(false)
+  const [hasMotion, setHasMotion] = useState(false)
+  const touching = useRef(false)
 
   // Touch position, motion and the idle sway are separate values that are added together.
   const touchX = useRef(new Animated.Value(0)).current
@@ -32,10 +34,12 @@ export default function Tilt3D({ children, max = 9, style }: { children: ReactNo
 
   useEffect(() => {
     void AccessibilityInfo.isReduceMotionEnabled().then(setStill)
+    void motionAvailable().then(setHasMotion)
   }, [])
 
+  // Only sway on its own when the phone has no motion sensor; otherwise the sensor is the movement.
   useEffect(() => {
-    if (still) return
+    if (still || hasMotion) return
     const loop = Animated.loop(
       Animated.sequence([
         Animated.timing(sway, { toValue: 1, duration: 3600, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
@@ -44,30 +48,20 @@ export default function Tilt3D({ children, max = 9, style }: { children: ReactNo
     )
     loop.start()
     return () => loop.stop()
-  }, [sway, still])
+  }, [sway, still, hasMotion])
 
   useEffect(() => {
     if (still) return
-    let sub: { remove: () => void } | null = null
-    let live = true
-    DeviceMotion.isAvailableAsync()
-      .then((ok) => {
-        if (!ok || !live) return
-        DeviceMotion.setUpdateInterval(50)
-        sub = DeviceMotion.addListener((m) => {
-          const r = m.rotation
-          if (!r) return
-          // gamma is left-right lean, beta is forward-back; a phone held naturally sits around beta 0.9.
-          motionY.setValue(clamp(r.gamma / 0.5, -1, 1))
-          motionX.setValue(clamp((r.beta - 0.9) / 0.5, -1, 1))
-        })
-      })
-      .catch(() => undefined)
-    return () => {
-      live = false
-      sub?.remove()
-    }
-  }, [motionX, motionY, still])
+    // Lean the phone left and the card turns left with it; the shine slides across as it turns.
+    return subscribeTilt((x, y) => {
+      if (touching.current) return
+      motionX.setValue(x)
+      motionY.setValue(y)
+      gx.setValue(0.5 + y * 0.5)
+      gy.setValue(0.5 + x * 0.5)
+      lit.setValue(clamp(Math.hypot(x, y) * 1.8, 0, 1))
+    })
+  }, [motionX, motionY, gx, gy, lit, still])
 
   function measure(after?: () => void) {
     ref.current?.measureInWindow((x, y, w, h) => {
@@ -89,6 +83,7 @@ export default function Tilt3D({ children, max = 9, style }: { children: ReactNo
   }
 
   function release() {
+    touching.current = false
     Animated.parallel([
       Animated.spring(touchX, { toValue: 0, useNativeDriver: true, friction: 6 }),
       Animated.spring(touchY, { toValue: 0, useNativeDriver: true, friction: 6 }),
@@ -121,6 +116,7 @@ export default function Tilt3D({ children, max = 9, style }: { children: ReactNo
       ]}
       onLayout={(e) => setSize({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height })}
       onTouchStart={(e) => {
+        touching.current = true
         const ev = { nativeEvent: { pageX: e.nativeEvent.pageX, pageY: e.nativeEvent.pageY } } as GestureResponderEvent
         measure(() => point(ev))
       }}

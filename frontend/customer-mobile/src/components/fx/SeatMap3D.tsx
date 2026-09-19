@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { AccessibilityInfo, Animated, Easing, Pressable, StyleSheet, Text, View } from 'react-native'
 import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg'
+import { subscribeTilt } from '../../lib/motion'
 import { colors, fonts } from '../../theme'
 
 export type SeatBlock = { id: number | string; name: string; capacity: number; remaining: number }
@@ -52,6 +53,8 @@ export default function SeatMap3D({
   const lightY = useRef(new Animated.Value(0)).current
   const lightOn = useRef(new Animated.Value(0.7)).current
   const touching = useRef(false)
+  const lean = useRef(new Animated.Value(0)).current
+  const leaning = useRef(false)
 
   useEffect(() => {
     void AccessibilityInfo.isReduceMotionEnabled().then(setStill)
@@ -61,9 +64,26 @@ export default function SeatMap3D({
     Animated.timing(rise, { toValue: 1, duration: 900, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start()
   }, [rise])
 
+  // Lean the phone and the whole room turns with it; the light slides toward the side you lean to.
+  useEffect(() => {
+    if (still || !width) return
+    return subscribeTilt((x, y) => {
+      lean.setValue(y)
+      if (touching.current) return
+      const active = Math.hypot(x, y) > 0.12
+      if (active && !leaning.current) lightX.stopAnimation()
+      leaning.current = active
+      if (active) {
+        lightX.setValue(width * (0.5 + y * 0.45))
+        lightY.setValue(140 + x * 120)
+      }
+    })
+  }, [lean, lightX, lightY, width, still])
+
   // Idle: the light drifts back and forth across the room until a finger takes over.
   useEffect(() => {
     if (still || !width) return
+    if (leaning.current) return
     lightX.setValue(width * 0.2)
     lightY.setValue(120)
     const loop = Animated.loop(
@@ -103,7 +123,7 @@ export default function SeatMap3D({
       <Animated.View
         style={{
           opacity: rise,
-          transform: [{ translateY: rise.interpolate({ inputRange: [0, 1], outputRange: [24, 0] }) }, { perspective: 700 }, { rotateX: '28deg' }, { scale: 0.96 }],
+          transform: [{ translateY: rise.interpolate({ inputRange: [0, 1], outputRange: [24, 0] }) }, { perspective: 700 }, { rotateX: '28deg' }, { rotateY: lean.interpolate({ inputRange: [-1, 1], outputRange: ['-12deg', '12deg'] }) }, { scale: 0.96 }],
         }}
       >
         <View style={s.stage}>
