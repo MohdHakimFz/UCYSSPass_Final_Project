@@ -52,10 +52,12 @@ trait BuildsScenarios
         ]);
     }
 
-    protected function tier(int $seats, ?Event $event = null): TicketType
+    /** A tier with the given number of seats. Free by default, so booking confirms straight away; pass a price to test payment. */
+    protected function tier(int $seats, ?Event $event = null, float $price = 0): TicketType
     {
         return TicketType::factory()->create([
             'event_id' => ($event ?? $this->publishedEvent())->id,
+            'price' => $price,
             'capacity' => $seats,
             'seats_remaining' => $seats,
         ]);

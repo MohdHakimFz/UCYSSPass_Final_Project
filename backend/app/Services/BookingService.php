@@ -3,8 +3,10 @@
 namespace App\Services;
 
 use App\Exceptions\BookingConflictException;
+use App\Exceptions\PaymentDeclinedException;
 use App\Models\Booking;
 use App\Models\Event;
+use App\Models\Payment;
 use App\Models\Seat;
 use App\Models\TicketType;
 use App\Models\User;
@@ -22,6 +24,7 @@ class BookingService
     public function __construct(
         private readonly QrTicketService $qrTickets,
         private readonly NotificationService $notifications,
+        private readonly SandboxPaymentGateway $gateway,
     ) {}
 
     /**
@@ -34,6 +37,9 @@ class BookingService
      */
     public function book(User $customer, TicketType $ticketType, ?int $seatId = null): Booking
     {
+        // Seats whose payment hold has run out go back on sale before anyone tries to take one.
+        $this->releaseExpired($ticketType->id);
+
         $notificationsToDispatch = [];
 
         $booking = DB::transaction(function () use ($customer, $ticketType, $seatId, &$notificationsToDispatch) {
@@ -61,7 +67,9 @@ class BookingService
                 }
 
                 $lockedTicketType->decrement('seats_remaining');
-                $status = 'confirmed';
+
+                // A free ticket is confirmed straight away. A priced one is held for the customer while they pay.
+                $status = (float) $lockedTicketType->price > 0 ? 'pending' : 'confirmed';
             }
 
             $booking = Booking::create([
@@ -70,6 +78,7 @@ class BookingService
                 'seat_id' => $seat?->id,
                 'status' => $status,
                 'booked_at' => now(),
+                'hold_expires_at' => $status === 'pending' ? now()->addMinutes(config('sentrypass.hold_minutes')) : null,
             ]);
 
             if ($status === 'confirmed') {
@@ -87,6 +96,89 @@ class BookingService
         }
 
         return $booking;
+    }
+
+    /**
+     * Pay for a held booking. On success the booking is confirmed, gets its signed QR pass, and the customer is emailed.
+     * A declined payment leaves the hold in place so they can try another method until it runs out.
+     */
+    public function pay(Booking $booking, string $method, string $outcome = 'approve'): Booking
+    {
+        $this->releaseExpired($booking->ticket_type_id);
+
+        $notification = null;
+
+        try {
+            $paid = DB::transaction(function () use ($booking, $method, $outcome, &$notification) {
+                $locked = Booking::where('id', $booking->id)->lockForUpdate()->firstOrFail();
+
+                if ($locked->status === 'confirmed' || $locked->status === 'attended') {
+                    throw new BookingConflictException('This booking is already paid.');
+                }
+
+                if ($locked->status !== 'pending' || ! $locked->hold_expires_at) {
+                    throw new BookingConflictException('This hold has expired. Choose your seat again.');
+                }
+
+                $amount = (float) $locked->ticketType->price;
+                $reference = $this->gateway->charge($amount, $method, $outcome);
+
+                Payment::create([
+                    'booking_id' => $locked->id,
+                    'amount' => $amount,
+                    'method' => $method,
+                    'status' => 'paid',
+                    'reference' => $reference,
+                    'paid_at' => now(),
+                ]);
+
+                $locked->update(['status' => 'confirmed', 'hold_expires_at' => null]);
+                $locked->update(['qr_token' => $this->qrTickets->generate($locked)]);
+                $notification = $this->notifications->record($locked, 'confirmation');
+
+                return $locked;
+            });
+        } catch (PaymentDeclinedException $e) {
+            // Kept outside the transaction so the failed attempt is still on record.
+            Payment::create([
+                'booking_id' => $booking->id,
+                'amount' => (float) $booking->ticketType->price,
+                'method' => $method,
+                'status' => 'failed',
+                'failure_reason' => $e->getMessage(),
+            ]);
+
+            throw $e;
+        }
+
+        $this->notifications->dispatch($notification);
+
+        return $paid;
+    }
+
+    /**
+     * Cancel every pending booking whose payment hold has run out, returning the seat (or handing it to the waitlist).
+     * Nobody is emailed: the customer simply did not finish paying.
+     *
+     * @return int how many holds were released
+     */
+    public function releaseExpired(?int $ticketTypeId = null): int
+    {
+        $ids = Booking::where('status', 'pending')
+            ->whereNotNull('hold_expires_at')
+            ->where('hold_expires_at', '<', now())
+            ->when($ticketTypeId, fn ($query) => $query->where('ticket_type_id', $ticketTypeId))
+            ->pluck('id');
+
+        foreach ($ids as $id) {
+            $booking = Booking::find($id);
+
+            if ($booking && $booking->status === 'pending' && $booking->hold_expires_at?->isPast()) {
+                $this->cancel($booking, notify: false);
+            }
+        }
+
+        return $ids->count();
     }
 
     /**
@@ -122,23 +214,39 @@ class BookingService
      * already-attended booking just releases its seat with no
      * promotion, since the holder already used the ticket.
      */
-    public function cancel(Booking $booking): Booking
+    public function cancel(Booking $booking, bool $notify = true): Booking
     {
         $notificationsToDispatch = [];
+        $refund = null;
 
-        $cancelled = DB::transaction(function () use ($booking, &$notificationsToDispatch) {
+        $cancelled = DB::transaction(function () use ($booking, $notify, &$notificationsToDispatch, &$refund) {
             $originalStatus = $booking->status;
-            $wasHoldingASeat = in_array($originalStatus, ['confirmed', 'attended']);
+            $wasHeldForPayment = $originalStatus === 'pending' && $booking->hold_expires_at !== null;
+            $wasHoldingASeat = in_array($originalStatus, ['confirmed', 'attended']) || $wasHeldForPayment;
 
             // The seat, if there was one, is handed on below or released.
             $seatId = $booking->seat_id;
-            $booking->update(['status' => 'cancelled', 'seat_id' => null]);
-            $notificationsToDispatch[] = $this->notifications->record($booking, 'cancelled');
+            $booking->update(['status' => 'cancelled', 'seat_id' => null, 'hold_expires_at' => null]);
+
+            // Money back when the cancellation is early enough; otherwise the payment stands.
+            $payment = $booking->payments()->where('status', 'paid')->latest('id')->first();
+            if ($payment) {
+                $early = $booking->ticketType->event->start_at->gt(now()->addHours(config('sentrypass.refund_hours_before')));
+                if ($early) {
+                    $payment->update(['status' => 'refunded', 'refunded_at' => now(), 'refunded_amount' => $payment->amount]);
+                }
+                $refund = ['refunded' => $early, 'amount' => $early ? $payment->amount : '0.00'];
+            }
+
+            // Walking away from checkout is not worth an email.
+            if ($notify && ! $wasHeldForPayment) {
+                $notificationsToDispatch[] = $this->notifications->record($booking, 'cancelled');
+            }
 
             if ($wasHoldingASeat) {
                 $ticketType = TicketType::where('id', $booking->ticket_type_id)->lockForUpdate()->first();
 
-                $promoted = $originalStatus === 'confirmed'
+                $promoted = in_array($originalStatus, ['confirmed', 'pending'])
                     ? Booking::where('ticket_type_id', $ticketType->id)
                         ->where('status', 'waitlisted')
                         ->orderBy('booked_at')
@@ -148,8 +256,17 @@ class BookingService
                     : null;
 
                 if ($promoted) {
-                    $promoted->update(['status' => 'confirmed', 'seat_id' => $seatId]);
-                    $promoted->update(['qr_token' => $this->qrTickets->generate($promoted)]);
+                    if ((float) $ticketType->price > 0) {
+                        // Their seat is kept for a while so they can pay for it.
+                        $promoted->update([
+                            'status' => 'pending',
+                            'seat_id' => $seatId,
+                            'hold_expires_at' => now()->addMinutes(config('sentrypass.promotion_hold_minutes')),
+                        ]);
+                    } else {
+                        $promoted->update(['status' => 'confirmed', 'seat_id' => $seatId]);
+                        $promoted->update(['qr_token' => $this->qrTickets->generate($promoted)]);
+                    }
                     $notificationsToDispatch[] = $this->notifications->record($promoted, 'waitlist_promoted');
                 } else {
                     $ticketType->increment('seats_remaining');
@@ -162,6 +279,8 @@ class BookingService
         foreach ($notificationsToDispatch as $notification) {
             $this->notifications->dispatch($notification);
         }
+
+        $cancelled->setAttribute('refund', $refund);
 
         return $cancelled;
     }
@@ -183,7 +302,13 @@ class BookingService
                 ->get();
 
             foreach ($bookings as $booking) {
-                $booking->update(['status' => 'cancelled', 'seat_id' => null]);
+                // The organiser called the event off, so everyone who paid gets their money back.
+                $booking->payments()->where('status', 'paid')->update([
+                    'status' => 'refunded',
+                    'refunded_at' => now(),
+                    'refunded_amount' => DB::raw('amount'),
+                ]);
+                $booking->update(['status' => 'cancelled', 'seat_id' => null, 'hold_expires_at' => null]);
                 $notificationsToDispatch[] = $this->notifications->record($booking, 'cancelled');
             }
 

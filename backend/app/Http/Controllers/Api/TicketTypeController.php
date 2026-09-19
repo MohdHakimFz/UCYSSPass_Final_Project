@@ -8,19 +8,23 @@ use App\Http\Requests\TicketType\UpdateTicketTypeRequest;
 use App\Models\Event;
 use App\Models\TicketType;
 use App\Models\Seat;
+use App\Services\BookingService;
 use App\Services\SeatingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 
 class TicketTypeController extends Controller
 {
-    public function __construct(private readonly SeatingService $seating) {}
+    public function __construct(private readonly SeatingService $seating, private readonly BookingService $bookings) {}
 
     /**
      * Every seat of a tier and whether it is taken. Public, and never says who holds a seat.
      */
     public function seats(TicketType $ticketType): JsonResponse
     {
+        // Seats held by someone who never paid are shown as free again.
+        $this->bookings->releaseExpired($ticketType->id);
+
         $seats = Seat::where('ticket_type_id', $ticketType->id)
             ->withExists(['booking as taken'])
             ->orderBy('id')

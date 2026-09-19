@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Booking\CheckinBookingRequest;
+use App\Http\Requests\Booking\PayBookingRequest;
 use App\Http\Requests\Booking\StoreBookingRequest;
 use App\Models\Booking;
 use App\Models\TicketType;
@@ -30,6 +31,9 @@ class BookingController extends Controller
     {
         $this->authorize('viewAny', Booking::class);
 
+        // Anyone looking at their bookings sees holds that have run out already released.
+        $this->bookings->releaseExpired();
+
         $user = $request->user();
 
         $bookings = Booking::query()
@@ -39,6 +43,7 @@ class BookingController extends Controller
                 'ticketType.event:id,title,category,start_at,end_at,venue_id',
                 'ticketType.event.venue:id,name',
                 'seat:id,row_label,number',
+                'payment',
             ])
             ->when($user->role === 'customer', fn ($query) => $query->where('customer_id', $user->id))
             ->when($user->role === 'organiser', fn ($query) => $query->whereHas(
@@ -87,7 +92,7 @@ class BookingController extends Controller
 
         $booking = $this->bookings->book($request->user(), $ticketType, $request->validated('seat_id'));
 
-        return response()->json($this->withWaitlistPosition($booking->load('seat')), 201);
+        return response()->json($this->withWaitlistPosition($booking->load('seat', 'payment')), 201);
     }
 
     /**
@@ -97,7 +102,9 @@ class BookingController extends Controller
     {
         $this->authorize('view', $booking);
 
-        return response()->json($this->withWaitlistPosition($booking->load('seat')));
+        $this->bookings->releaseExpired($booking->ticket_type_id);
+
+        return response()->json($this->withWaitlistPosition($booking->fresh()->load('seat', 'payment')));
     }
 
     /**
@@ -109,7 +116,17 @@ class BookingController extends Controller
 
         $booking = $this->bookings->cancel($booking);
 
-        return response()->json($booking->load('seat'));
+        return response()->json($booking->load('seat', 'payment'));
+    }
+
+    /**
+     * Pay for a held booking (sandbox: no real money). Confirms it and issues the signed pass.
+     */
+    public function pay(PayBookingRequest $request, Booking $booking): JsonResponse
+    {
+        $paid = $this->bookings->pay($booking, $request->validated('method'), $request->validated('outcome', 'approve'));
+
+        return response()->json($paid->load('seat', 'payment'));
     }
 
     /**

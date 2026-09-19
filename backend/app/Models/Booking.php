@@ -20,13 +20,27 @@ class Booking extends Model
         'qr_token',
         'booked_at',
         'checked_in_at',
+        'hold_expires_at',
     ];
+
+    protected $appends = ['hold_seconds_left'];
+
+    /**
+     * Seconds left on the payment hold, worked out on the server so a phone with the wrong clock still counts down correctly.
+     */
+    protected function holdSecondsLeft(): \Illuminate\Database\Eloquent\Casts\Attribute
+    {
+        return \Illuminate\Database\Eloquent\Casts\Attribute::get(
+            fn () => $this->hold_expires_at ? max(0, (int) now()->diffInSeconds($this->hold_expires_at, false)) : null
+        );
+    }
 
     protected function casts(): array
     {
         return [
             'booked_at' => 'datetime',
             'checked_in_at' => 'datetime',
+            'hold_expires_at' => 'datetime',
         ];
     }
 
@@ -38,6 +52,17 @@ class Booking extends Model
     public function ticketType(): BelongsTo
     {
         return $this->belongsTo(TicketType::class);
+    }
+
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    /** The latest payment attempt, for showing status. */
+    public function payment(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(Payment::class)->latestOfMany();
     }
 
     public function seat(): BelongsTo

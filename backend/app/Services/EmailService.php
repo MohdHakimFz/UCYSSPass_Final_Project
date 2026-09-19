@@ -85,6 +85,17 @@ class EmailService
         return $response->successful();
     }
 
+    private function refundLine(\App\Models\Booking $booking): string
+    {
+        $payment = $booking->payments()->latest('id')->first();
+
+        return match ($payment?->status) {
+            'refunded' => ' RM '.number_format((float) $payment->refunded_amount, 2).' has been refunded to you.',
+            'paid' => ' The payment is not refundable because the event is less than '.config('sentrypass.refund_hours_before').' hours away.',
+            default => '',
+        };
+    }
+
     /**
      * @return array{0: string, 1: string}
      */
@@ -101,11 +112,13 @@ class EmailService
             ],
             'waitlist_promoted' => [
                 "You're off the waitlist for {$event->title}",
-                "<p>A seat opened up and you've been promoted from the waitlist for <strong>{$event->title}</strong>. Your ticket is now confirmed.{$seatLine}</p>",
+                $notification->booking->status === 'pending'
+                    ? "<p>A seat opened up for <strong>{$event->title}</strong>.{$seatLine} It is yours if you pay within ".config('sentrypass.promotion_hold_minutes').' minutes: open My passes and tap Pay now.</p>'
+                    : "<p>A seat opened up and you've been promoted from the waitlist for <strong>{$event->title}</strong>. Your ticket is now confirmed.{$seatLine}</p>",
             ],
             'cancelled' => [
                 "Your SentryPass booking for {$event->title} was cancelled",
-                "<p>Your booking for <strong>{$event->title}</strong> has been cancelled.</p>",
+                "<p>Your booking for <strong>{$event->title}</strong> has been cancelled.".$this->refundLine($notification->booking).'</p>',
             ],
         };
     }

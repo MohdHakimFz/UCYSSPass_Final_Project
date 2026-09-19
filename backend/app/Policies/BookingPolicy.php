@@ -56,6 +56,14 @@ class BookingPolicy
     }
 
     /**
+     * Only the customer who holds the booking can pay for it.
+     */
+    public function pay(User $user, Booking $booking): bool
+    {
+        return $user->id === $booking->customer_id;
+    }
+
+    /**
      * Determine whether the user can check the booking in at the venue.
      */
     public function checkin(User $user, Booking $booking): bool
