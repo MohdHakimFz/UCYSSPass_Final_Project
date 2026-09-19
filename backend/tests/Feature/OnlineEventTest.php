@@ -212,4 +212,14 @@ class OnlineEventTest extends TestCase
         $this->actingAs($organiser, 'sanctum')->putJson('/api/events/'.$res->json('id'), ['title' => 'Renamed'])
             ->assertOk()->assertJsonPath('meeting_platform', 'zoom');
     }
+
+    public function test_a_cancelled_booking_gets_no_qr_code(): void
+    {
+        $tier = $this->tier(seats: 2, event: $this->publishedEvent());
+        $customer = $this->customer();
+        $booking = $this->book($customer, $tier);
+        $this->actingAs($customer, 'sanctum')->putJson("/api/bookings/{$booking->id}/cancel")->assertOk();
+
+        $this->actingAs($customer, 'sanctum')->getJson("/api/bookings/{$booking->id}/qr-code")->assertNotFound();
+    }
 }

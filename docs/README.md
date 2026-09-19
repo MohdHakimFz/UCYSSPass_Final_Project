@@ -6,6 +6,7 @@
 | [`database.md`](database.md) | Database design: ERD, tables, relationships, constraints and sample data |
 | [`ERD.png`](ERD.png) / [`ERD.svg`](ERD.svg) | Entity relationship diagram |
 | [`database/schema.sql`](database/schema.sql) | Exact PostgreSQL DDL for the six domain tables |
+| [`PLAN-AND-POSTMAN-GUIDE.md`](PLAN-AND-POSTMAN-GUIDE.md) | Remaining work, every API endpoint with Postman test steps and screenshots to capture, and the deployment plan (in Malay) |
 | [`postman/`](postman/) | Postman collection and environment (105 requests, 156 assertions) and how to run them |
 | [`SentryPass-Project-Spec.md`](SentryPass-Project-Spec.md) | The original project specification |
 

@@ -159,7 +159,8 @@ class BookingController extends Controller
     {
         $this->authorize('view', $booking);
 
-        if (! $booking->qr_token) {
+        // A cancelled booking keeps its old token, but its ticket is void, so it gets no QR code.
+        if (! $booking->qr_token || ! in_array($booking->status, ['confirmed', 'attended'], true)) {
             abort(404, 'This booking has no confirmed ticket to render a QR code for.');
         }
 
