@@ -55,6 +55,7 @@ class CertificateService
             'when' => $event->start_at->copy()->timezone('Asia/Kuala_Lumpur')->format('j F Y'),
             'where' => $event->isOnline() ? 'Online' : ($event->venue?->name ?? ''),
             'organiser' => $event->organiser?->name,
+            'issued' => now()->timezone('Asia/Kuala_Lumpur')->format('j F Y'),
             'number' => 'UCYSS-'.str_pad((string) $booking->id, 6, '0', STR_PAD_LEFT).'-'.$this->code($booking),
             'verifyUrl' => $this->verifyUrl($booking),
         ])->render();
