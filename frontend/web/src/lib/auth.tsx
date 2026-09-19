@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react'
 import { api, ApiError, tokenStore, type User } from './api'
+import { useLiveTick } from './useFetch'
 
 type AuthState = {
   user: User | null
@@ -26,6 +27,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       : Promise.resolve()
     check.finally(() => setLoading(false))
   }, [])
+
+  // Keep the profile fresh (for example, an admin adds you to the member list), and notice when the token has been revoked.
+  const tick = useLiveTick(30_000)
+  useEffect(() => {
+    if (!tokenStore.get()) return
+    api<User>('/auth/me')
+      .then((fresh) => setUser((prev) => (prev && JSON.stringify(prev) === JSON.stringify(fresh) ? prev : fresh)))
+      .catch((e) => {
+        if (e instanceof ApiError && e.status === 401) {
+          tokenStore.clear()
+          setUser(null)
+        }
+      })
+  }, [tick])
 
   const signIn = useCallback(async (email: string, password: string) => {
     const res = await api<{ user: User; token: string }>('/auth/login', {

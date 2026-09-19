@@ -194,19 +194,25 @@ export default function EventDetail() {
             {event.ticket_types!.map((t) => (
               <li key={t.id} data-active={(picked ?? event.ticket_types![0].id) === t.id || undefined}>
                 <div>
-                  <h3>{t.name}</h3>
+                  <h3>
+                    {t.name}
+                    {t.members_only && <span className="member-tag">Members only</span>}
+                  </h3>
                   <p className="sub">
                     {t.seats_remaining > 0 ? `${t.seats_remaining} of ${t.capacity} seats left` : 'Sold out'}
                   </p>
+                  {t.members_only && user && !user.is_member && <p className="sub">Ask a UCYSS committee member to add you to the member list.</p>}
                 </div>
                 <strong className="price">{Number(t.price) === 0 ? 'Free' : `RM ${Number(t.price).toFixed(2)}`}</strong>
                 <button
                   className="btn"
-                  disabled={!bookable || sessionLoading || busyId === t.id || (seated && t.seats_remaining > 0 && seatPick?.tierId !== t.id)}
+                  disabled={!bookable || sessionLoading || busyId === t.id || (!!t.members_only && !!user && !user.is_member) || (seated && t.seats_remaining > 0 && seatPick?.tierId !== t.id)}
                   onClick={() => book(t)}
                 >
                   {busyId === t.id
                     ? 'Booking…'
+                    : t.members_only && user && !user.is_member
+                      ? 'Members only'
                     : t.seats_remaining === 0
                       ? 'Join waitlist'
                       : seated

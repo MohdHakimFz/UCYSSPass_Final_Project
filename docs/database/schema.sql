@@ -203,6 +203,7 @@ CREATE TABLE public.ticket_types (
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
     seats_per_row smallint DEFAULT '10'::smallint NOT NULL,
+    members_only boolean DEFAULT false NOT NULL,
     CONSTRAINT ticket_types_capacity_check CHECK ((capacity >= 0)),
     CONSTRAINT ticket_types_seats_remaining_check CHECK (((seats_remaining >= 0) AND (seats_remaining <= capacity)))
 );
@@ -238,6 +239,7 @@ CREATE TABLE public.users (
     remember_token character varying(100),
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
+    is_member boolean DEFAULT false NOT NULL,
     CONSTRAINT users_role_check CHECK (((role)::text = ANY ((ARRAY['admin'::character varying, 'organiser'::character varying, 'customer'::character varying])::text[])))
 );
 

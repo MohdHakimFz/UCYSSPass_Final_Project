@@ -296,6 +296,7 @@ class EventController extends Controller
                     'price' => $tier->price,
                     'capacity' => $tier->capacity,
                     'seats_per_row' => $tier->seats_per_row,
+                    'members_only' => $tier->members_only,
                     'seats_remaining' => $tier->capacity,
                 ]);
             }

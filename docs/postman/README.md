@@ -4,7 +4,7 @@ Two files:
 
 | File | What it is |
 | --- | --- |
-| `SentryPass.postman_collection.json` | **166 requests in 17 folders, with 257 test assertions** (collection name in Postman: "UCYSS API") |
+| `SentryPass.postman_collection.json` | **174 requests in 18 folders, with 272 test assertions** (collection name in Postman: "UCYSS API") |
 | `SentryPass.local.postman_environment.json` | Local settings: `base_url`, admin login, check-in device key |
 
 ## Run it in Postman
@@ -23,7 +23,7 @@ npx newman run docs/postman/SentryPass.postman_collection.json \
   --env-var "checkin_api_key=<your CHECKIN_API_KEY>"
 ```
 
-Last run: 166 requests, 257 assertions, 0 failures (about 41 seconds).
+Last run: 174 requests, 272 assertions, 0 failures (about 48 seconds).
 
 ## What it covers
 
@@ -46,13 +46,14 @@ Each folder mixes the success case and the error cases (401, 403, 404, 409, 422,
 | 13. Numbered seats | Public seat list (no personal data), a seat is required (422), a taken seat (409), the organiser's seat map (owner only) |
 | 14. Online events and joining | No venue needed, publishing needs a link (422), the platform is detected from the link, the link is hidden from the public and customers, joining before the meeting opens (422), someone else's booking (403), joining when open returns the link and marks the booking attended |
 | 15. Drafts stay private | A draft is 404 to the public, customers and other organisers, visible to the owner and admin, cannot be booked (409), the organiser publishes it themselves |
-| 16. Organiser summary and password reset | `/organiser/summary`, the same answer for a known and an unknown email, a wrong reset code |
-| 17. Cleanup | Deletes everything the run created |
+| 16. Members-only tickets | A tier limited to members, a non-member is refused (403), nobody can make themselves a member, an admin adds a customer to the member list, the customer can then book, and the admin's people search |
+| 17. Organiser summary and password reset | `/organiser/summary`, the same answer for a known and an unknown email, a wrong reset code |
+| 18. Cleanup | Deletes everything the run created |
 
 ## Notes
 
-- **Self-contained and repeatable.** The run creates its own users (`…@postman.test`) and removes them in folder 17, so it needs only the seeded admin account and leaves the database as it found it. If a run stops halfway, delete the leftover `@postman.test` users from the admin People page. The shared "Online" venue, created by the first online event, stays.
-- **Wait a minute between runs.** Some routes are rate limited on purpose: `POST /bookings` allows 5 attempts a minute per user, and `forgot-password` allows 3 a minute per address. A second run straight after the first can hit a 429 on those. The collection uses fresh customers for the booking limits, so this only matters for `forgot-password` (folder 16).
+- **Self-contained and repeatable.** The run creates its own users (`…@postman.test`) and removes them in folder 18, so it needs only the seeded admin account and leaves the database as it found it. If a run stops halfway, delete the leftover `@postman.test` users from the admin People page. The shared "Online" venue, created by the first online event, stays.
+- **Wait a minute between runs.** Some routes are rate limited on purpose: `POST /bookings` allows 5 attempts a minute per user, and `forgot-password` allows 3 a minute per address. A second run straight after the first can hit a 429 on those. The collection uses fresh customers for the booking limits, so this only matters for `forgot-password` (folder 17).
 - **QR code request** (7.12) calls the external QR API, so it needs internet access from the API container.
 - **Check-in device key.** `checkin_api_key` in the environment must match `CHECKIN_API_KEY` in `backend/.env`. The environment file ships with the development default; if you changed the key in `.env` (you should, before deploying), request 7.17 returns 401 until the environment matches. Do not commit a real key.
 - **Time-dependent request.** Folder 14 creates an online event that starts ten minutes after the run began, so the meeting is open when the guest joins. The times are computed in a pre-request script.

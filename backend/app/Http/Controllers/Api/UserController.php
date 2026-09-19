@@ -20,6 +20,10 @@ class UserController extends Controller
 
         $users = User::query()
             ->when($request->filled('role'), fn ($query) => $query->where('role', $request->string('role')))
+            ->when($request->filled('member'), fn ($query) => $query->where('is_member', $request->boolean('member')))
+            ->when($request->filled('search'), fn ($query) => $query->where(fn ($q) => $q
+                ->where('name', 'ilike', '%'.$request->string('search').'%')
+                ->orWhere('email', 'ilike', '%'.$request->string('search').'%')))
             ->orderBy('name')
             ->paginate($request->integer('per_page', 15));
 

@@ -1372,3 +1372,17 @@ button:disabled {
     font-size: 2.4rem;
   }
 }
+
+/* A tier only UCYSS members can book */
+.member-tag {
+  display: inline-block;
+  margin-left: 10px;
+  padding: 2px 8px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  vertical-align: middle;
+  color: var(--bg);
+  background: var(--ink);
+}

@@ -105,4 +105,8 @@ SELECT setval('bookings_id_seq', (SELECT max(id) FROM bookings));
 SELECT setval('payments_id_seq', (SELECT max(id) FROM payments));
 SELECT setval('notifications_id_seq', (SELECT max(id) FROM notifications));
 
+-- Two students are on the member list, and the draft workshop has a members-only tier
+UPDATE users SET is_member = true WHERE id IN (4, 5);
+UPDATE ticket_types SET members_only = true WHERE id = 7;
+
 COMMIT;

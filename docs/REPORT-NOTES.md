@@ -72,6 +72,6 @@ Everything is in [`performance/PERFORMANCE.md`](performance/PERFORMANCE.md): mis
 | At least one genuine third-party API | Resend and the QR Code API (above) |
 | Two or more of logging, rate limiting, pagination, filtering, search, sorting | All of them, above |
 | Debugging and performance report | `performance/PERFORMANCE.md` |
-| Postman collection, success and error screenshots, API documentation | `postman/` (166 requests, 257 assertions), `PLAN-AND-POSTMAN-GUIDE.md` (screenshot list), `api-documentation.md` |
+| Postman collection, success and error screenshots, API documentation | `postman/` (174 requests, 272 assertions), `PLAN-AND-POSTMAN-GUIDE.md` (screenshot list), `api-documentation.md` |
 | README with setup and run instructions | `README.md` |
-| Automated tests | 167 backend tests, 31 browser tests (Playwright), the Postman run in CI |
+| Automated tests | 186 backend tests, 32 browser tests (Playwright), the Postman run in CI |

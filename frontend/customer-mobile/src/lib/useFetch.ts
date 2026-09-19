@@ -6,7 +6,7 @@ import { api, ApiError, errorText } from './api'
 const LIVE_MS = 5000
 
 /** A counter that goes up every few seconds while the app is on screen, and straight away when it comes back. */
-function useLiveTick(every: number) {
+export function useLiveTick(every: number) {
   const [tick, setTick] = useState(0)
 
   useEffect(() => {

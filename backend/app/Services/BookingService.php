@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Exceptions\BookingConflictException;
+use App\Exceptions\BookingNotAllowedException;
 use App\Exceptions\PaymentDeclinedException;
 use App\Models\Booking;
 use App\Models\Event;
@@ -46,6 +47,10 @@ class BookingService
             $event = $ticketType->event()->first();
             if (! $event || $event->status !== 'published' || $event->end_at->isPast()) {
                 throw new BookingConflictException('This event is not open for booking.');
+            }
+
+            if ($ticketType->members_only && ! $customer->is_member) {
+                throw new BookingNotAllowedException('This ticket is for UCYSS members. Ask a committee member to add you to the member list.');
             }
 
             $hasActiveBooking = Booking::where('customer_id', $customer->id)

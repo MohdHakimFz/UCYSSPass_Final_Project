@@ -7712,10 +7712,448 @@
 			]
 		},
 		{
-			"name": "16. Organiser summary and password reset",
+			"name": "16. Members-only tickets",
+			"description": "A tier can be limited to UCYSS members. Only an admin can add someone to the member list.",
 			"item": [
 				{
-					"name": "16.1 The organiser's own numbers",
+					"name": "16.1 Organiser A creates an event",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status is 201\", function () { pm.response.to.have.status(201); });",
+									"pm.collectionVariables.set(\"member_event_id\", pm.response.json().id);"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/events",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"events"
+							]
+						},
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{orgA_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"venue_id\": \"{{venue_id}}\",\n  \"title\": \"Postman Members {{run_id}}\",\n  \"description\": \"Created by the Postman collection.\",\n  \"category\": \"workshop\",\n  \"start_at\": \"2026-12-10T09:00:00Z\",\n  \"end_at\": \"2026-12-10T12:00:00Z\",\n  \"status\": \"published\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					}
+				},
+				{
+					"name": "16.2 A members-only tier",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status is 201\", function () { pm.response.to.have.status(201); });",
+									"pm.test(\"Flagged as members only\", function () { pm.expect(pm.response.json().members_only).to.eql(true); });",
+									"pm.collectionVariables.set(\"member_tier_id\", pm.response.json().id);"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/events/{{member_event_id}}/ticket-types",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"events",
+								"{{member_event_id}}",
+								"ticket-types"
+							]
+						},
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{orgA_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Member price\",\n  \"price\": 0,\n  \"capacity\": 5,\n  \"members_only\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					}
+				},
+				{
+					"name": "16.3 The public tier list says which tiers are for members",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+									"pm.test(\"members_only is shown\", function () { pm.expect(pm.response.json()[0].members_only).to.eql(true); });"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/events/{{member_event_id}}/ticket-types",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"events",
+								"{{member_event_id}}",
+								"ticket-types"
+							]
+						},
+						"auth": {
+							"type": "noauth"
+						}
+					}
+				},
+				{
+					"name": "16.4 A customer who is not a member is refused",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status is 403\", function () { pm.response.to.have.status(403); });",
+									"pm.test(\"Says it is for members\", function () { pm.expect(pm.response.json().message).to.include(\"members\"); });"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/bookings",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"bookings"
+							]
+						},
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{c4_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"ticket_type_id\": \"{{member_tier_id}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					}
+				},
+				{
+					"name": "16.5 A customer cannot make themselves a member",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+									"pm.test(\"Still not a member\", function () { pm.expect(Boolean(pm.response.json().is_member)).to.eql(false); });"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/users/{{c4_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"{{c4_id}}"
+							]
+						},
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{c4_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"is_member\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					}
+				},
+				{
+					"name": "16.6 An admin adds the customer to the member list",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+									"pm.test(\"Now a member\", function () { pm.expect(pm.response.json().is_member).to.eql(true); });"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/users/{{c4_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"{{c4_id}}"
+							]
+						},
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"is_member\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					}
+				},
+				{
+					"name": "16.7 The customer can now book the member tier",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status is 201\", function () { pm.response.to.have.status(201); });",
+									"pm.test(\"Confirmed\", function () { pm.expect(pm.response.json().status).to.eql(\"confirmed\"); });"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/bookings",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"bookings"
+							]
+						},
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{c4_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"ticket_type_id\": \"{{member_tier_id}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					}
+				},
+				{
+					"name": "16.8 The admin can find people by name or email",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+									"pm.test(\"Found exactly the one\", function () { pm.expect(pm.response.json().total).to.eql(1); });"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/users?search=customer4-{{run_id}}&per_page=5",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users"
+							],
+							"query": [
+								{
+									"key": "search",
+									"value": "customer4-{{run_id}}"
+								},
+								{
+									"key": "per_page",
+									"value": "5"
+								}
+							]
+						},
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "17. Organiser summary and password reset",
+			"item": [
+				{
+					"name": "17.1 The organiser's own numbers",
 					"event": [
 						{
 							"listen": "test",
@@ -7760,7 +8198,7 @@
 					}
 				},
 				{
-					"name": "16.2 A customer has no summary",
+					"name": "17.2 A customer has no summary",
 					"event": [
 						{
 							"listen": "test",
@@ -7803,7 +8241,7 @@
 					}
 				},
 				{
-					"name": "16.3 Forgot password gives a general answer",
+					"name": "17.3 Forgot password gives a general answer",
 					"event": [
 						{
 							"listen": "test",
@@ -7853,7 +8291,7 @@
 					}
 				},
 				{
-					"name": "16.4 An unknown email gets the very same answer",
+					"name": "17.4 An unknown email gets the very same answer",
 					"event": [
 						{
 							"listen": "test",
@@ -7903,7 +8341,7 @@
 					}
 				},
 				{
-					"name": "16.5 A wrong reset code is refused",
+					"name": "17.5 A wrong reset code is refused",
 					"event": [
 						{
 							"listen": "test",
@@ -7955,10 +8393,10 @@
 			]
 		},
 		{
-			"name": "17. Cleanup",
+			"name": "18. Cleanup",
 			"item": [
 				{
-					"name": "17.1 Admin deletes customer 1",
+					"name": "18.1 Admin deletes customer 1",
 					"event": [
 						{
 							"listen": "test",
@@ -8001,7 +8439,7 @@
 					}
 				},
 				{
-					"name": "17.2 Admin deletes customer 2",
+					"name": "18.2 Admin deletes customer 2",
 					"event": [
 						{
 							"listen": "test",
@@ -8044,7 +8482,7 @@
 					}
 				},
 				{
-					"name": "17.3 Admin deletes customer 3",
+					"name": "18.3 Admin deletes customer 3",
 					"event": [
 						{
 							"listen": "test",
@@ -8087,7 +8525,7 @@
 					}
 				},
 				{
-					"name": "17.4 Admin deletes customer 4",
+					"name": "18.4 Admin deletes customer 4",
 					"event": [
 						{
 							"listen": "test",
@@ -8130,7 +8568,7 @@
 					}
 				},
 				{
-					"name": "17.5 Admin deletes customer 5",
+					"name": "18.5 Admin deletes customer 5",
 					"event": [
 						{
 							"listen": "test",
@@ -8173,7 +8611,7 @@
 					}
 				},
 				{
-					"name": "17.6 Admin deletes customer 6",
+					"name": "18.6 Admin deletes customer 6",
 					"event": [
 						{
 							"listen": "test",
@@ -8216,7 +8654,7 @@
 					}
 				},
 				{
-					"name": "17.7 Admin deletes organiser A (and their event)",
+					"name": "18.7 Admin deletes organiser A (and their event)",
 					"event": [
 						{
 							"listen": "test",
@@ -8259,7 +8697,7 @@
 					}
 				},
 				{
-					"name": "17.8 Admin deletes organiser B",
+					"name": "18.8 Admin deletes organiser B",
 					"event": [
 						{
 							"listen": "test",
@@ -8302,7 +8740,7 @@
 					}
 				},
 				{
-					"name": "17.9 Admin deletes the test venue",
+					"name": "18.9 Admin deletes the test venue",
 					"event": [
 						{
 							"listen": "test",
@@ -8345,7 +8783,7 @@
 					}
 				},
 				{
-					"name": "17.10 The event is gone",
+					"name": "18.10 The event is gone",
 					"event": [
 						{
 							"listen": "test",
@@ -8574,6 +9012,14 @@
 		},
 		{
 			"key": "draft_tier_id",
+			"value": ""
+		},
+		{
+			"key": "member_event_id",
+			"value": ""
+		},
+		{
+			"key": "member_tier_id",
 			"value": ""
 		}
 	]

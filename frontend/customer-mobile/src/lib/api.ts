@@ -111,7 +111,7 @@ export async function fetchQrDataUri(bookingId: number): Promise<string> {
 }
 
 export type Paginated<T> = { data: T[]; current_page: number; last_page: number; total: number }
-export type User = { id: number; name: string; email: string; role: 'admin' | 'organiser' | 'customer' }
+export type User = { id: number; name: string; email: string; role: 'admin' | 'organiser' | 'customer'; is_member?: boolean }
 export type Category = 'ctf' | 'bootcamp' | 'conference' | 'workshop'
 export const CATEGORY_LABEL: Record<Category, string> = {
   ctf: 'CTF',
@@ -120,7 +120,7 @@ export const CATEGORY_LABEL: Record<Category, string> = {
   workshop: 'Workshop',
 }
 
-export type TicketType = { id: number; event_id: number; name: string; price: string; capacity: number; seats_per_row?: number; seats_remaining: number }
+export type TicketType = { id: number; event_id: number; name: string; price: string; capacity: number; seats_per_row?: number; members_only?: boolean; seats_remaining: number }
 
 export type SeatInfo = { id: number; row: string; number: number; label: string; taken: boolean }
 

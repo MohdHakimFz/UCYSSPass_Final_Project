@@ -108,7 +108,7 @@ export default function MyEvents() {
                     </TableCell>
                     <TableCell>
                       <div className="row-actions">
-                        <OverflowMenu flipped aria-label={`Actions for ${ev.title}`} size="sm">
+                        <OverflowMenu flipped aria-label={`Actions for ${ev.title}`} iconDescription={`Actions for ${ev.title}`} size="sm">
                           <OverflowMenuItem itemText="Manage" href={`/organiser/events/${ev.id}`} />
                           {ev.status === 'draft' && <OverflowMenuItem itemText="Publish" onClick={() => setStatus(ev, 'published')} />}
                           {ev.status === 'published' && <OverflowMenuItem itemText="Move back to draft" onClick={() => setStatus(ev, 'draft')} />}

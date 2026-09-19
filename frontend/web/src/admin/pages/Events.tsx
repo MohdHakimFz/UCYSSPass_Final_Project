@@ -185,7 +185,7 @@ export default function EventsPage() {
                     </TableCell>
                     <TableCell>
                       <div className="row-actions">
-                        <OverflowMenu flipped aria-label={`Actions for ${ev.title}`} size="sm">
+                        <OverflowMenu flipped aria-label={`Actions for ${ev.title}`} iconDescription={`Actions for ${ev.title}`} size="sm">
                           <OverflowMenuItem itemText="Open" href={`/admin/events/${ev.id}`} />
                           {ev.status !== 'published' && ev.status !== 'cancelled' && <OverflowMenuItem itemText="Publish" onClick={() => setEventStatus(ev, 'published')} />}
                           {ev.status === 'published' && <OverflowMenuItem itemText="Move back to draft" onClick={() => setEventStatus(ev, 'draft')} />}

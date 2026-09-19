@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Button, ContentSwitcher, ProgressBar, Switch, Select, Toggle, SelectItem, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TextArea, TextInput } from '@carbon/react'
+import { Button, ContentSwitcher, ProgressBar, Switch, Select, Tag, Toggle, SelectItem, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TextArea, TextInput } from '@carbon/react'
 import { Add, Copy, Download } from '@carbon/icons-react'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
@@ -273,7 +273,7 @@ function EventForm({
   )
 }
 
-type Tier = { id?: number; name: string; price: string; capacity: string; seats_per_row: string }
+type Tier = { id?: number; name: string; price: string; capacity: string; seats_per_row: string; members_only: boolean }
 
 function Tiers({ event, stats, onChange }: { event: EventItem; stats: EventStats | null; onChange: () => void }) {
   const waitByTier = new Map(stats?.tiers.map((t) => [t.id, t.waitlisted]))
@@ -290,6 +290,7 @@ function Tiers({ event, stats, onChange }: { event: EventItem; stats: EventStats
       name: draft.name,
       price: Number(draft.price),
       capacity: Number(draft.capacity),
+      members_only: draft.members_only,
       ...(event.seated ? { seats_per_row: Number(draft.seats_per_row) } : {}),
     }
     try {
@@ -334,6 +335,12 @@ function Tiers({ event, stats, onChange }: { event: EventItem; stats: EventStats
               <TableRow key={t.id}>
                 <TableCell>
                   <strong>{t.name}</strong>
+                  {t.members_only && (
+                    <>
+                      {' '}
+                      <Tag type="purple" size="sm">Members only</Tag>
+                    </>
+                  )}
                 </TableCell>
                 <TableCell>RM {Number(t.price).toFixed(2)}</TableCell>
                 <TableCell>
@@ -342,7 +349,7 @@ function Tiers({ event, stats, onChange }: { event: EventItem; stats: EventStats
                 <TableCell>{waitByTier.get(t.id) ?? 0}</TableCell>
                 <TableCell>
                   <div className="form-actions">
-                    <Button kind="ghost" size="sm" onClick={() => setDraft({ id: t.id, name: t.name, price: String(Number(t.price)), capacity: String(t.capacity), seats_per_row: String(t.seats_per_row ?? 10) })}>
+                    <Button kind="ghost" size="sm" onClick={() => setDraft({ id: t.id, name: t.name, price: String(Number(t.price)), capacity: String(t.capacity), seats_per_row: String(t.seats_per_row ?? 10), members_only: !!t.members_only })}>
                       Edit
                     </Button>
                     <Button kind="danger--ghost" size="sm" onClick={() => remove(t)}>
@@ -363,6 +370,7 @@ function Tiers({ event, stats, onChange }: { event: EventItem; stats: EventStats
             <TextInput id="tier-name" labelText="Name" required value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
             <TextInput id="tier-price" labelText="Price (RM)" required type="number" min={0} step="0.01" value={draft.price} onChange={(e) => setDraft({ ...draft, price: e.target.value })} />
             <TextInput id="tier-seats" labelText="Seats" required type="number" min={0} value={draft.capacity} onChange={(e) => setDraft({ ...draft, capacity: e.target.value })} />
+            <Toggle id="tier-members" labelText="Who can book" labelA="Anyone" labelB="UCYSS members only" toggled={draft.members_only} onToggle={(on: boolean) => setDraft({ ...draft, members_only: on })} />
             {event.seated && (
               <TextInput id="tier-row" labelText="Seats per row" required type="number" min={1} max={40} value={draft.seats_per_row} onChange={(e) => setDraft({ ...draft, seats_per_row: e.target.value })} helperText="Rows are lettered A, B, C and so on." />
             )}
@@ -376,7 +384,7 @@ function Tiers({ event, stats, onChange }: { event: EventItem; stats: EventStats
         </form>
       ) : (
         <div style={{ marginTop: 16 }}>
-          <Button kind="tertiary" renderIcon={Add} onClick={() => setDraft({ name: '', price: '0', capacity: '50', seats_per_row: '10' })}>
+          <Button kind="tertiary" renderIcon={Add} onClick={() => setDraft({ name: '', price: '0', capacity: '50', seats_per_row: '10', members_only: false })}>
             Add tier
           </Button>
         </div>

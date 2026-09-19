@@ -47,4 +47,22 @@ class RateLimitTest extends TestCase
 
         $this->actingAs($b, 'sanctum')->getJson('/api/events')->assertOk();
     }
+
+    public function test_paying_and_joining_do_not_use_up_the_booking_allowance(): void
+    {
+        config(['sentrypass.api_rate_limit' => 500]);
+        $customer = $this->customer();
+        $held = $this->book($customer, $this->tier(seats: 3, price: 10));
+
+        // Six payment attempts and six join attempts: each has its own, larger allowance.
+        foreach (range(1, 6) as $i) {
+            $this->actingAs($customer, 'sanctum')->postJson("/api/bookings/{$held->id}/pay", ['method' => 'card', 'outcome' => 'decline'])->assertStatus(402);
+            $this->actingAs($customer, 'sanctum')->postJson("/api/bookings/{$held->id}/join")->assertStatus(422);
+        }
+
+        // ...and the person can still make their own bookings, five a minute.
+        foreach (range(1, 4) as $i) {
+            $this->actingAs($customer, 'sanctum')->postJson('/api/bookings', ['ticket_type_id' => $this->tier(seats: 2)->id])->assertCreated();
+        }
+    }
 }

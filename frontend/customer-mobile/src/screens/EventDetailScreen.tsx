@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { ScrollView, Share, StyleSheet, Text, View } from 'react-native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { api, ApiError, CATEGORY_LABEL, errorText, type Booking, type EventItem, type SeatInfo, type TicketType } from '../lib/api'
+import { useAuth } from '../lib/auth'
 import { useFetch } from '../lib/useFetch'
 import SeatMap3D from '../components/fx/SeatMap3D'
 import Checkout from '../components/Checkout'
@@ -12,6 +13,7 @@ import type { RootParamList } from '../../App'
 
 export default function EventDetailScreen({ route }: NativeStackScreenProps<RootParamList, 'EventDetail'>) {
   const { id } = route.params
+  const { user } = useAuth()
   const { data: event, error, reload } = useFetch<EventItem>(`/events/${id}`)
   const [busyId, setBusyId] = useState<number | null>(null)
   const [picked, setPicked] = useState<number | null>(null)
@@ -132,13 +134,17 @@ export default function EventDetailScreen({ route }: NativeStackScreenProps<Root
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <View style={{ flex: 1 }}>
                   <Text style={s.tierName}>{t.name}</Text>
+                  {t.members_only && <Text style={s.memberTag}>MEMBERS ONLY</Text>}
                   <Text style={s.sub}>{t.seats_remaining > 0 ? `${t.seats_remaining} of ${t.capacity} seats left` : 'Sold out'}</Text>
                 </View>
                 <Text style={s.tierName}>{Number(t.price) === 0 ? 'Free' : `RM ${Number(t.price).toFixed(2)}`}</Text>
               </View>
+              {t.members_only && !user?.is_member && <Text style={s.sub}>Ask a UCYSS committee member to add you to the member list.</Text>}
               <Button
                 title={
-                  t.seats_remaining === 0
+                  t.members_only && !user?.is_member
+                    ? 'Members only'
+                    : t.seats_remaining === 0
                     ? 'Join waitlist'
                     : seated
                       ? seatPick?.tierId === t.id
@@ -147,7 +153,7 @@ export default function EventDetailScreen({ route }: NativeStackScreenProps<Root
                       : 'Book this pass'
                 }
                 onPress={() => book(t)}
-                disabled={!bookable || (seated && t.seats_remaining > 0 && seatPick?.tierId !== t.id)}
+                disabled={!bookable || (!!t.members_only && !user?.is_member) || (seated && t.seats_remaining > 0 && seatPick?.tierId !== t.id)}
                 busy={busyId === t.id}
               />
             </View>
@@ -182,5 +188,6 @@ const s = StyleSheet.create({
   sub: { fontFamily: fonts.regular, fontSize: 14, color: colors.inkSoft },
   body: { fontFamily: fonts.regular, fontSize: 16, lineHeight: 24, color: colors.ink, marginTop: 8 },
   tier: { padding: 16, gap: 12, borderBottomWidth: 1, borderBottomColor: colors.line },
+  memberTag: { alignSelf: 'flex-start', marginTop: 4, marginBottom: 2, paddingHorizontal: 6, paddingVertical: 2, backgroundColor: colors.ink, color: colors.concrete, fontFamily: fonts.heavy, fontSize: 10, letterSpacing: 1 },
   tierName: { fontFamily: fonts.heavy, fontSize: 17, color: colors.ink },
 })

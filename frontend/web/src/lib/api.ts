@@ -53,7 +53,7 @@ export function errorText(err: unknown): string {
 
 export type Paginated<T> = { data: T[]; current_page: number; last_page: number; total: number }
 export type Role = 'admin' | 'organiser' | 'customer'
-export type User = { id: number; name: string; email: string; role: Role; created_at: string }
+export type User = { id: number; name: string; email: string; role: Role; is_member?: boolean; created_at: string }
 export type Venue = { id: number; name: string; address: string; capacity: number }
 export type EventStatus = 'draft' | 'published' | 'cancelled' | 'completed'
 export type Category = 'ctf' | 'bootcamp' | 'conference' | 'workshop'
@@ -67,6 +67,8 @@ export type TicketType = {
   price: string
   capacity: number
   seats_per_row?: number
+  /** Only a UCYSS member can book this tier. */
+  members_only?: boolean
   seats_remaining: number
 }
 

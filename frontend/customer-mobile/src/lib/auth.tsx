@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react'
 import { api, setUnauthorisedHandler, tokenStore, type User } from './api'
 import { clearCache } from './offline'
+import { useLiveTick } from './useFetch'
 
 type AuthState = {
   user: User | null
@@ -48,6 +49,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const refresh = useCallback(async () => {
     setUser(await api<User>('/auth/me'))
   }, [])
+
+  // Keep the profile fresh (for example, a committee member adds you to the member list). A failed check keeps what is shown.
+  const tick = useLiveTick(30_000)
+  useEffect(() => {
+    if (!user) return
+    api<User>('/auth/me')
+      .then((fresh) => setUser((prev) => (prev && JSON.stringify(prev) === JSON.stringify(fresh) ? prev : fresh)))
+      .catch(() => undefined)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tick])
 
   return <AuthContext.Provider value={{ user, loading, signIn, register, signOut, refresh }}>{children}</AuthContext.Provider>
 }

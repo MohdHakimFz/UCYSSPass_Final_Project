@@ -128,7 +128,7 @@ export default function VenuesPage() {
                   <TableCell>{v.capacity.toLocaleString()} seats</TableCell>
                   <TableCell>
                     <div className="row-actions">
-                      <OverflowMenu flipped aria-label={`Actions for ${v.name}`} size="sm">
+                      <OverflowMenu flipped aria-label={`Actions for ${v.name}`} iconDescription={`Actions for ${v.name}`} size="sm">
                         <OverflowMenuItem itemText="Edit" onClick={() => { setFormError(null); setDraft({ id: v.id, name: v.name, address: v.address, capacity: String(v.capacity) }) }} />
                         <OverflowMenuItem itemText="Delete" isDelete hasDivider onClick={() => remove(v)} />
                       </OverflowMenu>

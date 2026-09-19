@@ -27,6 +27,7 @@ class UpdateTicketTypeRequest extends FormRequest
             'price' => ['sometimes', 'required', 'numeric', 'min:0'],
             'capacity' => ['sometimes', 'required', 'integer', 'min:0'],
             'seats_per_row' => ['sometimes', 'integer', 'min:1', 'max:40'],
+            'members_only' => ['sometimes', 'boolean'],
             'seats_remaining' => ['sometimes', 'required', 'integer', 'min:0'],
         ];
     }

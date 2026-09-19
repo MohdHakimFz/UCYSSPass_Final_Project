@@ -17,6 +17,7 @@ export default function AccountScreen() {
       </View>
       <Text style={s.h1}>{user?.name}</Text>
       <Text style={s.sub}>{user?.email}</Text>
+      {user?.is_member && <Text style={s.sub}>UCYSS member</Text>}
       <View style={{ height: 12 }} />
       <Button title="Edit profile" variant="dark" onPress={() => navigation.navigate('Profile')} />
       <Button title="Sign out" variant="quiet" onPress={signOut} />

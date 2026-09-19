@@ -38,6 +38,8 @@ class UpdateUserRequest extends FormRequest
 
         if ($this->user()->role === 'admin') {
             $rules['role'] = ['sometimes', 'required', 'in:admin,organiser,customer'];
+            // Membership comes from the society's own list, so only an admin can grant or take it.
+            $rules['is_member'] = ['sometimes', 'boolean'];
         }
 
         return $rules;

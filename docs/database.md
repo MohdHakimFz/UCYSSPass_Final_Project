@@ -14,10 +14,10 @@ UCYSS (the code is still called SentryPass) uses **PostgreSQL 18**. The schema i
 
 | Table | What a row is | Key columns |
 | --- | --- | --- |
-| `users` | A person who can sign in | `role` is `admin`, `organiser` or `customer` (default `customer`); `email` is unique |
+| `users` | A person who can sign in | `role` is `admin`, `organiser` or `customer` (default `customer`); `is_member` (on the UCYSS member list, set only by an admin); `email` is unique |
 | `venues` | A place events can be held | `capacity` must be greater than 0. One venue named "Online" is shared by every online event |
 | `events` | A CTF, bootcamp, conference or workshop | `category`, `status` (`draft` → `published` → `completed` / `cancelled`), `mode` (`physical` or `online`), `seated`, `venue_id`, `organiser_id`; `meeting_url` and `meeting_platform` for an online event |
-| `ticket_types` | A tier of an event, such as Early Bird or VIP | `price`, `capacity`, `seats_remaining`, `seats_per_row` |
+| `ticket_types` | A tier of an event, such as Early Bird or VIP | `price`, `capacity`, `seats_remaining`, `seats_per_row`, `members_only` |
 | `seats` | One numbered seat of a tier (only on a `seated` event) | `row_label` and `number`, unique within the tier |
 | `bookings` | One customer's place on one tier | `status` (`pending`, `confirmed`, `waitlisted`, `attended`, `cancelled`), `seat_id`, `qr_token` (HMAC-signed ticket), `hold_expires_at` (the payment hold), `booked_at`, `checked_in_at` |
 | `payments` | One payment attempt for a booking | `amount`, `method` (`card`, `fpx`, `ewallet`), `status` (`paid`, `failed`, `refunded`), `refunded_amount` |
@@ -64,6 +64,7 @@ PostgreSQL does not index a foreign key by itself, so the migration `2026_09_20_
 - A customer can't hold two active (`pending`, `confirmed` or `waitlisted`) bookings on the same ticket type. `BookingService::book()` checks this inside the same transaction that locks the tier row (`lockForUpdate()`), so two simultaneous requests can't both slip through.
 - An online event has no seats, no venue of its own and needs a meeting link before it can be published. The link is never put in a response for anyone but the organiser, an admin, and (through the join call) a confirmed guest.
 - A draft event is visible only to its organiser and admins, and a draft, cancelled or finished event cannot be booked.
+- A `members_only` tier can only be booked by a user with `is_member`, which only an admin can set.
 
 ## Sample data (DML)
 
@@ -74,10 +75,10 @@ There are two ways to get data:
 
 | Table | Rows in `sample-data.sql` | Mix |
 | --- | --- | --- |
-| `users` | 8 | 1 admin, 2 organisers, 5 customers |
+| `users` | 8 | 1 admin, 2 organisers, 5 customers (two of them members) |
 | `venues` | 6 | "Online" plus five UPTM places |
 | `events` | 7 | Online and in person, every status (draft, published, completed, cancelled) |
-| `ticket_types` | 10 | Free and paid tiers, one sold out |
+| `ticket_types` | 10 | Free and paid tiers, one sold out, one members-only |
 | `seats` | 18 | Numbered seats for the seated CTF |
 | `bookings` | 12 | Every status, one with a payment hold, seated and unseated |
 | `payments` | 6 | Paid by card, FPX and e-wallet, one refunded, two declined |

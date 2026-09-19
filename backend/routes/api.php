@@ -15,8 +15,8 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
-    Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:3,1');
-    Route::post('/reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:10,1');
+    Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:3,1,forgot-password');
+    Route::post('/reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:10,1,reset-password');
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
@@ -56,12 +56,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/bookings/{booking}', [BookingController::class, 'show']);
     Route::get('/bookings/{booking}/qr-code', [BookingController::class, 'qrCode']);
     Route::put('/bookings/{booking}/cancel', [BookingController::class, 'cancel']);
-    Route::post('/bookings/{booking}/join', [BookingController::class, 'join'])->middleware('throttle:30,1');
-    Route::post('/bookings/{booking}/pay', [BookingController::class, 'pay'])->middleware('throttle:20,1');
+    Route::post('/bookings/{booking}/join', [BookingController::class, 'join'])->middleware('throttle:30,1,join');
+    Route::post('/bookings/{booking}/pay', [BookingController::class, 'pay'])->middleware('throttle:20,1,pay');
     Route::delete('/bookings/{booking}', [BookingController::class, 'destroy']);
 
     // Anti-scalping: throttle booking creation to 5 attempts/minute per user (spec §5.3).
-    Route::post('/bookings', [BookingController::class, 'store'])->middleware('throttle:5,1');
+    Route::post('/bookings', [BookingController::class, 'store'])->middleware('throttle:5,1,book');
 });
 
 // Admin dashboard analytics, email log and exports.

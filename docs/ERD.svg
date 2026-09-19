@@ -18,8 +18,8 @@
 <text x="1335.2165450996952" y="187.94537715740094" font-size="14" font-weight="800" text-anchor="middle" fill="#E4572E">1</text>
 <text x="1384.7834549003048" y="204.05462284259906" font-size="14" font-weight="800" text-anchor="middle" fill="#E4572E">N</text>
 <text x="1360" y="169" font-size="12" fill="#4B5D6E" text-anchor="middle">has seats</text>
-<polyline points="1070,360 1070,566 1070,560" fill="none" stroke="#12263A" stroke-width="2"/>
-<text x="1062.0" y="376.0" font-size="14" font-weight="800" text-anchor="middle" fill="#E4572E">1</text>
+<polyline points="1070,386 1070,566 1070,560" fill="none" stroke="#12263A" stroke-width="2"/>
+<text x="1062.0" y="402.0" font-size="14" font-weight="800" text-anchor="middle" fill="#E4572E">1</text>
 <text x="1062.0" y="576.0" font-size="14" font-weight="800" text-anchor="middle" fill="#E4572E">N</text>
 <text x="1080" y="520" font-size="12" fill="#4B5D6E" text-anchor="start">is booked as</text>
 <polyline points="400,637 980,637" fill="none" stroke="#12263A" stroke-width="2"/>
@@ -58,7 +58,7 @@
 <text x="388" y="274" font-size="12" text-anchor="end" fill="#4B5D6E">int > 0</text>
 </g>
 <g id="users">
-<rect x="60" y="560" width="340" height="220" rx="6" fill="#fff" stroke="#12263A" stroke-width="2"/>
+<rect x="60" y="560" width="340" height="246" rx="6" fill="#fff" stroke="#12263A" stroke-width="2"/>
 <path d="M60,598 V566 Q60,560 66,560 H394 Q400,560 400,566 V598 Z" fill="#12263A"/>
 <text x="76" y="585" font-size="18" font-weight="700" fill="#fff">users</text>
 <text x="72" y="616" font-size="11" font-weight="800" fill="#E4572E">PK</text>
@@ -80,11 +80,15 @@
 <text x="388" y="720" font-size="12" text-anchor="end" fill="#4B5D6E">admin | organiser | customer</text>
 <rect x="61" y="728" width="338" height="26" fill="#F3F5F7"/>
 
-<text x="112" y="746" font-size="14" font-weight="400" fill="#12263A">email_verified_at</text>
-<text x="388" y="746" font-size="12" text-anchor="end" fill="#4B5D6E">timestamp</text>
+<text x="112" y="746" font-size="14" font-weight="400" fill="#12263A">is_member</text>
+<text x="388" y="746" font-size="12" text-anchor="end" fill="#4B5D6E">boolean (admin sets)</text>
 
-<text x="112" y="772" font-size="14" font-weight="400" fill="#12263A">created_at</text>
+<text x="112" y="772" font-size="14" font-weight="400" fill="#12263A">email_verified_at</text>
 <text x="388" y="772" font-size="12" text-anchor="end" fill="#4B5D6E">timestamp</text>
+<rect x="61" y="780" width="338" height="26" fill="#F3F5F7"/>
+
+<text x="112" y="798" font-size="14" font-weight="400" fill="#12263A">created_at</text>
+<text x="388" y="798" font-size="12" text-anchor="end" fill="#4B5D6E">timestamp</text>
 </g>
 <g id="events">
 <rect x="520" y="140" width="340" height="376" rx="6" fill="#fff" stroke="#12263A" stroke-width="2"/>
@@ -137,7 +141,7 @@
 <text x="848" y="508" font-size="12" text-anchor="end" fill="#4B5D6E">draft | published | ...</text>
 </g>
 <g id="ticket_types">
-<rect x="980" y="140" width="340" height="220" rx="6" fill="#fff" stroke="#12263A" stroke-width="2"/>
+<rect x="980" y="140" width="340" height="246" rx="6" fill="#fff" stroke="#12263A" stroke-width="2"/>
 <path d="M980,178 V146 Q980,140 986,140 H1314 Q1320,140 1320,146 V178 Z" fill="#12263A"/>
 <text x="996" y="165" font-size="18" font-weight="700" fill="#fff">ticket_types</text>
 <text x="992" y="196" font-size="11" font-weight="800" fill="#E4572E">PK</text>
@@ -164,6 +168,10 @@
 
 <text x="1032" y="352" font-size="14" font-weight="400" fill="#12263A">seats_per_row</text>
 <text x="1308" y="352" font-size="12" text-anchor="end" fill="#4B5D6E">smallint</text>
+<rect x="981" y="360" width="338" height="26" fill="#F3F5F7"/>
+
+<text x="1032" y="378" font-size="14" font-weight="400" fill="#12263A">members_only</text>
+<text x="1308" y="378" font-size="12" text-anchor="end" fill="#4B5D6E">boolean</text>
 </g>
 <g id="seats">
 <rect x="1400" y="140" width="340" height="142" rx="6" fill="#fff" stroke="#12263A" stroke-width="2"/>

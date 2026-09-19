@@ -49,7 +49,7 @@ Susunan ikut keutamaan. `[ ]` = belum, tanda kalau dah siap.
 - [ ] **ERD** dikemas kini: jadual `seats`, `payments`, lajur baru `events.mode`, `meeting_url`, `meeting_platform`, `events.seated`, `bookings.seat_id`, `bookings.hold_expires_at`.
 - [ ] **Skrip DDL dan DML** (`docs/database/schema.sql`) ikut skema terkini, dengan **sekurang-kurangnya 5 rekod setiap jadual**.
 - [ ] **`docs/api-documentation.md`** ditambah: seat, bayaran, hold, refund, reset password, `/organiser/summary`, `/events/{id}/seat-map`, `/bookings/{id}/join`, mod online, peraturan draft.
-- [x] **Koleksi Postman dikemas kini:** 166 permintaan, 257 semakan, 0 kegagalan. Lihat [3.9](#39-keadaan-koleksi-sedia-ada).
+- [x] **Koleksi Postman dikemas kini:** 174 permintaan, 272 semakan, 0 kegagalan. Lihat [3.9](#39-keadaan-koleksi-sedia-ada).
 - [ ] **README** dengan langkah pasang dan jalankan (sudah ada, semak selepas rebrand).
 - [ ] **Laporan PDF** ikut struktur PDF: System Overview, Database Design, API Documentation, API Testing, System Implementation, System Demonstration, Repository, Advanced Features, Debugging, Reflection.
 - [ ] **Tangkapan skrin Postman** (senarai di [3.8](#38-senarai-tangkapan-skrin-untuk-laporan)).
@@ -381,7 +381,7 @@ Sekurang-kurangnya satu **berjaya** dan satu **ralat** untuk setiap kumpulan:
 
 ### 3.9 Keadaan koleksi sedia ada
 
-Koleksi sudah dikemas kini: **166 permintaan, 257 semakan, 0 kegagalan** (dijalankan dengan `newman`, sekitar 41 saat). Ia meliputi juga bayaran, seat bernombor, event online dan Join, draf yang tersembunyi, ringkasan organiser, dan reset kata laluan (folder 12 hingga 16). Butiran ada dalam `docs/postman/README.md`.
+Koleksi sudah dikemas kini: **174 permintaan, 272 semakan, 0 kegagalan** (dijalankan dengan `newman`, sekitar 41 saat). Ia meliputi juga bayaran, seat bernombor, event online dan Join, draf yang tersembunyi, ringkasan organiser, dan reset kata laluan (folder 12 hingga 16). Butiran ada dalam `docs/postman/README.md`.
 
 Dua perkara yang perlu diingat semasa menjalankannya:
 

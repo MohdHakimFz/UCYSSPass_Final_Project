@@ -17,6 +17,9 @@ import {
   TableHeader,
   TableRow,
   Tag,
+  TableToolbar,
+  TableToolbarContent,
+  TableToolbarSearch,
   TextInput,
 } from '@carbon/react'
 import { Add, Download, UserMultiple } from '@carbon/icons-react'
@@ -40,6 +43,7 @@ export default function PeoplePage() {
   const [page, setPage] = useState(1)
   const [size, setSize] = useState(10)
   const [role, setRole] = useState<'' | Role>('')
+  const [query, setQuery] = useState('')
   const [adding, setAdding] = useState(false)
   const [form, setForm] = useState({ name: '', email: '', password: '', role: 'organiser' as Role })
   const [formError, setFormError] = useState<string | null>(null)
@@ -48,6 +52,7 @@ export default function PeoplePage() {
 
   const qs = new URLSearchParams({ page: String(page), per_page: String(size) })
   if (role) qs.set('role', role)
+  if (query) qs.set('search', query)
   const { data: rows, error, reload } = useFetch<Paginated<User>>(`/users?${qs}`)
 
   async function create() {
@@ -75,6 +80,16 @@ export default function PeoplePage() {
       reload()
     } catch (err) {
       toast({ kind: 'error', title: 'Could not change the role', subtitle: errorText(err) })
+    }
+  }
+
+  async function setMember(u: User, on: boolean) {
+    try {
+      await api(`/users/${u.id}`, { method: 'PUT', body: { is_member: on } })
+      toast({ kind: 'success', title: on ? `${u.name} is now a UCYSS member` : `${u.name} is no longer a member`, subtitle: on ? 'They can book members-only tickets.' : undefined })
+      reload()
+    } catch (err) {
+      toast({ kind: 'error', title: 'Could not change membership', subtitle: errorText(err) })
     }
   }
 
@@ -118,6 +133,18 @@ export default function PeoplePage() {
       {error && <Notice tone="error">{error}</Notice>}
 
       <TableContainer>
+        <TableToolbar aria-label="People list tools">
+          <TableToolbarContent>
+            <TableToolbarSearch
+              persistent
+              placeholder="Search by name or email"
+              onChange={(e: React.ChangeEvent<HTMLInputElement> | '', value?: string) => {
+                setPage(1)
+                setQuery(value ?? (e ? e.target.value : ''))
+              }}
+            />
+          </TableToolbarContent>
+        </TableToolbar>
         {!rows ? (
           <Skeleton rows={6} />
         ) : rows.data.length === 0 ? (
@@ -142,7 +169,7 @@ export default function PeoplePage() {
                   <TableRow key={u.id}>
                     <TableCell>
                       <span className="cell-title">
-                        {u.name} {self && <Tag size="sm" type="cool-gray">You</Tag>}
+                        {u.name} {self && <Tag size="sm" type="cool-gray">You</Tag>} {u.is_member && <Tag size="sm" type="green">Member</Tag>}
                       </span>
                       <span className="sub">{u.email}</span>
                     </TableCell>
@@ -153,8 +180,9 @@ export default function PeoplePage() {
                     <TableCell>
                       <div className="row-actions">
                         {!self && (
-                          <OverflowMenu flipped aria-label={`Actions for ${u.name}`} size="sm">
+                          <OverflowMenu flipped aria-label={`Actions for ${u.name}`} iconDescription={`Actions for ${u.name}`} size="sm">
                             <OverflowMenuItem itemText="Change role" onClick={() => setChanging({ user: u, role: u.role })} />
+                            <OverflowMenuItem itemText={u.is_member ? 'Remove from member list' : 'Add to member list'} onClick={() => setMember(u, !u.is_member)} />
                             <OverflowMenuItem itemText="Delete account" isDelete hasDivider onClick={() => remove(u)} />
                           </OverflowMenu>
                         )}

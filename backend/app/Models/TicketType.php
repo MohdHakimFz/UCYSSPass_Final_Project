@@ -19,6 +19,7 @@ class TicketType extends Model
         'capacity',
         'seats_per_row',
         'seats_remaining',
+        'members_only',
     ];
 
     protected function casts(): array
@@ -28,6 +29,7 @@ class TicketType extends Model
             'capacity' => 'integer',
             'seats_remaining' => 'integer',
             'seats_per_row' => 'integer',
+            'members_only' => 'boolean',
         ];
     }
 

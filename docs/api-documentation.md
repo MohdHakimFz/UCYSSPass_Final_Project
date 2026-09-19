@@ -6,7 +6,7 @@ A JSON REST API for event ticketing and venue booking, built on Laravel 12 with 
 - **Format:** JSON in, JSON out. Send `Accept: application/json`. Dates are ISO 8601 in UTC (`2026-12-01T09:00:00.000000Z`).
 - **Auth:** `Authorization: Bearer <token>`, where the token comes from `POST /auth/register` or `POST /auth/login`.
 - **Health check:** `GET http://localhost/up` (outside `/api`).
-- **Try it:** import [`postman/SentryPass.postman_collection.json`](postman/). It runs every endpoint below, success and error cases (166 requests, 257 assertions).
+- **Try it:** import [`postman/SentryPass.postman_collection.json`](postman/). It runs every endpoint below, success and error cases (174 requests, 272 assertions).
 
 ## Contents
 
@@ -31,9 +31,9 @@ A JSON REST API for event ticketing and venue booking, built on Laravel 12 with 
 | Role | Can do |
 | --- | --- |
 | **Guest** (no token) | Browse venues, published events and their tiers and seats. Register, log in, reset a password. |
-| **Customer** | Book, pay for, cancel and view their own bookings and passes. Join their online meetings. Edit their own profile. |
+| **Customer** | Book, pay for, cancel and view their own bookings and passes. Join their online meetings. Edit their own profile. A customer on the **member list** can also book members-only tiers. |
 | **Organiser** | Everything a guest can, plus create, **publish** and manage their own events, tiers and attendees, see the seat map, and check people in. |
-| **Admin** | Everything, across all users. Manages venues and accounts and sees platform analytics. |
+| **Admin** | Everything, across all users. Manages venues and accounts, keeps the **member list**, and sees platform analytics. |
 
 Ownership is enforced with Laravel Policies: an organiser can only change events (and tiers, seats and check-ins) that they own. An organiser publishes their own events; no admin approval is needed.
 
@@ -90,7 +90,7 @@ List endpoints are paginated with `?page=` and `?per_page=` (default 15). The re
 | Scope | Limit |
 | --- | --- |
 | Every API route | 240 requests a minute per signed-in user, or per address for a guest (`API_RATE_LIMIT`) |
-| `POST /bookings` | 5 a minute per user (anti-scalping) |
+| `POST /bookings` | 5 a minute per user (anti-scalping). Paying and joining have their own counters, so they never use up this allowance |
 | `POST /bookings/{id}/pay` | 20 a minute |
 | `POST /bookings/{id}/join` | 30 a minute |
 | `POST /auth/forgot-password` | 3 a minute |
@@ -146,13 +146,13 @@ Going over returns `429` with `Retry-After`. Every response carries `X-RateLimit
 
 | Method | Path | Auth | Description |
 | --- | --- | --- | --- |
-| GET | `/users` | Admin | Paginated. Filter with `?role=admin\|organiser\|customer`. |
+| GET | `/users` | Admin | Paginated. Filter with `?role=admin\|organiser\|customer`, `?member=1` or `?member=0`, and `?search=` (name or email, case-insensitive). |
 | GET | `/users/{id}` | Admin, or that user | One account. |
 | POST | `/users` | Admin | Create an organiser or admin account: `name`, `email`, `password` (min 8), `role`. |
-| PUT | `/users/{id}` | Admin, or that user | Partial update of `name`, `email`, `password`. Only an admin can change `role`. |
+| PUT | `/users/{id}` | Admin, or that user | Partial update of `name`, `email`, `password`. Only an admin can change `role` and `is_member`. |
 | DELETE | `/users/{id}` | Admin | `204`. Their events and bookings are deleted too (database cascade). |
 
-Changing your **own** password also requires `current_password`; a wrong value returns `422`. A non-admin who sends `role` has it ignored (`200`, role unchanged).
+Changing your **own** password also requires `current_password`; a wrong value returns `422`. A non-admin who sends `role` or `is_member` has it ignored (`200`, unchanged). **Membership** (`is_member`) comes from the society's own member list, so nobody can grant it to themselves and registering never sets it. `GET /auth/me` returns it.
 
 ---
 
@@ -297,12 +297,14 @@ A ticket type is a tier of an event (for example Early Bird, Standard, VIP) with
 | Method | Path | Auth | Description |
 | --- | --- | --- | --- |
 | GET | `/events/{eventId}/ticket-types` | Public | The event's tiers. |
-| POST | `/events/{eventId}/ticket-types` | Owner, Admin | `name`, `price` (≥ 0), `capacity` (≥ 0), optional `seats_per_row` (1 to 40) and `seats_remaining` (defaults to `capacity`). |
+| POST | `/events/{eventId}/ticket-types` | Owner, Admin | `name`, `price` (≥ 0), `capacity` (≥ 0), optional `seats_per_row` (1 to 40), `seats_remaining` (defaults to `capacity`) and `members_only` (default `false`). |
 | PUT | `/ticket-types/{id}` | Owner, Admin | Partial update. `seats_remaining` may not exceed `capacity` (`422`). On a seated event, growing `capacity` adds seats and shrinking it removes only free ones. |
 | DELETE | `/ticket-types/{id}` | Owner, Admin | `204`. Bookings on the tier are deleted too. |
 | GET | `/ticket-types/{id}/seats` | Public | Every seat of a tier and whether it is taken. It never says who holds a seat. |
 
 `price` is returned as a string with two decimals (`"25.00"`).
+
+**Members-only tiers.** With `members_only: true` a tier can only be booked by someone on the member list; anyone else gets `403` ("This ticket is for UCYSS members. Ask a committee member to add you to the member list.") and no seat is taken. The flag is shown in the public tier list, so an app can label the tier, and a duplicated event keeps it.
 
 `GET /ticket-types/{id}/seats` `200`
 
@@ -366,7 +368,7 @@ Seats whose payment hold has run out are shown as free again.
 | `409` | The event is a draft, cancelled or already over ("This event is not open for booking.") |
 | `409` | The seat was just taken by someone else |
 | `422` | `ticket_type_id` missing or unknown; a seated event needs a `seat_id`; the seat belongs to another tier |
-| `403` | An organiser account (organisers cannot book tickets; an admin can, for testing) |
+| `403` | An organiser account (organisers cannot book tickets; an admin can, for testing), or a members-only tier and you are not on the member list |
 | `429` | More than 5 attempts in a minute |
 
 On an event without numbered seats, a `seat_id` is ignored.

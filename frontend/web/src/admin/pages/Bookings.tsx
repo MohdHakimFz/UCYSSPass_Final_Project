@@ -156,7 +156,7 @@ export default function BookingsPage() {
                   </TableCell>
                   <TableCell>
                     <div className="row-actions">
-                      <OverflowMenu flipped aria-label={`Actions for booking ${b.id}`} size="sm">
+                      <OverflowMenu flipped aria-label={`Actions for booking ${b.id}`} iconDescription={`Actions for booking ${b.id}`} size="sm">
                         {b.status !== 'cancelled' && <OverflowMenuItem itemText="Cancel booking" onClick={() => cancel(b)} />}
                         <OverflowMenuItem itemText="Delete record" isDelete hasDivider={b.status !== 'cancelled'} onClick={() => remove(b)} />
                       </OverflowMenu>

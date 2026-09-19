@@ -98,6 +98,7 @@ The endpoints with a real query problem improved clearly (waitlisted bookings âˆ
 | A cancelled booking still produced a QR code | The QR endpoint only checked that a token existed | It now also requires the booking to be confirmed or attended |
 | Event titles went into emails unescaped | Titles were pasted into the HTML body | Everything typed by a person is escaped |
 | Screens showed stale data until refresh | A page loaded its data once | Screens re-ask every 5 seconds while visible, keep the old data through a dropped connection, and stop when the tab is hidden |
+| Paying a few times stopped a customer from booking | The four `throttle:n,m` limits (booking, payment, joining, password reset) share one counter for the same user, so payments used up the 5-a-minute booking allowance | Each limit has its own counter (`throttle:5,1,book`, `20,1,pay`, and so on). A test makes six payment and six join attempts and then books four times |
 | Signed out by a passing network error | The session check cleared the token on any failure | Only a real `401` ends the session |
 
 ## Reproduce
