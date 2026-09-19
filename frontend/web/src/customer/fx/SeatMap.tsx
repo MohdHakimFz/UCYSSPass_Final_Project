@@ -82,6 +82,36 @@ export default function SeatMap({
     })
   }, [])
 
+  // The room is drawn in perspective, so its near rows look wider and lower than the box it sits in. Keep the
+  // stretch small by backing the camera off in proportion to how deep the room is, then make the panel exactly
+  // tall enough for what is drawn. Without this the front rows and the last ticket tiers get cut off.
+  useEffect(() => {
+    const vp = viewport.current
+    const scene = vp?.querySelector<HTMLElement>('.seatmap-scene')
+    if (!vp || !scene) return
+
+    const fit = () => {
+      const depth = scene.offsetHeight
+      if (!depth) return
+      const narrow = vp.clientWidth < 600
+      // A narrow screen has no spare width, so it gets a flatter view (less stretch) and a slightly wider room.
+      vp.style.setProperty('--wfrac', narrow ? '0.8' : '0.7')
+      vp.style.setProperty('--persp', `${Math.round(depth * (narrow ? 4.6 : 3.1))}px`)
+      const top = vp.getBoundingClientRect().top
+      vp.style.height = `${Math.ceil(scene.getBoundingClientRect().bottom - top + 24)}px`
+    }
+
+    const observer = new ResizeObserver(fit)
+    observer.observe(scene)
+    observer.observe(vp)
+    const later = window.setTimeout(fit, 900)
+    fit()
+    return () => {
+      observer.disconnect()
+      window.clearTimeout(later)
+    }
+  }, [zoom, blocks.length, pick?.seats])
+
   // Ctrl + wheel (and a trackpad pinch), two-finger pinch on a phone, and drag-to-pan with a mouse when zoomed in.
   useEffect(() => {
     const vp = viewport.current

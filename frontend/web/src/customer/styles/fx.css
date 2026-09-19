@@ -943,8 +943,8 @@ span.seat {
 }
 
 .seatmap-viewport {
-  /* The camera backs off as the room grows, so zooming in enlarges the room without bending it. */
-  perspective: calc(var(--zoom, 1) * 1600px);
+  /* Set by the seat map from the room's depth, so the front rows are not stretched out of the panel. */
+  perspective: var(--persp, 3600px);
   perspective-origin: 50% 8%;
   overflow-x: auto;
   overflow-y: hidden;
@@ -964,7 +964,7 @@ span.seat {
 
 .seatmap-scene {
   --base: 940px;
-  width: calc(var(--zoom, 1) * min(100%, var(--base)));
+  width: calc(var(--zoom, 1) * min(calc(var(--wfrac, 0.7) * 100%), var(--base)));
   max-width: none;
 }
 
