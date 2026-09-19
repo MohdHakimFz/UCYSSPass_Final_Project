@@ -38,6 +38,7 @@ class BookingController extends Controller
                 'ticketType:id,event_id,name,price',
                 'ticketType.event:id,title,category,start_at,end_at,venue_id',
                 'ticketType.event.venue:id,name',
+                'seat:id,row_label,number',
             ])
             ->when($user->role === 'customer', fn ($query) => $query->where('customer_id', $user->id))
             ->when($user->role === 'organiser', fn ($query) => $query->whereHas(
@@ -84,9 +85,9 @@ class BookingController extends Controller
     {
         $ticketType = TicketType::findOrFail($request->validated('ticket_type_id'));
 
-        $booking = $this->bookings->book($request->user(), $ticketType);
+        $booking = $this->bookings->book($request->user(), $ticketType, $request->validated('seat_id'));
 
-        return response()->json($this->withWaitlistPosition($booking), 201);
+        return response()->json($this->withWaitlistPosition($booking->load('seat')), 201);
     }
 
     /**
@@ -96,7 +97,7 @@ class BookingController extends Controller
     {
         $this->authorize('view', $booking);
 
-        return response()->json($this->withWaitlistPosition($booking));
+        return response()->json($this->withWaitlistPosition($booking->load('seat')));
     }
 
     /**
@@ -108,7 +109,7 @@ class BookingController extends Controller
 
         $booking = $this->bookings->cancel($booking);
 
-        return response()->json($booking);
+        return response()->json($booking->load('seat'));
     }
 
     /**
@@ -152,7 +153,7 @@ class BookingController extends Controller
             'checked_in_at' => now(),
         ]);
 
-        return response()->json($booking);
+        return response()->json($booking->load('seat'));
     }
 
     /**

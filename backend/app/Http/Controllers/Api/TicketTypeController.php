@@ -7,10 +7,35 @@ use App\Http\Requests\TicketType\StoreTicketTypeRequest;
 use App\Http\Requests\TicketType\UpdateTicketTypeRequest;
 use App\Models\Event;
 use App\Models\TicketType;
+use App\Models\Seat;
+use App\Services\SeatingService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 
 class TicketTypeController extends Controller
 {
+    public function __construct(private readonly SeatingService $seating) {}
+
+    /**
+     * Every seat of a tier and whether it is taken. Public, and never says who holds a seat.
+     */
+    public function seats(TicketType $ticketType): JsonResponse
+    {
+        $seats = Seat::where('ticket_type_id', $ticketType->id)
+            ->withExists(['booking as taken'])
+            ->orderBy('id')
+            ->get(['id', 'row_label', 'number'])
+            ->map(fn (Seat $seat) => [
+                'id' => $seat->id,
+                'row' => $seat->row_label,
+                'number' => $seat->number,
+                'label' => $seat->label,
+                'taken' => (bool) $seat->taken,
+            ]);
+
+        return response()->json($seats);
+    }
+
     /**
      * List ticket types for an event.
      */
@@ -27,7 +52,15 @@ class TicketTypeController extends Controller
         $data = $request->validated();
         $data['seats_remaining'] = $data['seats_remaining'] ?? $data['capacity'];
 
-        $ticketType = $event->ticketTypes()->create($data);
+        $ticketType = DB::transaction(function () use ($event, $data) {
+            $ticketType = $event->ticketTypes()->create($data);
+
+            if ($event->seated) {
+                $this->seating->sync($ticketType);
+            }
+
+            return $ticketType->fresh();
+        });
 
         return response()->json($ticketType, 201);
     }
@@ -37,9 +70,22 @@ class TicketTypeController extends Controller
      */
     public function update(UpdateTicketTypeRequest $request, TicketType $ticketType): JsonResponse
     {
-        $ticketType->update($request->validated());
+        DB::transaction(function () use ($request, $ticketType) {
+            $data = $request->validated();
 
-        return response()->json($ticketType);
+            // The database will not hold seats_remaining above capacity, even for a moment before the seats are recounted.
+            if ($ticketType->event->seated && isset($data['capacity'])) {
+                $data['seats_remaining'] = min($ticketType->seats_remaining, $data['capacity']);
+            }
+
+            $ticketType->update($data);
+
+            if ($ticketType->event->seated) {
+                $this->seating->sync($ticketType);
+            }
+        });
+
+        return response()->json($ticketType->fresh());
     }
 
     /**

@@ -30,6 +30,7 @@ class UpdateEventRequest extends FormRequest
             'start_at' => ['sometimes', 'required', 'date'],
             'end_at' => ['sometimes', 'required', 'date', 'after:start_at'],
             'status' => ['sometimes', 'required', 'in:draft,published,cancelled,completed'],
+            'seated' => ['sometimes', 'boolean'],
         ];
     }
 

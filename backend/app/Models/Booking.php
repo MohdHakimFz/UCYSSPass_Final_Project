@@ -15,6 +15,7 @@ class Booking extends Model
     protected $fillable = [
         'customer_id',
         'ticket_type_id',
+        'seat_id',
         'status',
         'qr_token',
         'booked_at',
@@ -37,6 +38,11 @@ class Booking extends Model
     public function ticketType(): BelongsTo
     {
         return $this->belongsTo(TicketType::class);
+    }
+
+    public function seat(): BelongsTo
+    {
+        return $this->belongsTo(Seat::class);
     }
 
     public function notifications(): HasMany

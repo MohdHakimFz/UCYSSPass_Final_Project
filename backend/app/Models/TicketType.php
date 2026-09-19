@@ -17,6 +17,7 @@ class TicketType extends Model
         'name',
         'price',
         'capacity',
+        'seats_per_row',
         'seats_remaining',
     ];
 
@@ -26,12 +27,18 @@ class TicketType extends Model
             'price' => 'decimal:2',
             'capacity' => 'integer',
             'seats_remaining' => 'integer',
+            'seats_per_row' => 'integer',
         ];
     }
 
     public function event(): BelongsTo
     {
         return $this->belongsTo(Event::class);
+    }
+
+    public function seats(): HasMany
+    {
+        return $this->hasMany(Seat::class);
     }
 
     public function bookings(): HasMany

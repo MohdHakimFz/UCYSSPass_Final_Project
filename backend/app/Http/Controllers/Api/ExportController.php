@@ -28,7 +28,7 @@ class ExportController extends Controller
 
         return $this->csv(
             'sentrypass-bookings.csv',
-            ['ID', 'Attendee', 'Email', 'Event', 'Tier', 'Status', 'Booked at', 'Checked in at'],
+            ['ID', 'Attendee', 'Email', 'Event', 'Tier', 'Seat', 'Status', 'Booked at', 'Checked in at'],
             fn () => $this->bookingRows(Booking::query()),
         );
     }
@@ -42,20 +42,21 @@ class ExportController extends Controller
 
         return $this->csv(
             'attendees-event-'.$event->id.'.csv',
-            ['ID', 'Attendee', 'Email', 'Event', 'Tier', 'Status', 'Booked at', 'Checked in at'],
+            ['ID', 'Attendee', 'Email', 'Event', 'Tier', 'Seat', 'Status', 'Booked at', 'Checked in at'],
             fn () => $this->bookingRows(Booking::query()->whereHas('ticketType', fn ($q) => $q->where('event_id', $event->id))),
         );
     }
 
     private function bookingRows($query): \Generator
     {
-        foreach ($query->with(['customer:id,name,email', 'ticketType:id,event_id,name', 'ticketType.event:id,title'])->orderBy('id')->cursor() as $b) {
+        foreach ($query->with(['customer:id,name,email', 'ticketType:id,event_id,name', 'ticketType.event:id,title', 'seat:id,row_label,number'])->orderBy('id')->cursor() as $b) {
             yield [
                 $b->id,
                 $b->customer?->name,
                 $b->customer?->email,
                 $b->ticketType?->event?->title,
                 $b->ticketType?->name,
+                $b->seat?->label,
                 $b->status,
                 $b->booked_at,
                 $b->checked_in_at,

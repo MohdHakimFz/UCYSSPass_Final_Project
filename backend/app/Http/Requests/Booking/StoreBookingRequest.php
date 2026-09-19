@@ -24,6 +24,7 @@ class StoreBookingRequest extends FormRequest
     {
         return [
             'ticket_type_id' => ['required', 'integer', 'exists:ticket_types,id'],
+            'seat_id' => ['nullable', 'integer', 'exists:seats,id'],
         ];
     }
 }

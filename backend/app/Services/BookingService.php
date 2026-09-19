@@ -5,9 +5,11 @@ namespace App\Services;
 use App\Exceptions\BookingConflictException;
 use App\Models\Booking;
 use App\Models\Event;
+use App\Models\Seat;
 use App\Models\TicketType;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class BookingService
 {
@@ -30,11 +32,11 @@ class BookingService
      * simultaneous requests racing for the last seat can't both see
      * seats_remaining > 0 and both get confirmed.
      */
-    public function book(User $customer, TicketType $ticketType): Booking
+    public function book(User $customer, TicketType $ticketType, ?int $seatId = null): Booking
     {
         $notificationsToDispatch = [];
 
-        $booking = DB::transaction(function () use ($customer, $ticketType, &$notificationsToDispatch) {
+        $booking = DB::transaction(function () use ($customer, $ticketType, $seatId, &$notificationsToDispatch) {
             $hasActiveBooking = Booking::where('customer_id', $customer->id)
                 ->where('ticket_type_id', $ticketType->id)
                 ->whereIn('status', self::ACTIVE_STATUSES)
@@ -49,8 +51,15 @@ class BookingService
             $lockedTicketType = TicketType::where('id', $ticketType->id)->lockForUpdate()->first();
 
             $status = 'waitlisted';
+            $seat = null;
 
             if ($lockedTicketType->seats_remaining > 0) {
+                // On a seated event the customer must name the seat they want, and it must still be free.
+                // The ticket_types row is locked, so two people asking for the same seat are handled one after the other.
+                if ($lockedTicketType->event->seated) {
+                    $seat = $this->claimSeat($lockedTicketType, $seatId);
+                }
+
                 $lockedTicketType->decrement('seats_remaining');
                 $status = 'confirmed';
             }
@@ -58,6 +67,7 @@ class BookingService
             $booking = Booking::create([
                 'customer_id' => $customer->id,
                 'ticket_type_id' => $lockedTicketType->id,
+                'seat_id' => $seat?->id,
                 'status' => $status,
                 'booked_at' => now(),
             ]);
@@ -80,6 +90,28 @@ class BookingService
     }
 
     /**
+     * Check the seat a customer asked for belongs to this tier and is free.
+     */
+    private function claimSeat(TicketType $ticketType, ?int $seatId): Seat
+    {
+        if (! $seatId) {
+            throw ValidationException::withMessages(['seat_id' => ['Choose a seat for this ticket.']]);
+        }
+
+        $seat = Seat::where('id', $seatId)->where('ticket_type_id', $ticketType->id)->first();
+
+        if (! $seat) {
+            throw ValidationException::withMessages(['seat_id' => ['That seat is not part of this ticket type.']]);
+        }
+
+        if (Booking::where('seat_id', $seat->id)->exists()) {
+            throw new BookingConflictException('That seat was just taken. Pick another one.');
+        }
+
+        return $seat;
+    }
+
+    /**
      * Cancel a booking (spec §5.4 state machine).
      *
      * If the cancelled booking was holding a seat (confirmed), that
@@ -98,7 +130,9 @@ class BookingService
             $originalStatus = $booking->status;
             $wasHoldingASeat = in_array($originalStatus, ['confirmed', 'attended']);
 
-            $booking->update(['status' => 'cancelled']);
+            // The seat, if there was one, is handed on below or released.
+            $seatId = $booking->seat_id;
+            $booking->update(['status' => 'cancelled', 'seat_id' => null]);
             $notificationsToDispatch[] = $this->notifications->record($booking, 'cancelled');
 
             if ($wasHoldingASeat) {
@@ -114,7 +148,7 @@ class BookingService
                     : null;
 
                 if ($promoted) {
-                    $promoted->update(['status' => 'confirmed']);
+                    $promoted->update(['status' => 'confirmed', 'seat_id' => $seatId]);
                     $promoted->update(['qr_token' => $this->qrTickets->generate($promoted)]);
                     $notificationsToDispatch[] = $this->notifications->record($promoted, 'waitlist_promoted');
                 } else {
@@ -149,7 +183,7 @@ class BookingService
                 ->get();
 
             foreach ($bookings as $booking) {
-                $booking->update(['status' => 'cancelled']);
+                $booking->update(['status' => 'cancelled', 'seat_id' => null]);
                 $notificationsToDispatch[] = $this->notifications->record($booking, 'cancelled');
             }
 

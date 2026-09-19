@@ -27,6 +27,7 @@ class StoreTicketTypeRequest extends FormRequest
             'name' => ['required', 'string', 'max:100'],
             'price' => ['required', 'numeric', 'min:0'],
             'capacity' => ['required', 'integer', 'min:0'],
+            'seats_per_row' => ['sometimes', 'integer', 'min:1', 'max:40'],
             'seats_remaining' => ['sometimes', 'integer', 'min:0'],
         ];
     }

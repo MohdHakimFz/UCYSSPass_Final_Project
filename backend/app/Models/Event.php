@@ -21,6 +21,7 @@ class Event extends Model
         'start_at',
         'end_at',
         'status',
+        'seated',
     ];
 
     protected function casts(): array
@@ -28,6 +29,7 @@ class Event extends Model
         return [
             'start_at' => 'datetime',
             'end_at' => 'datetime',
+            'seated' => 'boolean',
         ];
     }
 

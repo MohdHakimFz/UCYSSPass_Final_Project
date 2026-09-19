@@ -91,15 +91,17 @@ class EmailService
     private function content(Notification $notification): array
     {
         $event = $notification->booking->ticketType->event;
+        $seat = $notification->booking->seat;
+        $seatLine = $seat ? " Your seat is <strong>{$seat->label}</strong>." : '';
 
         return match ($notification->type) {
             'confirmation' => [
                 "Your SentryPass ticket for {$event->title} is confirmed",
-                "<p>Your booking for <strong>{$event->title}</strong> is confirmed. See you there!</p>",
+                "<p>Your booking for <strong>{$event->title}</strong> is confirmed.{$seatLine} See you there!</p>",
             ],
             'waitlist_promoted' => [
                 "You're off the waitlist for {$event->title}",
-                "<p>A seat opened up and you've been promoted from the waitlist for <strong>{$event->title}</strong>. Your ticket is now confirmed.</p>",
+                "<p>A seat opened up and you've been promoted from the waitlist for <strong>{$event->title}</strong>. Your ticket is now confirmed.{$seatLine}</p>",
             ],
             'cancelled' => [
                 "Your SentryPass booking for {$event->title} was cancelled",

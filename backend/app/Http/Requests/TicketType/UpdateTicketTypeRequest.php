@@ -26,6 +26,7 @@ class UpdateTicketTypeRequest extends FormRequest
             'name' => ['sometimes', 'required', 'string', 'max:100'],
             'price' => ['sometimes', 'required', 'numeric', 'min:0'],
             'capacity' => ['sometimes', 'required', 'integer', 'min:0'],
+            'seats_per_row' => ['sometimes', 'integer', 'min:1', 'max:40'],
             'seats_remaining' => ['sometimes', 'required', 'integer', 'min:0'],
         ];
     }
@@ -38,6 +39,11 @@ class UpdateTicketTypeRequest extends FormRequest
     {
         $validator->after(function (Validator $validator) {
             $ticketType = $this->route('ticketType');
+
+            // On a seated event the seat count decides seats_remaining, so there is nothing to compare.
+            if ($ticketType->event->seated) {
+                return;
+            }
 
             $capacity = $this->input('capacity', $ticketType->capacity);
             $seatsRemaining = $this->input('seats_remaining', $ticketType->seats_remaining);

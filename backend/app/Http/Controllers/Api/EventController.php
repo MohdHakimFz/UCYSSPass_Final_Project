@@ -8,13 +8,14 @@ use App\Http\Requests\Event\UpdateEventRequest;
 use App\Models\Booking;
 use App\Models\Event;
 use App\Services\BookingService;
+use App\Services\SeatingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class EventController extends Controller
 {
-    public function __construct(private readonly BookingService $bookings) {}
+    public function __construct(private readonly BookingService $bookings, private readonly SeatingService $seating) {}
 
     /**
      * List events: paginated, filterable, searchable, sortable.
@@ -78,8 +79,17 @@ class EventController extends Controller
     public function update(UpdateEventRequest $request, Event $event): JsonResponse
     {
         $wasCancelled = $event->status === 'cancelled';
+        $wasSeated = $event->seated;
 
-        $event->update($request->validated());
+        DB::transaction(function () use ($request, $event, $wasSeated) {
+            $event->update($request->validated());
+
+            if ($event->seated && ! $wasSeated) {
+                $this->seating->enable($event);
+            } elseif (! $event->seated && $wasSeated) {
+                $this->seating->disable($event);
+            }
+        });
 
         // Cancelling an event cancels every active booking on it and emails those attendees.
         $cancelledBookings = (! $wasCancelled && $event->status === 'cancelled')
@@ -172,8 +182,13 @@ class EventController extends Controller
                     'name' => $tier->name,
                     'price' => $tier->price,
                     'capacity' => $tier->capacity,
+                    'seats_per_row' => $tier->seats_per_row,
                     'seats_remaining' => $tier->capacity,
                 ]);
+            }
+
+            if ($copy->seated) {
+                $this->seating->enable($copy);
             }
 
             return $copy;

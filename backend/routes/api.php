@@ -42,6 +42,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
 // Ticket types — nested under events for listing/creation, flat for update/delete.
 Route::get('/events/{event}/ticket-types', [TicketTypeController::class, 'index']);
+Route::get('/ticket-types/{ticketType}/seats', [TicketTypeController::class, 'seats']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/events/{event}/ticket-types', [TicketTypeController::class, 'store']);
     Route::put('/ticket-types/{ticketType}', [TicketTypeController::class, 'update']);
