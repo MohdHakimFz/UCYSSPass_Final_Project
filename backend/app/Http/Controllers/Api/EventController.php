@@ -8,6 +8,7 @@ use App\Http\Requests\Event\UpdateEventRequest;
 use App\Models\Booking;
 use App\Models\Event;
 use App\Models\Payment;
+use App\Models\Venue;
 use App\Services\BookingService;
 use App\Services\SeatingService;
 use Illuminate\Http\JsonResponse;
@@ -62,9 +63,9 @@ class EventController extends Controller
             ? ($data['organiser_id'] ?? $request->user()->id)
             : $request->user()->id;
 
-        $event = Event::create($data);
+        $event = Event::create($this->withModeDefaults($data));
 
-        return response()->json($event, 201);
+        return response()->json($event->makeVisible('meeting_url'), 201);
     }
 
     /**
@@ -75,7 +76,35 @@ class EventController extends Controller
         // A draft is the organiser's work in progress: nobody else can open it, even with the address.
         abort_if($event->status === 'draft' && ! $this->mayOpenDraft($request, $event), 404);
 
-        return response()->json($event->load('venue', 'ticketTypes'));
+        $event->load('venue', 'ticketTypes');
+
+        if ($this->mayOpenDraft($request, $event)) {
+            $event->makeVisible('meeting_url');
+        }
+
+        return response()->json($event);
+    }
+
+    /**
+     * An online event always sits at the shared Online venue and has no numbered seats;
+     * a physical event never carries a meeting link.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    private function withModeDefaults(array $data, ?Event $event = null): array
+    {
+        $mode = $data['mode'] ?? $event?->mode ?? 'physical';
+
+        if ($mode === 'online') {
+            $data['venue_id'] = Venue::online()->id;
+            $data['seated'] = false;
+        } else {
+            $data['meeting_url'] = null;
+            $data['meeting_platform'] = null;
+        }
+
+        return $data;
     }
 
     /** Drafts are listed only for admins, or for an organiser asking for their own events. */
@@ -102,7 +131,7 @@ class EventController extends Controller
         $wasSeated = $event->seated;
 
         DB::transaction(function () use ($request, $event, $wasSeated) {
-            $event->update($request->validated());
+            $event->update($this->withModeDefaults($request->validated(), $event));
 
             if ($event->seated && ! $wasSeated) {
                 $this->seating->enable($event);
@@ -118,7 +147,7 @@ class EventController extends Controller
 
         $event->setAttribute('cancelled_bookings', $cancelledBookings);
 
-        return response()->json($event);
+        return response()->json($event->makeVisible('meeting_url'));
     }
 
     /**
@@ -226,7 +255,7 @@ class EventController extends Controller
             return $copy;
         });
 
-        return response()->json($copy->load('venue', 'ticketTypes'), 201);
+        return response()->json($copy->load('venue', 'ticketTypes')->makeVisible('meeting_url'), 201);
     }
 
     /**

@@ -11,6 +11,17 @@ class Venue extends Model
     /** @use HasFactory<\Database\Factories\VenueFactory> */
     use HasFactory;
 
+    /** Online events all point at this one venue, so every event still has a place. */
+    public const ONLINE_NAME = 'Online';
+
+    public static function online(): self
+    {
+        return self::firstOrCreate(
+            ['name' => self::ONLINE_NAME],
+            ['address' => 'Online meeting', 'capacity' => 100000],
+        );
+    }
+
     protected $fillable = [
         'name',
         'address',

@@ -7,6 +7,8 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateEventRequest extends FormRequest
 {
+    use ChecksEventMode;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -31,7 +33,7 @@ class UpdateEventRequest extends FormRequest
             'end_at' => ['sometimes', 'required', 'date', 'after:start_at'],
             'status' => ['sometimes', 'required', 'in:draft,published,cancelled,completed'],
             'seated' => ['sometimes', 'boolean'],
-        ];
+        ] + $this->modeRules();
     }
 
     /**
@@ -50,6 +52,16 @@ class UpdateEventRequest extends FormRequest
             if (strtotime((string) $endAt) <= strtotime((string) $startAt)) {
                 $validator->errors()->add('end_at', 'The end_at must be a date after start_at.');
             }
+
+            $venueId = $this->has('venue_id') ? $this->integer('venue_id') : $event->venue_id;
+            $this->checkMode(
+                $validator,
+                $this->input('mode', $event->mode),
+                $this->input('status', $event->status),
+                $this->has('meeting_url') ? $this->input('meeting_url') : $event->getRawOriginal('meeting_url'),
+                $venueId,
+                $this->venueIsOnline($venueId),
+            );
         });
     }
 }

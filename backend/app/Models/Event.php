@@ -18,11 +18,22 @@ class Event extends Model
         'title',
         'description',
         'category',
+        'mode',
+        'meeting_url',
+        'meeting_platform',
         'start_at',
         'end_at',
         'status',
         'seated',
     ];
+
+    /** The meeting link is a secret of the guest list: it is only put in a response on purpose. */
+    protected $hidden = ['meeting_url'];
+
+    public function isOnline(): bool
+    {
+        return $this->mode === 'online';
+    }
 
     protected function casts(): array
     {
