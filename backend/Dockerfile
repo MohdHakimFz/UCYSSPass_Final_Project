@@ -17,7 +17,9 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progre
 
 # Render sets $PORT; migrate is safe to run on every boot (already-applied migrations are skipped).
 # Config/route caching happens here, at container start, so it picks up the real env vars Render injects.
+# SEED_DEMO=true seeds the UCYSS demo programme once; turn it back off afterwards so a restart doesn't re-run it.
 CMD php artisan migrate --force --no-interaction \
+    && if [ "$SEED_DEMO" = "true" ]; then php artisan db:seed --force --no-interaction; fi \
     && php artisan config:cache \
     && php artisan route:cache \
     && php -S 0.0.0.0:${PORT:-10000} -t public
