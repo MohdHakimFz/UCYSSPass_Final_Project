@@ -1,4 +1,4 @@
--- UCYSS / SentryPass: database creation script (DDL).
+-- UCYSS / UCYSSPass: database creation script (DDL).
 -- PostgreSQL 18. Nine domain tables: users, venues, events, ticket_types, seats, bookings, payments, notifications, announcements.
 -- Exported from the live database with pg_dump; the Laravel migrations in backend/database/migrations create the same schema.
 -- Load into an empty database:   psql -d yourdb -f schema.sql   then   psql -d yourdb -f sample-data.sql

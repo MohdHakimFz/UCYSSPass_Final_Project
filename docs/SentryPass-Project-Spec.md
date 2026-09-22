@@ -1,4 +1,4 @@
-# SentryPass — Project Specification
+# UCYSSPass — Project Specification
 
 **Course:** SWC3633 / SWC4443 Web API Development (UPTM)
 **Deadline:** 12 October 2026
@@ -10,7 +10,7 @@ This file is the full build spec. Feed it to Claude Code as project context and 
 
 ## 1. Project Overview
 
-SentryPass is a RESTful Event Ticketing & Venue Booking API scoped to the infosec community — CTF competitions, pentesting bootcamps, and security conferences — rather than a generic concert/movie ticketing clone.
+UCYSSPass is a RESTful Event Ticketing & Venue Booking API scoped to the infosec community — CTF competitions, pentesting bootcamps, and security conferences — rather than a generic concert/movie ticketing clone.
 
 Three roles:
 - **Administrator** — owns the platform: manages venues, oversees all users/events, views platform-wide analytics.

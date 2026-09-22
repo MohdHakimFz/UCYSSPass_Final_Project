@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "0492fde1-6233-45be-8f79-9cc265d29c83",
 		"name": "UCYSS API",
-		"description": "Every SentryPass endpoint with success and error cases. Run the whole collection top to bottom (Collection Runner or Newman): it creates its own users, exercises the API and deletes them again. Needs the admin account from the seeder. Wait a minute before re-running if you triggered the booking rate limit by hand.",
+		"description": "Every UCYSSPass endpoint with success and error cases. Run the whole collection top to bottom (Collection Runner or Newman): it creates its own users, exercises the API and deletes them again. Needs the admin account from the seeder. Wait a minute before re-running if you triggered the booking rate limit by hand.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [

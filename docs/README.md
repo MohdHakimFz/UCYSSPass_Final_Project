@@ -1,4 +1,4 @@
-# SentryPass documentation
+# UCYSSPass documentation
 
 | Document | What's in it |
 | --- | --- |

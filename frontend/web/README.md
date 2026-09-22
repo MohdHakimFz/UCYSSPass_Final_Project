@@ -1,4 +1,4 @@
-# SentryPass web app
+# UCYSSPass web app
 
 One React + Vite app for customers, organisers and admins.
 

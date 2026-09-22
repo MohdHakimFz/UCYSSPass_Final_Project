@@ -1,4 +1,4 @@
-# UCYSS / SentryPass: pelan kerja, panduan Postman dan pelan deploy
+# UCYSS / UCYSSPass: pelan kerja, panduan Postman dan pelan deploy
 
 Fail ini ada empat bahagian:
 
@@ -112,7 +112,7 @@ Semua idea di bawah **sudah dibuat** kecuali yang ditanda.
 3. **Import** dua fail dalam `docs/postman/`:
    - `SentryPass.postman_collection.json`
    - `SentryPass.local.postman_environment.json`
-4. Pilih environment **SentryPass Local** (kanan atas). Pembolehubahnya:
+4. Pilih environment **UCYSSPass Local** (kanan atas). Pembolehubahnya:
 
 | Nama | Nilai |
 | --- | --- |
@@ -355,7 +355,7 @@ Buat setiap senario dalam Postman mengikut turutan. Simpan id daripada respons k
 
 ### 3.6 Cara menjalankan koleksi automatik
 
-Dalam Postman: klik kanan koleksi → **Run collection** → **Run SentryPass API**. Tangkap skrin ringkasan (lulus/gagal).
+Dalam Postman: klik kanan koleksi → **Run collection** → **Run UCYSS API**. Tangkap skrin ringkasan (lulus/gagal).
 
 Atau baris arahan (sama seperti untuk CI):
 

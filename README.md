@@ -1,4 +1,4 @@
-# UCYSS Events (SentryPass)
+# UCYSS Events (UCYSSPass)
 
 Event ticketing and venue booking for the UPTM Cybersecurity Student Society (UCYSS): CTFs, bootcamps, conferences and workshops, in person or online. One Laravel API, a web app for customers, organisers and admins, and a customer mobile app.
 
@@ -133,7 +133,7 @@ erDiagram
 ## Project layout
 
 ```
-SentryPass/
+UCYSSPass/
 ├── backend/                 Laravel 12 API (Sanctum, PostgreSQL via Sail)
 ├── frontend/
 │   ├── web/                 One web app for every role   React + Vite

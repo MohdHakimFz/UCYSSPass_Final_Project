@@ -1,4 +1,4 @@
--- UCYSS / SentryPass: sample data (DML).
+-- UCYSS / UCYSSPass: sample data (DML).
 -- Run after schema.sql. At least five rows in every table, covering every status, both event modes and both payment outcomes.
 -- Every account has the password "password".
 --   psql -d yourdb -f schema.sql

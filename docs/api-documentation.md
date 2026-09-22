@@ -1,6 +1,6 @@
 # UCYSS API reference
 
-A JSON REST API for event ticketing and venue booking, built on Laravel 12 with Sanctum token authentication and PostgreSQL. It was built for UCYSS (the UPTM Cybersecurity Student Society), and the code still uses the name SentryPass. There are no server-rendered views: the web app and the mobile app both use this API.
+A JSON REST API for event ticketing and venue booking, built on Laravel 12 with Sanctum token authentication and PostgreSQL. It was built for UCYSS (the UPTM Cybersecurity Student Society), and the code still uses the name UCYSSPass. There are no server-rendered views: the web app and the mobile app both use this API.
 
 - **Base URL (local):** `http://localhost/api`
 - **Format:** JSON in, JSON out. Send `Accept: application/json`. Dates are ISO 8601 in UTC (`2026-12-01T09:00:00.000000Z`).

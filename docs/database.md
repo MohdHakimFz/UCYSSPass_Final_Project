@@ -1,6 +1,6 @@
 # Database design
 
-UCYSS (the code is still called SentryPass) uses **PostgreSQL 18**. The schema is created by Laravel migrations (`backend/database/migrations`). Three files here describe it on their own, for anyone who wants to build the database without Laravel:
+UCYSS (the code is still called UCYSSPass) uses **PostgreSQL 18**. The schema is created by Laravel migrations (`backend/database/migrations`). Three files here describe it on their own, for anyone who wants to build the database without Laravel:
 
 | File | What it is |
 | --- | --- |

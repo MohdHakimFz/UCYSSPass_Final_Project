@@ -10,7 +10,7 @@ Two files:
 ## Run it in Postman
 
 1. **Import** both files.
-2. Choose the **SentryPass Local** environment (top right).
+2. Choose the **UCYSSPass Local** environment (top right).
 3. Start the API (`docker compose up -d` in `backend/`) with the seeded database.
 4. Set `checkin_api_key` in the environment to the value of `CHECKIN_API_KEY` in `backend/.env` (see the notes below).
 5. Right-click the collection → **Run collection** → **Run**. Keep the order; later requests use ids and tokens saved by earlier ones.
