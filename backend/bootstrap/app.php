@@ -23,6 +23,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Behind a platform proxy (Render, Vercel, ...) the real client IP and https scheme
+        // arrive as X-Forwarded-* headers. Without trusting them, $request->ip() would return
+        // the proxy's own address for every guest, and they'd all share one rate-limit bucket.
+        $middleware->trustProxies(at: '*');
+
         // API-only app: never redirect unauthenticated requests to a "login" route.
         $middleware->redirectGuestsTo(fn () => null);
 
