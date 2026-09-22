@@ -22,8 +22,9 @@ function defaultBase(): string {
 
 export const BASE = process.env.EXPO_PUBLIC_API_URL ?? defaultBase()
 
-// A dead connection should fail in seconds with a clear message, not hang.
-const TIMEOUT_MS = 10000
+// A dead connection should fail with a clear message, not hang forever — but a deployed free-tier API can
+// take 30-50s to wake from sleep after being idle, so this has to outlast a cold start, not just a dead link.
+const TIMEOUT_MS = 45000
 function timeoutSignal(): AbortSignal {
   const controller = new AbortController()
   setTimeout(() => controller.abort(), TIMEOUT_MS)
@@ -89,12 +90,18 @@ export async function api<T = unknown>(path: string, options: { method?: string;
   return data as T
 }
 
+// A local dev API is reachable only over the same network; a deployed one (a real domain) is reachable from
+// anywhere, but a free-tier host can be asleep and slow to answer the very first request.
+const isLocalDev = /^https?:\/\/(localhost|10\.0\.2\.2|\d{1,3}(\.\d{1,3}){3})/.test(BASE)
+
 export function errorText(err: unknown): string {
   if (err instanceof ApiError) {
     const first = err.errors ? Object.values(err.errors)[0]?.[0] : undefined
     return first ?? err.message
   }
-  return `Can't reach the server at ${BASE}. Check that the API is running and that your phone is on the same Wi-Fi as your computer.`
+  return isLocalDev
+    ? `Can't reach the server at ${BASE}. Check that the API is running and that your phone is on the same Wi-Fi as your computer.`
+    : "Can't reach the server. It may be waking up after being idle — please try again in a moment."
 }
 
 // The QR image sits behind auth, so fetch it with the token and hand back a data URI.
