@@ -17,3 +17,8 @@ dist/
 .env.local
 .env.*.local
 .playwright-mcp/
+
+# Personal working files (report evidence, not part of the codebase)
+/Proof Images/
+/asset/
+*.pdf

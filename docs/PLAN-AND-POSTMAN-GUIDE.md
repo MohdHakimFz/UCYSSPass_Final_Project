@@ -15,27 +15,19 @@ Tarikh hantar: **12 Oktober 2026**. Rujukan markah: `SWC3633_SWC4443 - Project D
 
 | Bahagian | Status |
 | --- | --- |
-| Backend Laravel 12, Sanctum, PostgreSQL | Siap. **226** test PHPUnit lulus |
-| Web (customer, organiser, admin) | Siap. **43** ujian Playwright lulus |
-| App mobile (customer) | Siap dan boleh dibina, tetapi **belum diuji pada telefon sebenar** |
-| Koleksi Postman | **198 permintaan, 309 semakan, 0 kegagalan** |
+| Backend Laravel 12, Sanctum, PostgreSQL | Siap. **230** test PHPUnit lulus |
+| Web (customer, organiser, admin) | Siap. **44** ujian Playwright lulus |
+| App mobile (customer) | Siap dan boleh dibina; diuji dalam pelayar (react-native-web) dengan Playwright, **belum diuji pada telefon sebenar** |
+| Koleksi Postman | **198 permintaan, 309 semakan, 0 kegagalan**. Tangkapan skrin setiap permintaan (198) siap dalam `Proof Images/` |
 | Event physical, seat bernombor, tahan seat, bayaran sandbox, refund | Siap |
 | Event online, link meeting dilindungi, butang Join ikut platform | Siap |
 | Organiser publish sendiri, peta seat, kemas kini automatik | Siap |
-| Rebrand UCYSS, email peringatan (diuji dengan Resend sebenar) | Siap |
+| Rebrand UCYSS, email peringatan (Brevo, diuji dengan emel sebenar; `--booking=ID` untuk cuba satu tempahan tanpa tunggu tetingkap masa) | Siap |
 | Rate limit global, indeks pangkalan data, bukti prestasi | Siap (`docs/performance/PERFORMANCE.md`) |
-| Tier khas ahli, pengumuman organiser, statistik kehadiran, kongsi WhatsApp, sijil PDF, data demo UCYSS, CI | Siap |
-| ERD, DDL, DML, dokumentasi API, nota laporan | Siap |
-| Laporan PDF, tangkapan skrin, video, dan deploy | **Belum** (kerja kau dan langkah terakhir) |
-
---- | --- |
-| Backend Laravel 12, Sanctum, PostgreSQL | Siap. 144 test PHPUnit lulus |
-| Web (customer, organiser, admin) | Siap. 29 ujian Playwright lulus |
-| App mobile (customer) | Siap, tapi belum diuji semula pada telefon selepas perubahan minggu ni |
-| Event physical, seat bernombor, tahan seat, bayaran sandbox, refund | Siap |
-| Event online, link meeting dilindungi, butang Join dikesan ikut platform | Siap |
-| Organiser publish sendiri, peta seat organiser, kemas kini automatik (5 saat) | Siap |
-| Rebrand UCYSS, email peringatan, dokumen, deploy | Belum |
+| Tier khas ahli, pengumuman organiser, statistik kehadiran (termasuk "did not attend" selepas event tamat), kongsi WhatsApp, sijil PDF (reka bentuk penuh: jalur header, tandatangan, meterai), data demo UCYSS, CI | Siap |
+| Tema cerah/gelap/auto: laman customer web dan app mobile (tab Account), diingati pada peranti | Siap |
+| ERD, DDL, DML, dokumentasi API, nota laporan | Siap. ERD juga ada sebagai kod Mermaid (`docs/erd/ERD.mmd`, `docs/erd/ERD.md`) |
+| Laporan PDF, video, dan deploy | **Belum** (kerja kau dan langkah terakhir) |
 
 ---
 
@@ -49,7 +41,7 @@ Susunan ikut keutamaan. `[ ]` = belum, tanda kalau dah siap.
 - [x] **Email peringatan** H-1 hari sebelum event (Resend + penjadual Laravel). Untuk event online, sertakan link meeting dalam email ini sahaja. *Anggaran: setengah hingga satu hari.*
 - [x] **Add to calendar dalam email** (fail `.ics` lampiran atau pautan). Butang "Add to calendar" pada tiket sudah ada.
 - [x] **Kemas Admin:** tag Online/Physical dan tapis mod dalam senarai event; log email tunjuk jenis "Reminder".
-- [ ] **Uji app mobile pada telefon sebenar (kau):** butang Join, tiada zoom pada peta seat, senarai event yang muncul sendiri.
+- [ ] **Uji app mobile pada telefon sebenar (kau):** butang Join, tiada zoom pada peta seat, senarai event yang muncul sendiri, suis tema Auto/Light/Dark, dan ikon bar status (jam/bateri) jelas dalam kedua-dua tema.
 
 ### B. Perkara yang rubrik tanda (jangan tinggalkan)
 
@@ -66,7 +58,7 @@ Susunan ikut keutamaan. `[ ]` = belum, tanda kalau dah siap.
 - [x] **Koleksi Postman dikemas kini:** 198 permintaan, 309 semakan, 0 kegagalan. Lihat [3.9](#39-keadaan-koleksi-sedia-ada).
 - [x] **README** dengan langkah pasang dan jalankan (sudah ada, semak selepas rebrand).
 - [ ] **Laporan PDF (kau)** ikut struktur PDF: System Overview, Database Design, API Documentation, API Testing, System Implementation, System Demonstration, Repository, Advanced Features, Debugging, Reflection.
-- [ ] **Tangkapan skrin Postman (kau)** (senarai di [3.8](#38-senarai-tangkapan-skrin-untuk-laporan)).
+- [x] **Tangkapan skrin Postman (kau).** Semua 198 permintaan, satu skrin setiap satu (request + response + test results), dalam `Proof Images/`, satu subfolder per kumpulan Postman (1. Setup hingga 20. Cleanup), padan dengan bilangan sebenar setiap folder.
 
 ### D. Kualiti
 
@@ -379,7 +371,7 @@ Selepas kemas kini, klik **… → Export** (Collection v2.1) dan simpan ke `doc
 
 ### 3.8 Senarai tangkapan skrin untuk laporan
 
-Sekurang-kurangnya satu **berjaya** dan satu **ralat** untuk setiap kumpulan:
+**Siap.** `Proof Images/` ada satu skrin bagi setiap 198 permintaan (request, response dan Test Results dalam satu tangkapan), susun ikut 20 subfolder yang sama nama dengan koleksi Postman (`1. Setup` hingga `20. Cleanup`). Untuk laporan, cukup pilih beberapa contoh mewakili setiap kumpulan (satu berjaya, satu ralat), tak perlu lampirkan kesemua 198:
 
 | Kumpulan | Berjaya | Ralat |
 | --- | --- | --- |
@@ -405,14 +397,7 @@ Dua perkara yang perlu diingat semasa menjalankannya:
 - **Tunggu seminit antara dua larian.** `forgot-password` dihadkan 3 kali seminit, jadi larian kedua serta-merta boleh dapat 429.
 - **Kunci check-in.** Nilai `checkin_api_key` dalam environment mesti sama dengan `CHECKIN_API_KEY` dalam `backend/.env`. Kalau kau dah menukar kunci (patut), permintaan 7.17 akan dapat 401 sehingga environment dikemas kini.
 
---- | --- | --- |
-| 7.1, 7.19, 7.22 | Tier berbayar kini `pending` sehingga dibayar | Guna tier `price: 0`, atau tambah langkah `pay` |
-| 7.12 QR (2 semakan) | Tempahan masih `pending`, jadi belum ada QR | Sama seperti di atas |
-| 7.14, 7.17 (4 semakan) | Tiket tak `confirmed` lagi, jadi mesej dan kod status lain | Sama seperti di atas |
-| 9.1 Statistik | Jumlah kapasiti berubah | Kemas kini nombor dijangka |
-| 11.1 Cancel event | Bilangan tempahan dibatalkan berubah | Kemas kini nombor dijangka |
-
-Tambahan yang belum ada dalam koleksi: `pay`, `join`, seat bernombor, `seat-map`, event online, draf tersembunyi, `organiser/summary`, reset password. Tambah satu folder baru untuk setiap senario 1–3 di atas.
+Larian terakhir yang disahkan (newman, ~1m 17s): 198 permintaan, 309 semakan, **0 kegagalan**. Koleksi membersihkan sendiri data yang ia cipta (folder 20).
 
 ---
 

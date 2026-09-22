@@ -56,6 +56,8 @@ Evidence: `docs/api-documentation.md` (Third-party APIs), Postman requests 7.12 
 - Online events with a private meeting link, opened 15 minutes before the start, detected platform (Zoom, Meet, Teams and more), and a join click that counts as attendance.
 - Reminder emails a day before, once per booking.
 - Screens refresh themselves every few seconds, so an organiser's change reaches guests without a reload.
+- No-shows: a confirmed guest whose event has ended without them checking in is counted and labelled "Did not attend" (organiser and admin views), separate from a guest who simply has not arrived yet while the event is still running.
+- Light, dark or system theme on both the customer web app and the mobile app, remembered per device.
 
 ## 3. Debugging and performance (report section 9)
 
@@ -66,12 +68,12 @@ Everything is in [`performance/PERFORMANCE.md`](performance/PERFORMANCE.md): mis
 | Requirement in the description | Evidence |
 | --- | --- |
 | At least 4 related tables, keys, integrity constraints | `database/schema.sql` (9 tables, 12 foreign keys, check and unique constraints), `erd/ERD.png`, `database.md` |
-| ERD, DDL and DML with at least 5 records per table | `erd/ERD.png`, `database/schema.sql`, `database/sample-data.sql` (checked by loading it into an empty database) |
+| ERD, DDL and DML with at least 5 records per table | `erd/ERD.png` (also as Mermaid: `erd/ERD.mmd`, `erd/ERD.md`), `database/schema.sql`, `database/sample-data.sql` (checked by loading it into an empty database) |
 | `/users`, `/events`, `/venues`, `/bookings` with GET, POST, PUT, DELETE, JSON, status codes, validation | `api-documentation.md` |
 | Authentication, role-based access, validation, centralised error handling | `api-documentation.md` (Security and middleware), `backend/bootstrap/app.php`, the policies and form requests |
 | At least one genuine third-party API | Resend or Brevo, and the QR Code API (above) |
 | Two or more of logging, rate limiting, pagination, filtering, search, sorting | All of them, above |
 | Debugging and performance report | `performance/PERFORMANCE.md` |
-| Postman collection, success and error screenshots, API documentation | `postman/` (198 requests, 309 assertions), `PLAN-AND-POSTMAN-GUIDE.md` (screenshot list), `api-documentation.md` |
+| Postman collection, success and error screenshots, API documentation | `postman/` (198 requests, 309 assertions), one screenshot per request in `../Proof Images/` (20 subfolders, one per collection folder), `api-documentation.md` |
 | README with setup and run instructions | `README.md` |
-| Automated tests | 226 backend tests, 43 browser tests (Playwright), the Postman run in CI |
+| Automated tests | 230 backend tests, 44 browser tests (Playwright), the Postman run in CI |
