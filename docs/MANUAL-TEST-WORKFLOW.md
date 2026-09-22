@@ -129,8 +129,8 @@ Organiser: **Create event**, pilih **Online meeting**.
 
 ## 8. Peringatan email
 
-- [ ] **Faham syarat.** Peringatan ("Reminder: ... is coming up") dihantar sendiri setiap 10 minit, tetapi hanya untuk tempahan yang **Confirmed**, event **published** dan bermula dalam **24 jam akan datang**, ditempah **lebih sejam lalu**, dan belum pernah diingatkan. Tempahan event yang jauh, yang sudah **Checked in** atau Cancelled tidak layak (itu sebab `Sent 0`).
-- [ ] **Sediakan.** Emel dihantar melalui **Brevo** ke emel customer sebenar (`mh29209501@gmail.com`). (1) Organiser buat event percuma yang bermula lebih kurang **20 jam dari sekarang**, publish. (2) Customer itu tempah tier percuma. (3) Semua arahan `docker compose` dijalankan dalam folder **`backend`**. Cari nombor tempahan itu:
+- [works] **Faham syarat.** Peringatan ("Reminder: ... is coming up") dihantar sendiri setiap 10 minit, tetapi hanya untuk tempahan yang **Confirmed**, event **published** dan bermula dalam **24 jam akan datang**, ditempah **lebih sejam lalu**, dan belum pernah diingatkan. Tempahan event yang jauh, yang sudah **Checked in** atau Cancelled tidak layak (itu sebab `Sent 0`).
+- [works] **Sediakan.** Emel dihantar melalui **Brevo** ke emel customer sebenar (`mh29209501@gmail.com`). (1) Organiser buat event percuma yang bermula lebih kurang **20 jam dari sekarang**, publish. (2) Customer itu tempah tier percuma. (3) Semua arahan `docker compose` dijalankan dalam folder **`backend`**. Cari nombor tempahan itu:
 
   ```powershell
   docker compose exec laravel.test php artisan tinker --execute="echo App\Models\Booking::latest('id')->first()->id;"
@@ -140,10 +140,10 @@ Organiser: **Create event**, pilih **Online meeting**.
   ```powershell
   docker compose exec laravel.test php artisan tinker --execute="App\Models\Booking::find(123)->update(['booked_at' => now()->subHours(3)]);"
   ```
-- [ ] **Hantar.** `docker compose exec laravel.test php artisan bookings:send-reminders`: mencetak `Sent 1 reminders.` Jalan pintas tanpa syarat masa: `docker compose exec laravel.test php artisan bookings:send-reminders --booking=123` (mengingatkan tempahan itu sahaja; kalau gagal ia menyebut sebabnya).
-- [ ] **Sekali sahaja.** Jalankan arahan yang sama lagi: `Sent 0 reminders.`
-- [ ] **Peti masuk.** Emel "Reminder: ... is coming up" sampai (semak Spam juga), dengan masa Malaysia, tempat (atau link meeting), dan lampiran `event.ics`. 📸
-- [ ] **Log admin.** Admin, **Emails**, tapis "Reminder before the event": ada baris dengan jawapan Brevo (status 201).
+- [works] **Hantar.** `docker compose exec laravel.test php artisan bookings:send-reminders`: mencetak `Sent 1 reminders.` Jalan pintas tanpa syarat masa: `docker compose exec laravel.test php artisan bookings:send-reminders --booking=123` (mengingatkan tempahan itu sahaja; kalau gagal ia menyebut sebabnya).
+- [works] **Sekali sahaja.** Jalankan arahan yang sama lagi: `Sent 0 reminders.`
+- [works] **Peti masuk.** Emel "Reminder: ... is coming up" sampai (semak Spam juga), dengan masa Malaysia, tempat (atau link meeting), dan lampiran `event.ics`. 📸
+- [works] **Log admin.** Admin, **Emails**, tapis "Reminder before the event": ada baris dengan jawapan Brevo (status 201).
 
 ## 9. Pengumuman organiser
 
@@ -219,7 +219,7 @@ Pastikan `EXPO_PUBLIC_API_URL` betul (atau telefon dan komputer pada rangkaian y
 - [works] Bayar tiket berbayar (tahan seat dengan kiraan detik).
 - [works] Tiket online: butang **Join on ...** (kelabu sebelum masa, aktif 15 minit sebelum).
 - [works] Tier "Members only" tak boleh ditempah oleh bukan ahli.
-- [ ] **Tema.** Tab **Account**, bahagian **Appearance**: **Auto / Light / Dark**. **Dark**: semua skrin (senarai event, butiran, My passes, tetingkap bayaran, log masuk, header dan tab bawah) bertukar gelap dan teks kekal boleh dibaca. **Light**: cerah walaupun telefon dalam mod gelap. **Auto**: ikut tetapan telefon (tukar mod gelap pada telefon, app ikut tanpa dibuka semula). Tutup dan buka app: pilihan kekal. Kod QR tetap latar putih supaya boleh diimbas.
+- [works] **Tema.** Tab **Account**, bahagian **Appearance**: **Auto / Light / Dark**. **Dark**: semua skrin (senarai event, butiran, My passes, tetingkap bayaran, log masuk, header dan tab bawah) bertukar gelap dan teks kekal boleh dibaca. **Light**: cerah walaupun telefon dalam mod gelap. **Auto**: ikut tetapan telefon (tukar mod gelap pada telefon, app ikut tanpa dibuka semula). Tutup dan buka app: pilihan kekal. Kod QR tetap latar putih supaya boleh diimbas.
 - [works] Tiket tiada isyarat: QR masih dibuka (disimpan dalam telefon).
 
 ## 16. Ujian automatik (jalankan sekali untuk bukti)
