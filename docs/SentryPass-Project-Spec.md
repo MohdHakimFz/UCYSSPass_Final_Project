@@ -253,7 +253,7 @@ sentrypass/
 │   ├── customer-web/              # React + Vite
 │   └── customer-mobile/           # React Native + Expo
 ├── docs/
-│   ├── ERD.png
+│   ├── erd/ERD.png              # also erd/ERD.mmd (Mermaid) and erd/ERD.svg
 │   ├── postman-collection.json
 │   └── api-documentation.md
 └── README.md                      # setup + run instructions for the whole group

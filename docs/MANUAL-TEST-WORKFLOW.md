@@ -4,6 +4,8 @@ Ikut turutan. Setiap langkah ada **apa yang perlu dibuat** dan **apa yang patut 
 
 Setiap bahagian ada tanda 📸 di mana tangkapan skrin berguna untuk laporan.
 
+**Nota deploy (23 Sept 2026):** semua langkah `[works]` di bawah diuji di `localhost` (Docker/Sail). Sistem juga **dah live** — backend di https://ucyss-api.onrender.com, web di https://ucyss-web.vercel.app. Aliran utama (daftar → tempah → bayar sandbox → check-in QR → tolak scan berulang/token palsu) disahkan berfungsi sama di URL live tu. Peringatan email dan pelepasan tahan seat automatik **tak berjalan sendiri dalam produksi** (tiada cron dikonfigurasi di Render setakat ini) — lihat `PLAN-AND-POSTMAN-GUIDE.md` bahagian 4.2.
+
 ## 0. Sediakan
 
 ```powershell

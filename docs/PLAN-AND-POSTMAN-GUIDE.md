@@ -27,7 +27,8 @@ Tarikh hantar: **12 Oktober 2026**. Rujukan markah: `SWC3633_SWC4443 - Project D
 | Tier khas ahli, pengumuman organiser, statistik kehadiran (termasuk "did not attend" selepas event tamat), kongsi WhatsApp, sijil PDF (reka bentuk penuh: jalur header, tandatangan, meterai), data demo UCYSS, CI | Siap |
 | Tema cerah/gelap/auto: laman customer web dan app mobile (tab Account), diingati pada peranti | Siap |
 | ERD, DDL, DML, dokumentasi API, nota laporan | Siap. ERD juga ada sebagai kod Mermaid (`docs/erd/ERD.mmd`, `docs/erd/ERD.md`) |
-| Laporan PDF, video, dan deploy | **Belum** (kerja kau dan langkah terakhir) |
+| Deploy: backend+DB di Render, web di Vercel, mobile APK tempatan | Siap, live sejak 22-23 Sept 2026 (lihat [bahagian 4](#4-pelan-deploy)) |
+| Laporan PDF, video | **Belum** (kerja kau) |
 
 ---
 
@@ -68,7 +69,7 @@ Susunan ikut keutamaan. `[ ]` = belum, tanda kalau dah siap.
 
 ### E. Deploy (bahagian [4](#4-pelan-deploy))
 
-- [ ] Backend, pangkalan data, web, dan app mobile.
+- [x] Backend + pangkalan data (Render), web (Vercel). App mobile: APK tempatan dipasang terus ke telefon (bukan EAS/app store).
 
 ### F. Yang ditangguh (bukan keperluan PDF)
 
@@ -401,86 +402,40 @@ Larian terakhir yang disahkan (newman, ~1m 17s): 198 permintaan, 309 semakan, **
 
 ---
 
-## 4. Pelan deploy
+## 4. Pelan deploy — **SIAP**, sistem live sejak 22-23 Sept 2026
 
-### 4.1 Gambaran
-
-| Bahagian | Apa | Cadangan |
+| Bahagian | Hos | URL |
 | --- | --- | --- |
-| API | Laravel 12 (PHP 8.3+) | Hos yang boleh jalankan Docker, dengan HTTPS |
-| Pangkalan data | PostgreSQL | PostgreSQL terurus di hos yang sama atau berasingan |
-| Web | `frontend/web` (Vite, fail statik) | Hos statik dengan CDN |
-| Mobile | `frontend/customer-mobile` (Expo) | Expo Go untuk demo, APK melalui EAS Build untuk penyerahan |
-| Email | Resend | Domain yang disahkan (lihat risiko) |
+| API (Laravel 12) | Render, web service Docker (Singapore) | https://ucyss-api.onrender.com |
+| Pangkalan data | Render PostgreSQL 17 (free, Singapore) | dalaman sahaja |
+| Web (customer/organiser/admin) | Vercel | https://ucyss-web.vercel.app |
+| Mobile (customer) | APK dibina tempatan (`expo run:android --variant release`), dipasang terus ke telefon melalui USB | tiada URL, fail berdiri sendiri |
+| Email | Brevo (`MAIL_API_DRIVER=brevo`) | — |
 
-### 4.2 Pilihan hos (semak harga dan had semasa sebelum memilih)
+Aliran utama (daftar → tempah → bayar → check-in) disahkan berfungsi terus di URL live (bukan sekadar `localhost`) pada 23 Sept 2026.
 
-| Pilihan | Kebaikan | Keburukan |
-| --- | --- | --- |
-| **A. Platform PaaS untuk Docker** (contohnya Railway, Render, Fly.io) | Cepat, HTTPS automatik, pangkalan data Postgres terurus | Had percuma berbeza-beza, mungkin tidur bila tidak digunakan |
-| **B. VPS kecil dengan Docker Compose dan Caddy** | Kawalan penuh, satu tempat untuk API, DB, penjadual | Kena urus sendiri (kemas kini, sandaran) |
+### 4.1 Apa yang telah dibuat
 
-Cadangan aku: **A** untuk kepantasan, kerana masa terhad. Kalau ada kredit pelajar (GitHub Student Pack, Azure for Students), semak sama ada boleh dipakai untuk VPS.
+1. **`backend/Dockerfile`** (baru): PHP 8.2 CLI, `pdo_pgsql`, `composer install --no-dev`, dan semasa boot kontena: `migrate --force`, `config:cache`, `route:cache`, kemudian `php -S 0.0.0.0:$PORT -t public`. Diuji `docker build` + jalan tempatan dahulu sebelum push.
+2. **`bootstrap/app.php`**: tambah `trustProxies(at: '*')` — perlu supaya `$request->ip()` (had kadar tamu) baca IP pelanggan sebenar, bukan IP proksi Render.
+3. **Database:** dicipta melalui Render, disambung ke backend guna `DB_URL` (Laravel baca terus daripada satu connection string).
+4. **`frontend/web/vercel.json`**: rewrite SPA (`/(.*) → /index.html`) supaya `/organiser/events/7` tak 404 bila dibuka terus.
+5. **Vercel SSO Protection dimatikan** — projek baru dari API defaultnya menyekat akses tanpa log masuk Vercel; kena dimatikan supaya laman betul-betul awam.
+6. **`VITE_API_URL`** (Vercel) → backend Render; **`WEB_URL`** (Render) → web Vercel, supaya pautan `/verify` pada sijil PDF betul.
+7. **Data demo:** `SEED_DEMO=true` di env Render sekali sahaja (jalankan `db:seed`), kemudian ditukar semula `false` supaya restart akan datang tak ulang seeding.
+8. **Ikon mobile:** ditukar daripada default Expo kepada huruf "U" jenama UCYSS (tipografi + blok warna, `assets/icon.png` dan fail Android adaptive-icon).
 
-Untuk web: mana-mana hos statik (Vercel, Netlify, Cloudflare Pages) dengan pilihan **SPA fallback** ke `index.html` supaya `/organiser/events/7` tak jadi 404 bila refresh.
+### 4.2 Yang **belum** dibuat (had sengaja, bukan bug)
 
-### 4.3 Langkah deploy backend
+- **Tiada penjadual (cron) di Render.** `bookings:release-expired` dan `bookings:send-reminders` **tidak berjalan automatik** dalam produksi. Tahan seat tamat masih dibebaskan secara malas (bila orang lain cuba tempah seat sama), tetapi peringatan emel H-1 **takkan terhantar sendiri** — perlu dijalankan manual (`--booking=ID`) atau tambah Render Cron Job kalau nak automatik. Ini bukan diperbetulkan sebab skop projek kursus cukup dengan bukti ia berfungsi (dah diuji dalam `MANUAL-TEST-WORKFLOW.md`).
+- **CORS masih terbuka (`*`)**, tak dihadkan ke domain Vercel sahaja. Risiko rendah sebab app guna token Bearer (bukan cookie), tapi bukan amalan terbaik untuk produksi sebenar.
+- **`CHECKIN_API_KEY` dan akaun demo (`admin@sentrypass.test` / `password`) guna nilai pembangunan**, tak ditukar untuk "go live" sebenar. Boleh diterima untuk demo/marking, tapi kalau sistem ni nak terus dipakai lepas kursus, kena ditukar.
+- **Database free tier luput 22 Okt 2026** (30 hari daripada dicipta) — lepas tarikh serah (12 Okt), jadi tak menjejaskan marking, tapi jangan lupa kalau nak simpan lama.
+- **Mobile belum melalui EAS Build/app store** — APK dibina tempatan dan dipasang terus (cukup untuk demo/video, tapi bukan pengedaran rasmi).
 
-1. **Dockerfile produksi** (belum ada; Sail hanya untuk pembangunan). Perlukan PHP-FPM dengan Nginx atau FrankenPHP, `composer install --no-dev --optimize-autoloader`, dan `php artisan config:cache route:cache`.
-2. **Pembolehubah persekitaran** (jangan komit):
+### 4.3 Kalau nak sambung kerja deploy ni
 
-```env
-APP_ENV=production
-APP_DEBUG=false
-APP_KEY=              # php artisan key:generate --show
-APP_URL=https://api.contoh.my
-DB_CONNECTION=pgsql
-DB_HOST=...  DB_PORT=5432  DB_DATABASE=...  DB_USERNAME=...  DB_PASSWORD=...
-RESEND_API_KEY=...
-RESEND_FROM_EMAIL="UCYSS <events@domain-anda>"
-CHECKIN_API_KEY=      # nilai panjang dan rawak, BUKAN nilai lalai
-SEAT_HOLD_MINUTES=3
-PAYMENTS_DRIVER=sandbox
-MEETING_OPEN_MINUTES=15
-```
-
-3. Jalankan sekali: `php artisan migrate --force`. Untuk data demo: `php artisan db:seed --force` (sekali sahaja, jangan pada setiap deploy).
-4. **Penjadual:** perintah `bookings:release-expired` berjalan setiap minit. Perlukan cron `* * * * * php artisan schedule:run` (atau proses `schedule:work`). Tanpa ini, tahan seat tamat tak dibebaskan secara automatik (masih dibebaskan secara malas bila orang lihat seat, tetapi jangan bergantung).
-5. **Baris gilir (queue):** `QUEUE_CONNECTION=database`. Jalankan `php artisan queue:work` sebagai proses berasingan kalau email dihantar melalui queue.
-6. **CORS:** dalam produksi hadkan asal kepada domain web anda sahaja, bukan `*`.
-7. Uji dengan Postman: tukar `base_url` kepada URL produksi, jalankan koleksi, tangkap skrin.
-
-### 4.4 Langkah deploy web
-
-1. Di hos statik, tetapkan folder `frontend/web`, arahan bina `npm run build`, folder output `dist`.
-2. Tetapkan pembolehubah `VITE_API_URL=https://api.contoh.my/api`.
-3. Tambah peraturan SPA fallback (Vercel: `vercel.json` dengan rewrite ke `/index.html`; Netlify: `public/_redirects` dengan `/* /index.html 200`).
-4. Semak: log masuk, buka `/organiser` terus melalui alamat, refresh pada halaman event, dan butang Join.
-
-### 4.5 Langkah deploy mobile
-
-1. Tetapkan `EXPO_PUBLIC_API_URL=https://api.contoh.my/api`.
-2. **Demo mudah:** `npx expo start --tunnel`, dan buka dalam Expo Go pada telefon. Ini cukup untuk video.
-3. **Fail pemasangan:** akaun Expo, `npx eas build -p android --profile preview` menghasilkan `.apk` yang boleh dipasang (iOS memerlukan akaun pemaju berbayar; guna Expo Go untuk iOS).
-4. Semak butang Join dan pemuatan semula automatik pada API produksi.
-
-### 4.6 Risiko yang perlu dijaga
-
-- **Email Resend:** dengan alamat percuma `onboarding@resend.dev`, Resend hanya menghantar kepada emel pemilik akaun. Untuk menghantar kepada pelajar, **perlu domain sendiri yang disahkan**. Pengesahan email pengguna dan email peringatan bergantung pada ini.
-- **Pangkalan data:** ambil sandaran sebelum demonstrasi; jangan `migrate:fresh` pada produksi.
-- **Kunci dan kata laluan:** tukar `CHECKIN_API_KEY`, dan kata laluan akaun seeder (`password`) sebelum pautan diberi kepada sesiapa. Akaun `admin@sentrypass.test` dengan kata laluan `password` mesti ditukar atau dipadam pada produksi.
-- **Bayaran:** kekal `sandbox`; jangan mendakwa ia memproses wang sebenar.
-- **Kos:** semak had percuma dan kadar penggunaan sebelum tarikh demo. Tarik pelan sandaran jika hos tidur.
-
-### 4.7 Senarai semak "go live"
-
-- [ ] API menjawab `https://…/api/events` dengan JSON.
-- [ ] `migrate` dan seeder (jika perlu) telah dijalankan.
-- [ ] Cron `schedule:run` aktif, dan queue worker berjalan.
-- [ ] Web memuatkan senarai event dan log masuk berfungsi.
-- [ ] Refresh pada `/organiser/events/7` tidak 404.
-- [ ] Koleksi Postman lulus sepenuhnya terhadap URL produksi.
-- [ ] Emel pengesahan diterima oleh alamat sebenar (jika domain telah disahkan).
-- [ ] Butang Join dan peta seat organiser diuji pada URL produksi.
-- [ ] Kunci lalai dan kata laluan demo ditukar.
-- [ ] Pautan GitHub, video, dan URL live dimasukkan dalam laporan dan diuji tanpa log masuk.
+1. **Cron Render** untuk `schedule:run` (Render ada ciri Cron Job berasingan daripada web service) — jadikan reminder dan release-expired automatik.
+2. Hadkan CORS kepada `https://ucyss-web.vercel.app` sahaja dalam `config/cors.php`.
+3. Tukar `CHECKIN_API_KEY` dan kata laluan akaun demo, atau padam terus akaun tersebut.
+4. Domain emel sendiri (bukan emel pelajar) kalau nak nampak lebih profesional untuk produksi sebenar.
