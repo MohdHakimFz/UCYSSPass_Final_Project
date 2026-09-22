@@ -22,3 +22,6 @@ dist/
 /Proof Images/
 /asset/
 *.pdf
+
+# Local Claude Code plugin settings (per machine)
+/.claude/
