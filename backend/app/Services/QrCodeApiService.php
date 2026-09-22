@@ -21,10 +21,7 @@ class QrCodeApiService
             'qr_token' => $booking->qr_token,
         ]);
 
-        $response = Http::get('https://api.qrserver.com/v1/create-qr-code/', [
-            'size' => '300x300',
-            'data' => $payload,
-        ]);
+        $response = $this->fetchForData($payload, 300);
 
         Log::info('QR code API call', [
             'booking_id' => $booking->id,
@@ -36,5 +33,14 @@ class QrCodeApiService
         $response->throw();
 
         return $response;
+    }
+
+    /** The same goqr.me API, for any bit of text (a verify link, not necessarily a booking's ticket). */
+    public function fetchForData(string $data, int $size = 200): Response
+    {
+        return Http::timeout(5)->get('https://api.qrserver.com/v1/create-qr-code/', [
+            'size' => "{$size}x{$size}",
+            'data' => $data,
+        ]);
     }
 }

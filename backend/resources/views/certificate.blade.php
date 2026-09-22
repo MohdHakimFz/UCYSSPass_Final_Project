@@ -39,8 +39,10 @@
   .seal-text { font-family: 'DejaVu Sans', sans-serif; color: #fbf9f4; text-align: center; font-weight: bold; font-size: 15px; letter-spacing: 2px; padding-top: 22px; }
   .seal-sub { font-family: 'DejaVu Sans', sans-serif; color: #fbf9f4; text-align: center; font-size: 7px; letter-spacing: 2px; margin-top: 3px; }
 
-  .foot { position: absolute; left: 60px; right: 60px; bottom: 50px; text-align: center; font-family: 'DejaVu Sans', sans-serif; font-size: 8.5px; color: #4b5563; line-height: 1.6; }
+  .foot { position: absolute; left: 60px; right: 140px; bottom: 50px; text-align: center; font-family: 'DejaVu Sans', sans-serif; font-size: 8.5px; color: #4b5563; line-height: 1.6; }
   .number { font-family: 'DejaVu Sans Mono', monospace; font-weight: bold; color: #14181f; letter-spacing: 1px; }
+  .qr { position: absolute; right: 46px; bottom: 44px; width: 58px; height: 58px; }
+  .qr img { width: 100%; height: 100%; }
 </style>
 </head>
 <body>
@@ -89,5 +91,8 @@
   Certificate no. <span class="number">{{ $number }}</span><br>
   Check that this certificate is genuine: {{ $verifyUrl }}
 </div>
+@if ($qrDataUri)
+  <div class="qr"><img src="{{ $qrDataUri }}" alt="Scan to verify"></div>
+@endif
 </body>
 </html>

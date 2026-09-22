@@ -6,6 +6,8 @@ use App\Models\Booking;
 use App\Models\User;
 use App\Services\CertificateService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\Request;
+use Illuminate\Support\Facades\Http;
 use Tests\Feature\Concerns\BuildsScenarios;
 use Tests\TestCase;
 
@@ -14,10 +16,14 @@ class CertificateTest extends TestCase
     use BuildsScenarios;
     use RefreshDatabase;
 
+    /** A tiny real PNG, so base64-decoding it in a test is a real image and not just any old string. */
+    private const PIXEL_PNG = "\x89PNG\r\n\x1a\n\0\0\0\rIHDR\0\0\0\x01\0\0\0\x01\x08\x06\0\0\0\x1f\x15\xc4\x89\0\0\0\nIDATx\x9cc\0\x01\0\0\x05\0\x01\r\n-\xb4\0\0\0\0IEND\xaeB`\x82";
+
     protected function setUp(): void
     {
         parent::setUp();
         $this->setUpScenarios();
+        Http::fake(['api.qrserver.com/*' => Http::response(self::PIXEL_PNG, 200, ['Content-Type' => 'image/png'])]);
     }
 
     /** A booking for someone who attended, on an event that has already ended (unless told otherwise). */
@@ -124,6 +130,27 @@ class CertificateTest extends TestCase
 
         $this->assertStringStartsWith('%PDF', $pdf);
         $this->assertGreaterThan(1000, strlen($pdf));
+    }
+
+    public function test_the_certificate_carries_a_qr_code_that_points_at_its_own_verify_link(): void
+    {
+        $booking = $this->attended();
+
+        app(CertificateService::class)->pdf($booking);
+
+        $verifyUrl = app(CertificateService::class)->verifyUrl($booking);
+        Http::assertSent(fn (Request $request) => str_starts_with($request->url(), 'https://api.qrserver.com/v1/create-qr-code/')
+            && str_contains($request->url(), urlencode($verifyUrl)));
+    }
+
+    public function test_the_certificate_still_renders_if_the_qr_service_is_unreachable(): void
+    {
+        Http::fake(['api.qrserver.com/*' => Http::response('', 500)]);
+        $booking = $this->attended();
+
+        $pdf = app(CertificateService::class)->pdf($booking);
+
+        $this->assertStringStartsWith('%PDF', $pdf);
     }
 
     public function test_checking_is_rate_limited(): void

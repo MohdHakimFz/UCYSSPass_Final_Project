@@ -5,10 +5,14 @@ namespace App\Services;
 use App\Models\Booking;
 use Dompdf\Dompdf;
 use Dompdf\Options;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 /** A certificate of attendance: a PDF for someone who really came, with a code anyone can check. */
 class CertificateService
 {
+    public function __construct(private readonly QrCodeApiService $qr) {}
+
     /** Why this booking cannot have a certificate (yet), or null when it can. */
     public function problem(Booking $booking): ?string
     {
@@ -58,6 +62,7 @@ class CertificateService
             'issued' => now()->timezone('Asia/Kuala_Lumpur')->format('j F Y'),
             'number' => 'UCYSS-'.str_pad((string) $booking->id, 6, '0', STR_PAD_LEFT).'-'.$this->code($booking),
             'verifyUrl' => $this->verifyUrl($booking),
+            'qrDataUri' => $this->qrDataUri($booking),
         ])->render();
 
         $options = new Options;
@@ -70,5 +75,26 @@ class CertificateService
         $dompdf->render();
 
         return (string) $dompdf->output();
+    }
+
+    /**
+     * A QR code of the verify link, embedded as inline image data — Dompdf has remote fetching turned off,
+     * so it has to already be a data: URI, not a URL. A scanner reads it straight to the public check page.
+     * If the QR service is unreachable the certificate still renders, just without the code.
+     */
+    private function qrDataUri(Booking $booking): ?string
+    {
+        try {
+            $response = $this->qr->fetchForData($this->verifyUrl($booking), 200);
+            if (! $response->successful()) {
+                return null;
+            }
+
+            return 'data:'.($response->header('Content-Type') ?: 'image/png').';base64,'.base64_encode($response->body());
+        } catch (Throwable $e) {
+            Log::warning('Certificate QR code unavailable', ['booking_id' => $booking->id, 'error' => $e->getMessage()]);
+
+            return null;
+        }
     }
 }
