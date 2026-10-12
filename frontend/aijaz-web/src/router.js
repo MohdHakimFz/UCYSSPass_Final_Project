@@ -34,6 +34,10 @@ function currentPath() {
 
 // Go to another page. If we are already on it, redraw it.
 export function navigate(path) {
+  // Before the router has started (a dead token found while the page is still
+  // loading) there is nothing to do: the guard picks the right page on start.
+  if (routes.length === 0) return;
+
   if (currentPath() === path) {
     handleRoute();
   } else {

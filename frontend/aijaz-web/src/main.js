@@ -7,7 +7,7 @@ import { setUnauthorizedHandler, setSlowHandler } from './api.js';
 import { restoreSession, clearUser } from './auth.js';
 import { renderLayout, setSlowBanner } from './layout.js';
 import { startRouter, navigate } from './router.js';
-import { flash, loadingHtml, escapeHtml } from './ui.js';
+import { flash, loadingHtml, escapeHtml, handleError } from './ui.js';
 import { loginPage } from './pages/login.js';
 import { registerPage } from './pages/register.js';
 import { eventsPage } from './pages/customer/events.js';
@@ -59,6 +59,11 @@ setUnauthorizedHandler(() => {
   flash('Your session has expired. Please log in again.', 'warning');
   navigate('/login');
 });
+
+// Safety net: any error that a page forgot to catch still becomes a normal
+// message at the top, never a blank page or a silent failure.
+window.addEventListener('unhandledrejection', (event) => handleError(event.reason));
+window.addEventListener('error', (event) => handleError(event.error));
 
 async function boot() {
   const view = document.querySelector('#view');

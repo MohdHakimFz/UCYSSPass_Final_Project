@@ -100,7 +100,10 @@ async function request(method, path, body) {
     });
   } catch {
     // fetch only rejects when there was no response: offline, DNS, CORS or our timeout.
-    throw new ApiError(0, "Can't reach the server, it may be waking up, try again in a moment.");
+    const message = navigator.onLine
+      ? "Can't reach the server, it may be waking up, try again in a moment."
+      : 'You are offline. Check your internet connection and try again.';
+    throw new ApiError(0, message);
   } finally {
     clearTimeout(timeoutTimer);
     clearTimeout(slowTimer);

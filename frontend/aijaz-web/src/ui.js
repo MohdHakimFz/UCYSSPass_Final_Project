@@ -74,12 +74,27 @@ export function paginationHtml(result) {
 // "Try again" block where the content would be, so the page is never blank.
 export function showLoadError(element, error, retry) {
   handleError(error);
+
+  // Trying again cannot fix "not found" or "not allowed", so those get no button.
+  let text = 'This could not be loaded.';
+  let canRetry = true;
+  if (error?.status === 404) {
+    text = 'This item does not exist or was removed.';
+    canRetry = false;
+  } else if (error?.status === 403) {
+    text = 'You are not allowed to see this.';
+    canRetry = false;
+  }
+
   element.innerHTML = `
     <div class="text-center border rounded bg-white py-5">
-      <p class="text-muted">This could not be loaded.</p>
-      <button class="btn btn-outline-primary btn-sm" type="button">Try again</button>
+      <p class="text-muted ${canRetry ? '' : 'mb-0'}">${text}</p>
+      ${canRetry ? '<button class="btn btn-outline-primary btn-sm" type="button">Try again</button>' : ''}
     </div>`;
-  element.querySelector('button').addEventListener('click', retry);
+  element.querySelector('button')?.addEventListener('click', () => {
+    clearAlerts();
+    retry();
+  });
 }
 
 // One number on a dashboard.
@@ -130,6 +145,14 @@ export function showFieldErrors(form, errors) {
     feedback.textContent = messages.join(' ');
     // Grouped inputs (radio buttons, checkboxes) get the message after the whole group.
     (input.closest('[data-error-anchor]') || input).after(feedback);
+
+    // The red message disappears as soon as the user starts fixing that field.
+    const clear = () => {
+      input.classList.remove('is-invalid');
+      feedback.remove();
+    };
+    input.addEventListener('input', clear, { once: true });
+    input.addEventListener('change', clear, { once: true });
   }
   return leftover;
 }
