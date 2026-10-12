@@ -11,6 +11,10 @@ import { flash, loadingHtml, escapeHtml } from './ui.js';
 import { loginPage } from './pages/login.js';
 import { registerPage } from './pages/register.js';
 import { placeholderPage } from './pages/placeholder.js';
+import { eventsPage } from './pages/customer/events.js';
+import { eventDetailPage } from './pages/customer/eventDetail.js';
+import { bookingsPage } from './pages/customer/bookings.js';
+import { bookingDetailPage } from './pages/customer/bookingDetail.js';
 
 // Every address the app knows.
 //   guest: true -> only for logged-out visitors
@@ -18,7 +22,10 @@ import { placeholderPage } from './pages/placeholder.js';
 const routes = [
   { path: '/login', guest: true, page: loginPage },
   { path: '/register', guest: true, page: registerPage },
-  { path: '/events', role: 'customer', page: placeholderPage('Customer area') },
+  { path: '/events', role: 'customer', page: eventsPage },
+  { path: '/events/:id', role: 'customer', page: eventDetailPage },
+  { path: '/bookings', role: 'customer', page: bookingsPage },
+  { path: '/bookings/:id', role: 'customer', page: bookingDetailPage },
   { path: '/organiser', role: 'organiser', page: placeholderPage('Organiser area') },
   { path: '/admin', role: 'admin', page: placeholderPage('Admin area') },
 ];

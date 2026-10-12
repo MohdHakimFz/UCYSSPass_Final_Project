@@ -55,7 +55,10 @@ function messageFor(status, serverMessage) {
     case 401:
       return serverMessage || 'Please log in to continue.';
     case 403:
-      return 'You are not allowed to do this.';
+      // Laravel's default text adds nothing; a specific reason (e.g. "members only") does.
+      return serverMessage && serverMessage !== 'This action is unauthorized.'
+        ? `You are not allowed to do this. ${serverMessage}`
+        : 'You are not allowed to do this.';
     case 404:
       return 'We could not find what you were looking for.';
     case 409:

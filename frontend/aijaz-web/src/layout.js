@@ -7,7 +7,10 @@ import { escapeHtml, flash } from './ui.js';
 
 // Menu links for each role. More links are added as the pages are built.
 const NAV_LINKS = {
-  customer: [{ path: '/events', label: 'Events' }],
+  customer: [
+    { path: '/events', label: 'Events' },
+    { path: '/bookings', label: 'My bookings' },
+  ],
   organiser: [{ path: '/organiser', label: 'Dashboard' }],
   admin: [{ path: '/admin', label: 'Overview' }],
 };
@@ -41,7 +44,8 @@ export function renderNav(currentPath) {
 
   const links = (user ? NAV_LINKS[user.role] || [] : [])
     .map((link) => {
-      const active = currentPath === link.path ? 'active' : '';
+      // "/events/5" still highlights the "Events" link.
+      const active = currentPath === link.path || currentPath.startsWith(`${link.path}/`) ? 'active' : '';
       return `<li class="nav-item"><a class="nav-link ${active}" href="#${link.path}">${link.label}</a></li>`;
     })
     .join('');

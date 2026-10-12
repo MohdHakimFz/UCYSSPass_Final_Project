@@ -57,6 +57,31 @@ export function emptyHtml(text) {
   return `<div class="text-center text-muted border rounded bg-white py-5">${escapeHtml(text)}</div>`;
 }
 
+// Previous / Next buttons for a paginated API result ({ current_page, last_page, total }).
+// The page listens for clicks on [data-page] to load the other page.
+export function paginationHtml(result) {
+  if (result.last_page <= 1) return '';
+  const page = result.current_page;
+  return `
+    <div class="d-flex justify-content-between align-items-center mt-3">
+      <button class="btn btn-outline-secondary btn-sm" data-page="${page - 1}" ${page <= 1 ? 'disabled' : ''}>Previous</button>
+      <span class="text-muted small">Page ${page} of ${result.last_page} (${result.total} in total)</span>
+      <button class="btn btn-outline-secondary btn-sm" data-page="${page + 1}" ${page >= result.last_page ? 'disabled' : ''}>Next</button>
+    </div>`;
+}
+
+// When a list or page fails to load: show the message at the top AND put a
+// "Try again" block where the content would be, so the page is never blank.
+export function showLoadError(element, error, retry) {
+  handleError(error);
+  element.innerHTML = `
+    <div class="text-center border rounded bg-white py-5">
+      <p class="text-muted">This could not be loaded.</p>
+      <button class="btn btn-outline-primary btn-sm" type="button">Try again</button>
+    </div>`;
+  element.querySelector('button').addEventListener('click', retry);
+}
+
 // Disables a button and shows a spinner while a request is running, so the
 // user cannot submit the same form twice. Returns a function that undoes it.
 export function setBusy(button, busyText = 'Please wait...') {
