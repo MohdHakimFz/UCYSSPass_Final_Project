@@ -15,6 +15,10 @@ import { eventsPage } from './pages/customer/events.js';
 import { eventDetailPage } from './pages/customer/eventDetail.js';
 import { bookingsPage } from './pages/customer/bookings.js';
 import { bookingDetailPage } from './pages/customer/bookingDetail.js';
+import { organiserDashboardPage } from './pages/organiser/dashboard.js';
+import { organiserEventsPage } from './pages/organiser/events.js';
+import { eventFormPage } from './pages/organiser/eventForm.js';
+import { eventManagePage } from './pages/organiser/eventManage.js';
 
 // Every address the app knows.
 //   guest: true -> only for logged-out visitors
@@ -26,7 +30,12 @@ const routes = [
   { path: '/events/:id', role: 'customer', page: eventDetailPage },
   { path: '/bookings', role: 'customer', page: bookingsPage },
   { path: '/bookings/:id', role: 'customer', page: bookingDetailPage },
-  { path: '/organiser', role: 'organiser', page: placeholderPage('Organiser area') },
+  { path: '/organiser', role: 'organiser', page: organiserDashboardPage },
+  { path: '/organiser/events', role: 'organiser', page: organiserEventsPage },
+  // "new" must come before ":id", otherwise "new" would be read as an event id.
+  { path: '/organiser/events/new', role: 'organiser', page: eventFormPage },
+  { path: '/organiser/events/:id', role: 'organiser', page: eventManagePage },
+  { path: '/organiser/events/:id/edit', role: 'organiser', page: eventFormPage },
   { path: '/admin', role: 'admin', page: placeholderPage('Admin area') },
 ];
 

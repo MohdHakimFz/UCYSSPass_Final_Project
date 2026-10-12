@@ -82,6 +82,19 @@ export function showLoadError(element, error, retry) {
   element.querySelector('button').addEventListener('click', retry);
 }
 
+// One number on a dashboard.
+export function statCardHtml(label, value) {
+  return `
+    <div class="col-6 col-md-3">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <div class="small text-muted">${escapeHtml(label)}</div>
+          <div class="fs-3 fw-semibold">${escapeHtml(value)}</div>
+        </div>
+      </div>
+    </div>`;
+}
+
 // Disables a button and shows a spinner while a request is running, so the
 // user cannot submit the same form twice. Returns a function that undoes it.
 export function setBusy(button, busyText = 'Please wait...') {
@@ -113,9 +126,10 @@ export function showFieldErrors(form, errors) {
     }
     input.classList.add('is-invalid');
     const feedback = document.createElement('div');
-    feedback.className = 'invalid-feedback';
+    feedback.className = 'invalid-feedback d-block';
     feedback.textContent = messages.join(' ');
-    input.after(feedback);
+    // Grouped inputs (radio buttons, checkboxes) get the message after the whole group.
+    (input.closest('[data-error-anchor]') || input).after(feedback);
   }
   return leftover;
 }

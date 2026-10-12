@@ -11,7 +11,10 @@ const NAV_LINKS = {
     { path: '/events', label: 'Events' },
     { path: '/bookings', label: 'My bookings' },
   ],
-  organiser: [{ path: '/organiser', label: 'Dashboard' }],
+  organiser: [
+    { path: '/organiser', label: 'Dashboard' },
+    { path: '/organiser/events', label: 'My events' },
+  ],
   admin: [{ path: '/admin', label: 'Overview' }],
 };
 
@@ -42,10 +45,17 @@ export function renderNav(currentPath) {
   const nav = document.querySelector('#nav');
   const home = user ? homeFor(user.role) : '/login';
 
-  const links = (user ? NAV_LINKS[user.role] || [] : [])
+  const roleLinks = user ? NAV_LINKS[user.role] || [] : [];
+
+  // Highlight the link that matches the current address. "/events/5" still
+  // counts as "Events"; when two links match, the longer (more exact) one wins.
+  const activeLink = roleLinks
+    .filter((link) => currentPath === link.path || currentPath.startsWith(`${link.path}/`))
+    .sort((a, b) => b.path.length - a.path.length)[0];
+
+  const links = roleLinks
     .map((link) => {
-      // "/events/5" still highlights the "Events" link.
-      const active = currentPath === link.path || currentPath.startsWith(`${link.path}/`) ? 'active' : '';
+      const active = link === activeLink ? 'active' : '';
       return `<li class="nav-item"><a class="nav-link ${active}" href="#${link.path}">${link.label}</a></li>`;
     })
     .join('');
