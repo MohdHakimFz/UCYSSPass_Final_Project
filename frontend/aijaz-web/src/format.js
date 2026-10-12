@@ -45,6 +45,14 @@ export function statusBadge(status) {
   return `<span class="badge text-bg-${colour}">${escapeHtml(status)}</span>`;
 }
 
+// Who an event belongs to, for the admin pages: the name plus a badge that
+// tells an organiser's event apart from one kept under an admin account.
+export function ownerHtml(owner) {
+  if (!owner) return '<span class="text-muted">Unknown</span>';
+  const colour = owner.role === 'admin' ? 'dark' : 'secondary';
+  return `${escapeHtml(owner.name)} <span class="badge text-bg-${colour}">${escapeHtml(owner.role)}</span>`;
+}
+
 // "Cyber Range Lab" for a physical event, "Online" for an online one.
 export function placeLabel(event) {
   if (event.mode === 'online') return 'Online';

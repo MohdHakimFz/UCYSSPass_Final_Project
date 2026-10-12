@@ -3,7 +3,7 @@
 
 import { api } from '../../api.js';
 import { eventsHome, getUser } from '../../auth.js';
-import { categoryLabel, formatDateTime, placeLabel, statusBadge } from '../../format.js';
+import { categoryLabel, formatDateTime, ownerHtml, placeLabel, statusBadge } from '../../format.js';
 import { navigate } from '../../router.js';
 import { clearAlerts, escapeHtml, flash, handleError, loadingHtml, setBusy, showAlert, showLoadError } from '../../ui.js';
 import { mountEventBookings } from './eventBookings.js';
@@ -12,6 +12,7 @@ import { mountTiers } from './tiers.js';
 export async function eventManagePage(container, params) {
   container.innerHTML = loadingHtml('Loading event...');
   const base = eventsHome();
+  const isAdmin = getUser().role === 'admin';
 
   let event;
   try {
@@ -26,7 +27,7 @@ export async function eventManagePage(container, params) {
     : placeLabel(event);
 
   container.innerHTML = `
-    <a href="#${base}" class="small">&larr; ${getUser().role === 'admin' ? 'All events' : 'My events'}</a>
+    <a href="#${base}" class="small">&larr; ${isAdmin ? 'All events' : 'My events'}</a>
     <div class="card shadow-sm mt-2 mb-4">
       <div class="card-body">
         <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-2">
@@ -34,6 +35,7 @@ export async function eventManagePage(container, params) {
           ${statusBadge(event.status)}
         </div>
         <dl class="row mb-3">
+          ${isAdmin ? '<dt class="col-sm-2">Owner</dt><dd class="col-sm-10" id="owner">Loading...</dd>' : ''}
           <dt class="col-sm-2">Category</dt><dd class="col-sm-10">${escapeHtml(categoryLabel(event.category))}</dd>
           <dt class="col-sm-2">Starts</dt><dd class="col-sm-10">${escapeHtml(formatDateTime(event.start_at))}</dd>
           <dt class="col-sm-2">Ends</dt><dd class="col-sm-10">${escapeHtml(formatDateTime(event.end_at))}</dd>
@@ -54,6 +56,14 @@ export async function eventManagePage(container, params) {
     </div>
     <section id="tiers" class="mb-4"></section>
     <section id="event-bookings"></section>`;
+
+  // Admin only: the event carries just the owner's id, so look the account up.
+  if (isAdmin) {
+    const ownerCell = container.querySelector('#owner');
+    api.get(`/users/${event.organiser_id}`)
+      .then((owner) => { ownerCell.innerHTML = ownerHtml(owner); })
+      .catch(() => { ownerCell.innerHTML = ownerHtml(null); });
+  }
 
   mountTiers(container.querySelector('#tiers'), event.id);
   mountEventBookings(container.querySelector('#event-bookings'), event.id);

@@ -1,6 +1,6 @@
 // Organiser and admin: one form used for both "create event" and "edit event".
 // With an id in the address (#/organiser/events/5/edit) it edits, without one it creates.
-// An admin creating an event also chooses which organiser it belongs to.
+// An admin creating an event also chooses who owns it: an organiser, or the admin.
 
 import { api } from '../../api.js';
 import { eventsHome, getUser } from '../../auth.js';
@@ -54,11 +54,13 @@ export async function eventFormPage(container, params) {
 
         ${pickOrganiser ? `
         <div class="mb-3">
-          <label class="form-label" for="organiser_id">Organiser</label>
+          <label class="form-label" for="organiser_id">Owner</label>
           <select class="form-select" id="organiser_id" name="organiser_id">
-            <option value="">Choose the organiser who owns this event</option>
+            <option value="">Choose who owns this event</option>
+            ${option(getUser().id, `Me, ${getUser().name} (admin)`, false)}
             ${organisers.map((organiser) => option(organiser.id, `${organiser.name} (${organiser.email})`, false)).join('')}
           </select>
+          <div class="form-text">The owner is the account that can manage the event. It cannot be changed later.</div>
         </div>` : ''}
 
         <div class="row">
@@ -161,9 +163,9 @@ export async function eventFormPage(container, params) {
 
     if (pickOrganiser) {
       // This one is checked here, because the API would quietly make the admin
-      // the owner when no organiser is sent.
+      // the owner when no owner is sent.
       if (!fields.organiser_id.value) {
-        showFieldErrors(form, { organiser_id: ['Choose an organiser for this event.'] });
+        showFieldErrors(form, { organiser_id: ['Choose an owner for this event.'] });
         showAlert('Please check the highlighted fields.');
         done();
         return;

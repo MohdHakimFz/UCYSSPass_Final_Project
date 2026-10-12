@@ -3,16 +3,16 @@
 // any event to edit it, manage its ticket tiers, see its bookings or delete it.
 
 import { api } from '../../api.js';
-import { categoryLabel, formatDateTime, placeLabel, statusBadge } from '../../format.js';
+import { categoryLabel, formatDateTime, ownerHtml, placeLabel, statusBadge } from '../../format.js';
 import { clearAlerts, emptyHtml, escapeHtml, handleError, loadingHtml, paginationHtml, setBusy, showAlert, showLoadError } from '../../ui.js';
 
 const STATUSES = ['draft', 'published', 'cancelled', 'completed'];
 
-function eventRow(event, organiserNames) {
+function eventRow(event, owners) {
   return `
     <tr>
       <td><a href="#/admin/events/${event.id}">${escapeHtml(event.title)}</a></td>
-      <td>${escapeHtml(organiserNames[event.organiser_id] || '-')}</td>
+      <td>${ownerHtml(owners[event.organiser_id])}</td>
       <td>${escapeHtml(categoryLabel(event.category))}</td>
       <td>${escapeHtml(formatDateTime(event.start_at))}</td>
       <td>${escapeHtml(placeLabel(event))}</td>
@@ -40,8 +40,8 @@ export function adminEventsPage(container) {
         <input class="form-control" type="search" name="search" placeholder="Search events..." aria-label="Search events" />
       </div>
       <div class="col-md-3">
-        <select class="form-select" name="organiser_id" aria-label="Organiser filter">
-          <option value="">All organisers</option>
+        <select class="form-select" name="organiser_id" aria-label="Owner filter">
+          <option value="">All owners</option>
         </select>
       </div>
       <div class="col-md-3">
@@ -59,17 +59,22 @@ export function adminEventsPage(container) {
   const form = container.querySelector('#filter-form');
   const list = container.querySelector('#event-list');
   let page = 1;
-  // { 3: "Nurul Aisyah", ... } so the table can show a name instead of an id.
-  const organiserNames = {};
+  // { 3: { name: "Nurul Aisyah", role: "organiser" }, ... } so the table can
+  // show who owns each event instead of a bare id.
+  const owners = {};
 
-  // Events only carry organiser_id, so the names come from the users list.
-  // If this fails the page still works, just without names and the filter.
-  async function loadOrganisers() {
+  // Events only carry organiser_id, so names and roles come from the users
+  // list. An event can belong to an organiser or to an admin, so both are
+  // loaded. If this fails the page still works, just without names and filter.
+  async function loadOwners() {
     try {
-      const result = await api.get('/users', { role: 'organiser', per_page: 100 });
-      for (const organiser of result.data) {
-        organiserNames[organiser.id] = organiser.name;
-        form.elements.organiser_id.add(new Option(organiser.name, organiser.id));
+      const [organisers, admins] = await Promise.all([
+        api.get('/users', { role: 'organiser', per_page: 100 }),
+        api.get('/users', { role: 'admin', per_page: 100 }),
+      ]);
+      for (const user of [...organisers.data, ...admins.data]) {
+        owners[user.id] = user;
+        form.elements.organiser_id.add(new Option(`${user.name} (${user.role})`, user.id));
       }
     } catch {
       form.elements.organiser_id.disabled = true;
@@ -94,8 +99,8 @@ export function adminEventsPage(container) {
       list.innerHTML = `
         <div class="table-responsive bg-white border rounded">
           <table class="table align-middle mb-0">
-            <thead><tr><th>Title</th><th>Organiser</th><th>Category</th><th>Starts</th><th>Where</th><th>Status</th><th></th></tr></thead>
-            <tbody>${result.data.map((event) => eventRow(event, organiserNames)).join('')}</tbody>
+            <thead><tr><th>Title</th><th>Owner</th><th>Category</th><th>Starts</th><th>Where</th><th>Status</th><th></th></tr></thead>
+            <tbody>${result.data.map((event) => eventRow(event, owners)).join('')}</tbody>
           </table>
         </div>
         ${paginationHtml(result)}`;
@@ -145,5 +150,5 @@ export function adminEventsPage(container) {
   });
 
   // Names first, so the first table already shows them.
-  loadOrganisers().then(load);
+  loadOwners().then(load);
 }
