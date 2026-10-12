@@ -1,3 +1,5 @@
+import { useEffect } from 'react'
+import { Animated } from 'react-native'
 import { DeviceMotion } from 'expo-sensors'
 
 /**
@@ -17,6 +19,22 @@ export const FOLLOW = 1
 const DRIFT = 0.004
 // How much of each new reading is used, so the card glides instead of jittering.
 const SMOOTH = 0.3
+
+/**
+ * One set of animated values for the phone's lean, shared by every 3D card on screen.
+ * The sensor writes them once per reading, however many cards there are. (Before, each card kept its own copy,
+ * so a list of 30 passes meant 150 updates 30 times a second on the JavaScript thread: the app lagged, the back
+ * button got stuck and memory kept growing until Android closed the app.)
+ */
+export const sharedTilt = {
+  x: new Animated.Value(0),
+  y: new Animated.Value(0),
+  /** Where the light falls, 0 to 1 across and down the card. */
+  gx: new Animated.Value(0.5),
+  gy: new Animated.Value(0.5),
+  /** How strong the light is, 0 to 1. */
+  lit: new Animated.Value(0),
+}
 
 const listeners = new Set<Listener>()
 let sub: { remove: () => void } | null = null
@@ -42,6 +60,11 @@ async function start() {
       base.gamma += (rotation.gamma - base.gamma) * DRIFT
       x += (clamp(((rotation.beta - base.beta) / RANGE) * FOLLOW) - x) * SMOOTH
       y += (clamp(((rotation.gamma - base.gamma) / RANGE) * FOLLOW) - y) * SMOOTH
+      sharedTilt.x.setValue(x)
+      sharedTilt.y.setValue(y)
+      sharedTilt.gx.setValue(0.5 + y * 0.5)
+      sharedTilt.gy.setValue(0.5 + x * 0.5)
+      sharedTilt.lit.setValue(Math.min(1, Math.hypot(x, y) * 1.8))
       listeners.forEach((fn) => fn(x, y))
     })
   } catch {
@@ -57,6 +80,23 @@ function stop() {
   base = null
   x = 0
   y = 0
+  sharedTilt.x.setValue(0)
+  sharedTilt.y.setValue(0)
+  sharedTilt.gx.setValue(0.5)
+  sharedTilt.gy.setValue(0.5)
+  sharedTilt.lit.setValue(0)
+}
+
+/**
+ * Keeps the sensor on while `active` is true (for example, while a screen with 3D cards is in front).
+ * When nothing on screen needs it, the sensor stops completely.
+ */
+export function useTiltSensor(active: boolean) {
+  useEffect(() => {
+    if (!active) return
+    // A new function each time: the listeners are a Set, so a shared one would be counted once for all cards.
+    return subscribeTilt(() => undefined)
+  }, [active])
 }
 
 export async function motionAvailable(): Promise<boolean> {

@@ -85,14 +85,14 @@ jobs:
     timeout-minutes: 15
     defaults:
       run:
-        working-directory: frontend/customer-mobile
+        working-directory: frontend/ucyss-mobile
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: frontend/customer-mobile/package-lock.json
+          cache-dependency-path: frontend/ucyss-mobile/package-lock.json
       - run: npm ci
       - name: Type-check
         run: npx tsc --noEmit

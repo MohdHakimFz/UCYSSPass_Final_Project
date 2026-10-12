@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react'
 import * as Brightness from 'expo-brightness'
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake'
-import { Alert, FlatList, Image, Linking, Modal, RefreshControl, StyleSheet, Text, View } from 'react-native'
+import { FlatList, Image, Linking, Modal, RefreshControl, StyleSheet, Text, View } from 'react-native'
 import { api, CATEGORY_LABEL, errorText, fetchQrDataUri, type Booking, type Paginated } from '../lib/api'
 import { addToCalendar } from '../lib/calendar'
 import { loadCache, saveCache } from '../lib/offline'
 import { useFetch } from '../lib/useFetch'
 import Tilt3D from '../components/fx/Tilt3D'
 import Checkout from '../components/Checkout'
+import { askConfirm } from '../components/ConfirmDialog'
 import { Button, Empty, Notice, Skeleton, StatusTag, formatWhen } from '../components/ui'
 import { fonts, type Palette } from '../theme'
 import { useStyles, useTheme } from '../lib/themeMode'
@@ -123,6 +124,8 @@ export default function PassesScreen() {
   const [shown, setShown] = useState<Booking | null>(null)
   const [paying, setPaying] = useState<Booking | null>(null)
   const [note, setNote] = useState<{ tone: 'ok' | 'error'; text: string } | null>(null)
+  // The booking being cancelled right now: its button shows a spinner and no second cancel can start.
+  const [cancelling, setCancelling] = useState<number | null>(null)
 
   const live = data?.data ?? null
 
@@ -150,23 +153,26 @@ export default function PassesScreen() {
     const paidAmount = b.payment?.status === 'paid' ? Number(b.payment.amount) : 0
     const early = ev ? new Date(ev.start_at).getTime() - Date.now() > 24 * 3600 * 1000 : false
     const money = paidAmount ? (early ? ` You will be refunded RM ${paidAmount.toFixed(2)}.` : ' It is less than 24 hours away, so it will not be refunded.') : ''
-    Alert.alert('Cancel booking?', `Cancel your ${b.ticket_type?.name} pass?${money} This can't be undone.`, [
-      { text: 'Keep it', style: 'cancel' },
-      {
-        text: 'Cancel booking',
-        style: 'destructive',
-        onPress: async () => {
-          setNote(null)
-          try {
-            const res = await api<Booking>(`/bookings/${b.id}/cancel`, { method: 'PUT' })
-            setNote({ tone: 'ok', text: res.refund?.refunded ? `Booking cancelled. RM ${Number(res.refund.amount).toFixed(2)} has been refunded.` : 'Booking cancelled.' })
-            reload()
-          } catch (err) {
-            setNote({ tone: 'error', text: errorText(err) })
-          }
-        },
+    askConfirm({
+      title: 'Cancel booking?',
+      message: `Cancel your ${b.ticket_type?.name} pass${ev ? ` for ${ev.title}` : ''}?${money} This can't be undone.`,
+      confirmLabel: 'Cancel booking',
+      cancelLabel: 'Keep my pass',
+      tone: 'danger',
+      onConfirm: async () => {
+        setNote(null)
+        setCancelling(b.id)
+        try {
+          const res = await api<Booking>(`/bookings/${b.id}/cancel`, { method: 'PUT' })
+          setNote({ tone: 'ok', text: res.refund?.refunded ? `Booking cancelled. RM ${Number(res.refund.amount).toFixed(2)} has been refunded.` : 'Booking cancelled.' })
+          reload()
+        } catch (err) {
+          setNote({ tone: 'error', text: errorText(err) })
+        } finally {
+          setCancelling(null)
+        }
       },
-    ])
+    })
   }
 
   async function calendar(b: Booking) {
@@ -191,6 +197,12 @@ export default function PassesScreen() {
         contentContainerStyle={{ padding: 16, gap: 16 }}
         data={bookings}
         keyExtractor={(b) => String(b.id)}
+        // Keep only the cards around the screen alive: each 3D card carries its own drawings, and a long list
+        // held every one of them in memory.
+        initialNumToRender={6}
+        maxToRenderPerBatch={6}
+        windowSize={5}
+        removeClippedSubviews
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}
         ListHeaderComponent={
           <View style={{ gap: 12 }}>
@@ -236,7 +248,7 @@ export default function PassesScreen() {
                     {holding && <Button title="Pay now" onPress={() => setPaying(b)} />}
                     {online && b.meeting && <JoinButton booking={b} onDone={reload} onError={(text) => setNote({ tone: 'error', text })} />}
                     {canShow && !online && <Button title="Show pass" onPress={() => setShown(b)} />}
-                    {canCancel && <Button title="Cancel booking" variant="danger" onPress={() => cancel(b)} />}
+                    {canCancel && <Button title="Cancel booking" variant="danger" busy={cancelling === b.id} disabled={cancelling !== null} onPress={() => cancel(b)} />}
                   </View>
                 )}
               </View>
