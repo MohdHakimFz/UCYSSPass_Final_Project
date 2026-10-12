@@ -10,7 +10,6 @@ import { startRouter, navigate } from './router.js';
 import { flash, loadingHtml, escapeHtml } from './ui.js';
 import { loginPage } from './pages/login.js';
 import { registerPage } from './pages/register.js';
-import { placeholderPage } from './pages/placeholder.js';
 import { eventsPage } from './pages/customer/events.js';
 import { eventDetailPage } from './pages/customer/eventDetail.js';
 import { bookingsPage } from './pages/customer/bookings.js';
@@ -19,6 +18,11 @@ import { organiserDashboardPage } from './pages/organiser/dashboard.js';
 import { organiserEventsPage } from './pages/organiser/events.js';
 import { eventFormPage } from './pages/organiser/eventForm.js';
 import { eventManagePage } from './pages/organiser/eventManage.js';
+import { adminOverviewPage } from './pages/admin/overview.js';
+import { adminUsersPage } from './pages/admin/users.js';
+import { adminVenuesPage } from './pages/admin/venues.js';
+import { adminEventsPage } from './pages/admin/events.js';
+import { adminBookingsPage } from './pages/admin/bookings.js';
 
 // Every address the app knows.
 //   guest: true -> only for logged-out visitors
@@ -36,7 +40,11 @@ const routes = [
   { path: '/organiser/events/new', role: 'organiser', page: eventFormPage },
   { path: '/organiser/events/:id', role: 'organiser', page: eventManagePage },
   { path: '/organiser/events/:id/edit', role: 'organiser', page: eventFormPage },
-  { path: '/admin', role: 'admin', page: placeholderPage('Admin area') },
+  { path: '/admin', role: 'admin', page: adminOverviewPage },
+  { path: '/admin/users', role: 'admin', page: adminUsersPage },
+  { path: '/admin/venues', role: 'admin', page: adminVenuesPage },
+  { path: '/admin/events', role: 'admin', page: adminEventsPage },
+  { path: '/admin/bookings', role: 'admin', page: adminBookingsPage },
 ];
 
 const app = document.querySelector('#app');

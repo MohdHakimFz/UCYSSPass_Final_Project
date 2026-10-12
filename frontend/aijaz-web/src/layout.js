@@ -5,7 +5,7 @@ import { getUser, logout, homeFor } from './auth.js';
 import { navigate } from './router.js';
 import { escapeHtml, flash } from './ui.js';
 
-// Menu links for each role. More links are added as the pages are built.
+// Menu links for each role.
 const NAV_LINKS = {
   customer: [
     { path: '/events', label: 'Events' },
@@ -15,7 +15,13 @@ const NAV_LINKS = {
     { path: '/organiser', label: 'Dashboard' },
     { path: '/organiser/events', label: 'My events' },
   ],
-  admin: [{ path: '/admin', label: 'Overview' }],
+  admin: [
+    { path: '/admin', label: 'Overview' },
+    { path: '/admin/users', label: 'Users' },
+    { path: '/admin/venues', label: 'Venues' },
+    { path: '/admin/events', label: 'Events' },
+    { path: '/admin/bookings', label: 'Bookings' },
+  ],
 };
 
 export function renderLayout(app) {
