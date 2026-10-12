@@ -13,6 +13,7 @@ import { useFetch } from "@/lib/useFetch";
 import { PageHeader } from "@/dashboard/parts";
 import SeatMapPanel from "@/dashboard/SeatMapPanel";
 import { Notice, Pager, Tag, formatWhen, Skeleton } from "@/dashboard/ui";
+import { useOrganisers } from "../useOrganisers";
 
 const CATEGORY = { ctf: "CTF", bootcamp: "Bootcamp", conference: "Conference", workshop: "Workshop" } as const;
 
@@ -24,6 +25,7 @@ export default function EventDetailPage() {
   const { data: event, error } = useFetch<EventDetail>(`/events/${id}`);
   const { data: stats } = useFetch<EventStats>(`/events/${id}/stats`);
   const { data: bookings } = useFetch<Paginated<Booking>>(`/bookings?event_id=${id}&per_page=10&page=${page}`);
+  const people = useOrganisers();
 
   if (error) return <Notice tone="error">{error}</Notice>;
   if (!event) return <p className="loading">Loading event…</p>;
@@ -40,6 +42,12 @@ export default function EventDetailPage() {
       />
 
       {note && <Notice tone="error">{note}</Notice>}
+      {/* Admin only: who created this event. */}
+      <p className="lede-sub" style={{ marginTop: 0 }}>
+        Created by{" "}
+        <strong>{people.get(event.organiser_id)?.name ?? `user #${event.organiser_id}`}</strong>
+        {people.get(event.organiser_id) ? ` (${people.get(event.organiser_id)!.email}, ${people.get(event.organiser_id)!.role})` : ""}
+      </p>
       {event.description && <p className="prose">{event.description}</p>}
 
       {stats && (

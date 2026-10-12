@@ -22,6 +22,7 @@ import { Calendar } from '@carbon/icons-react'
 import { api, errorText, type EventItem, type EventStatus, type Paginated } from '@/lib/api'
 import { useFetch } from '@/lib/useFetch'
 import { useFeedback } from '@/dashboard/feedback'
+import { useOrganisers } from '../useOrganisers'
 import { EmptyState, PageHeader, TablePager } from '@/dashboard/parts'
 import { ModeTag, Notice, Skeleton, StatusTag, formatWhen } from '@/dashboard/ui'
 
@@ -48,6 +49,7 @@ export default function EventsPage() {
   if (query) qs.set('search', query)
   if (mode) qs.set('mode', mode)
   const { data: rows, error, reload } = useFetch<Paginated<EventItem>>(`/events?${qs}`)
+  const people = useOrganisers()
 
   async function setEventStatus(ev: EventItem, next: EventStatus) {
     if (next === 'cancelled') {
@@ -144,6 +146,7 @@ export default function EventsPage() {
             <TableHead>
               <TableRow>
                 <TableHeader>Event</TableHeader>
+                <TableHeader>Organiser</TableHeader>
                 <TableHeader>Starts</TableHeader>
                 <TableHeader>Seats held</TableHeader>
                 <TableHeader>Status</TableHeader>
@@ -164,6 +167,10 @@ export default function EventsPage() {
                         {CATEGORY[ev.category]}
                         {ev.mode === 'online' ? ', Online meeting' : ev.venue ? `, ${ev.venue.name}` : ''}
                       </span>
+                    </TableCell>
+                    <TableCell>
+                      {people.get(ev.organiser_id)?.name ?? `User #${ev.organiser_id}`}
+                      <span className="sub">{people.get(ev.organiser_id)?.email ?? ''}</span>
                     </TableCell>
                     <TableCell>{formatWhen(ev.start_at)}</TableCell>
                     <TableCell style={{ minWidth: 150 }}>
