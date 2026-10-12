@@ -38,6 +38,8 @@ export class ApiError extends Error {
 // Hooks that main.js fills in, so this file does not need to know about the UI.
 let onUnauthorized = () => {};
 let onSlow = () => {};
+// How many requests are slow right now, so the banner only hides when all are done.
+let slowCount = 0;
 
 export function setUnauthorizedHandler(fn) {
   onUnauthorized = fn;
@@ -78,7 +80,12 @@ async function request(method, path, body) {
   // AbortController lets us cancel the request ourselves when it takes too long.
   const controller = new AbortController();
   const timeoutTimer = setTimeout(() => controller.abort(), TIMEOUT_MS);
-  const slowTimer = setTimeout(() => onSlow(true), SLOW_AFTER_MS);
+  let wasSlow = false;
+  const slowTimer = setTimeout(() => {
+    wasSlow = true;
+    slowCount += 1;
+    onSlow(true);
+  }, SLOW_AFTER_MS);
 
   let response;
   try {
@@ -94,7 +101,10 @@ async function request(method, path, body) {
   } finally {
     clearTimeout(timeoutTimer);
     clearTimeout(slowTimer);
-    onSlow(false);
+    if (wasSlow) {
+      slowCount -= 1;
+      if (slowCount === 0) onSlow(false);
+    }
   }
 
   // Some responses (e.g. a delete) have no body, and an error page may not be JSON.
