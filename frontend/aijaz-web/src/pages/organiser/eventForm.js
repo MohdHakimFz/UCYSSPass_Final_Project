@@ -1,25 +1,33 @@
-// Organiser: one form used for both "create event" and "edit event".
+// Organiser and admin: one form used for both "create event" and "edit event".
 // With an id in the address (#/organiser/events/5/edit) it edits, without one it creates.
+// An admin creating an event also chooses which organiser it belongs to.
 
 import { api } from '../../api.js';
+import { eventsHome, getUser } from '../../auth.js';
 import { CATEGORIES, fromLocalInput, toLocalInput } from '../../format.js';
 import { navigate } from '../../router.js';
-import { clearAlerts, clearFieldErrors, escapeHtml, flash, handleError, loadingHtml, setBusy, showLoadError } from '../../ui.js';
+import { clearAlerts, clearFieldErrors, escapeHtml, flash, handleError, loadingHtml, setBusy, showAlert, showFieldErrors, showLoadError } from '../../ui.js';
 
 const STATUSES = ['draft', 'published', 'cancelled', 'completed'];
 
 export async function eventFormPage(container, params) {
   const editing = Boolean(params.id);
+  const base = eventsHome();
+  // The API only lets an admin pick the owner, and only when the event is created.
+  const pickOrganiser = getUser().role === 'admin' && !editing;
   container.innerHTML = loadingHtml('Loading form...');
 
   let venues;
   let event = null;
+  let organisers = [];
   try {
-    // Both requests run at the same time; we wait for both answers.
-    const [venueResult, eventResult] = await Promise.all([
+    // The requests run at the same time; we wait for all the answers.
+    const [venueResult, eventResult, organiserResult] = await Promise.all([
       api.get('/venues', { per_page: 100 }),
       editing ? api.get(`/events/${params.id}`) : null,
+      pickOrganiser ? api.get('/users', { role: 'organiser', per_page: 100 }) : null,
     ]);
+    organisers = organiserResult?.data || [];
     // The "Online" venue is a placeholder the API uses for online events,
     // so it is not offered as a place for a physical event.
     venues = (venueResult.data || venueResult).filter((venue) => venue.name !== 'Online');
@@ -29,7 +37,7 @@ export async function eventFormPage(container, params) {
     return;
   }
 
-  const backPath = editing ? `/organiser/events/${params.id}` : '/organiser/events';
+  const backPath = editing ? `${base}/${params.id}` : base;
   const mode = event?.mode || 'physical';
   const option = (value, label, selected) =>
     `<option value="${escapeHtml(value)}" ${selected ? 'selected' : ''}>${escapeHtml(label)}</option>`;
@@ -43,6 +51,15 @@ export async function eventFormPage(container, params) {
           <label class="form-label" for="title">Title</label>
           <input class="form-control" type="text" id="title" name="title" value="${escapeHtml(event?.title)}" />
         </div>
+
+        ${pickOrganiser ? `
+        <div class="mb-3">
+          <label class="form-label" for="organiser_id">Organiser</label>
+          <select class="form-select" id="organiser_id" name="organiser_id">
+            <option value="">Choose the organiser who owns this event</option>
+            ${organisers.map((organiser) => option(organiser.id, `${organiser.name} (${organiser.email})`, false)).join('')}
+          </select>
+        </div>` : ''}
 
         <div class="row">
           <div class="col-md-6 mb-3">
@@ -142,6 +159,18 @@ export async function eventFormPage(container, params) {
       body.venue_id = fields.venue_id.value ? Number(fields.venue_id.value) : null;
     }
 
+    if (pickOrganiser) {
+      // This one is checked here, because the API would quietly make the admin
+      // the owner when no organiser is sent.
+      if (!fields.organiser_id.value) {
+        showFieldErrors(form, { organiser_id: ['Choose an organiser for this event.'] });
+        showAlert('Please check the highlighted fields.');
+        done();
+        return;
+      }
+      body.organiser_id = Number(fields.organiser_id.value);
+    }
+
     try {
       // We do not validate here: the API checks everything and its 422
       // messages are shown under each field by handleError.
@@ -149,7 +178,7 @@ export async function eventFormPage(container, params) {
         ? await api.put(`/events/${params.id}`, body)
         : await api.post('/events', body);
       flash(editing ? 'Event saved.' : 'Event created. Now add its ticket tiers below.', 'success');
-      navigate(`/organiser/events/${saved.id}`);
+      navigate(`${base}/${saved.id}`);
     } catch (error) {
       handleError(error, form);
       done();

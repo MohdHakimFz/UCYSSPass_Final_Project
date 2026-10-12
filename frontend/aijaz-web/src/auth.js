@@ -21,6 +21,12 @@ export function homeFor(role) {
   return '/events';
 }
 
+// Where the event pages live for the logged-in user. The organiser and the
+// admin share the same event form and event page, under different addresses.
+export function eventsHome() {
+  return currentUser?.role === 'admin' ? '/admin/events' : '/organiser/events';
+}
+
 export async function login(email, password) {
   const data = await api.post('/auth/login', { email, password });
   setToken(data.token);

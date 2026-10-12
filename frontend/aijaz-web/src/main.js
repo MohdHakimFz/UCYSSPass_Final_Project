@@ -44,6 +44,10 @@ const routes = [
   { path: '/admin/users', role: 'admin', page: adminUsersPage },
   { path: '/admin/venues', role: 'admin', page: adminVenuesPage },
   { path: '/admin/events', role: 'admin', page: adminEventsPage },
+  // The admin reuses the organiser's event form and event page for any event.
+  { path: '/admin/events/new', role: 'admin', page: eventFormPage },
+  { path: '/admin/events/:id', role: 'admin', page: eventManagePage },
+  { path: '/admin/events/:id/edit', role: 'admin', page: eventFormPage },
   { path: '/admin/bookings', role: 'admin', page: adminBookingsPage },
 ];
 

@@ -67,7 +67,8 @@ The password is `password` for all of them.
 - Overview: revenue, users by role, events by status, bookings by status
 - Users: search, filter by role, create, change role, delete
 - Venues: list, create, edit, delete
-- All events (publish or cancel any of them) and all bookings
+- All events from every organiser, with an organiser filter: create an event for any organiser, edit it, manage its ticket tiers, publish, cancel, move back to draft or delete it
+- All bookings
 
 ## How the code is organised
 
