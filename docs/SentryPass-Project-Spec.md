@@ -251,7 +251,7 @@ sentrypass/
 │   ├── admin/                     # Next.js
 │   ├── staff/                     # React + Vite
 │   ├── customer-web/              # React + Vite
-│   └── customer-mobile/           # React Native + Expo
+│   └── ucyss-mobile/              # React Native + Expo
 ├── docs/
 │   ├── erd/ERD.png              # also erd/ERD.mmd (Mermaid) and erd/ERD.svg
 │   ├── postman-collection.json

@@ -15,7 +15,7 @@ docker compose up -d
 # 2. Web (folder frontend/web), dalam tetingkap lain
 npm run dev          # http://localhost:5175
 
-# 3. Mobile (folder frontend/customer-mobile), dalam tetingkap lain, bila nak uji telefon
+# 3. Mobile (folder frontend/ucyss-mobile), dalam tetingkap lain, bila nak uji telefon
 npx expo start
 ```
 
@@ -232,7 +232,7 @@ Pastikan `EXPO_PUBLIC_API_URL` betul (atau telefon dan komputer pada rangkaian y
 | Browser | `npx playwright test` (folder `frontend/web`, API dan web hidup) | semua lulus (lebih 44) |
 | API (Postman) | lihat `docs/postman/README.md` | 198 permintaan, 309 semakan, 0 gagal |
 | Web | `npx tsc -b`, `npm run lint`, `npm run build` (folder `frontend/web`) | tiada ralat |
-| Mobile | `npx tsc --noEmit` (folder `frontend/customer-mobile`) | tiada ralat |
+| Mobile | `npx tsc --noEmit` (folder `frontend/ucyss-mobile`) | tiada ralat |
 | Email | `docker compose exec laravel.test php artisan emails:test <emel penerima>` | `Resend answered 200` atau `Brevo answered 201` |
 
 ## Kalau sesuatu gagal

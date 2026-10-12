@@ -15,7 +15,7 @@ export function Button({
 }: {
   title: string
   onPress: () => void
-  variant?: 'primary' | 'quiet' | 'danger' | 'dark'
+  variant?: 'primary' | 'quiet' | 'danger' | 'dark' | 'destructive'
   disabled?: boolean
   busy?: boolean
 }) {
@@ -32,14 +32,15 @@ export function Button({
         variant === 'quiet' && s.btnQuiet,
         variant === 'danger' && s.btnDanger,
         variant === 'dark' && s.btnDark,
+        variant === 'destructive' && s.btnDestructive,
         (disabled || busy) && { opacity: 0.5 },
         pressed && { opacity: 0.8, transform: [{ translateY: 1 }] },
       ]}
     >
       {busy ? (
-        <ActivityIndicator color={variant === 'primary' ? colors.onAccent : colors.ink} />
+        <ActivityIndicator color={variant === 'primary' ? colors.onAccent : variant === 'destructive' ? '#FFFFFF' : colors.ink} />
       ) : (
-        <Text style={[s.btnText, variant === 'quiet' && { color: colors.ink }, variant === 'danger' && { color: colors.revoked }, variant === 'dark' && { color: colors.paper }]}>{title}</Text>
+        <Text style={[s.btnText, variant === 'quiet' && { color: colors.ink }, variant === 'danger' && { color: colors.revoked }, variant === 'dark' && { color: colors.paper }, variant === 'destructive' && { color: '#FFFFFF' }]}>{title}</Text>
       )}
     </Pressable>
   )
@@ -168,6 +169,8 @@ const makeStyles = (colors: Palette) => StyleSheet.create({
   btnQuiet: { backgroundColor: 'transparent' },
   btnDark: { backgroundColor: colors.ink },
   btnDanger: { backgroundColor: 'transparent', borderColor: 'transparent' },
+  // Filled red, for the button that confirms something that cannot be undone.
+  btnDestructive: { backgroundColor: colors.revoked, borderColor: colors.revoked },
   btnText: { fontFamily: fonts.semibold, fontSize: 16, color: colors.onAccent },
   label: { fontFamily: fonts.semibold, fontSize: 14, color: colors.ink },
   hint: { fontFamily: fonts.regular, fontSize: 13, color: colors.inkSoft },

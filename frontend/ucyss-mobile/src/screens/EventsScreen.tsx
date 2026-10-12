@@ -83,6 +83,12 @@ export default function EventsScreen() {
       contentContainerStyle={{ padding: 16, gap: 8 }}
       data={data?.data ?? []}
       keyExtractor={(e) => String(e.id)}
+      // Keep only the cards around the screen alive: each 3D card carries its own drawings, and a long list
+      // held every one of them in memory.
+      initialNumToRender={6}
+      maxToRenderPerBatch={6}
+      windowSize={5}
+      removeClippedSubviews
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}
       keyboardShouldPersistTaps="handled"
       ListHeaderComponent={

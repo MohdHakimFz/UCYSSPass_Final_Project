@@ -137,7 +137,7 @@ UCYSSPass/
 ├── backend/                 Laravel 12 API (Sanctum, PostgreSQL via Sail)
 ├── frontend/
 │   ├── web/                 One web app for every role   React + Vite
-│   └── customer-mobile/     Customer Mobile App   React Native + Expo
+│   └── ucyss-mobile/        Mobile app for every role   React Native + Expo
 ├── docs/                    API reference, ERD and database design, Postman collection, project spec
 └── README.md
 ```
@@ -146,7 +146,7 @@ UCYSSPass/
 | --- | --- | --- | --- |
 | API | `backend/` | Laravel 12, Sanctum, PostgreSQL | http://localhost/api |
 | Web app (customer, organiser, admin) | `frontend/web/` | React + Vite | http://localhost:5175 |
-| Customer Mobile | `frontend/customer-mobile/` | React Native + Expo | Expo Go / emulator |
+| Mobile app (customer, organiser, admin) | `frontend/ucyss-mobile/` | React Native + Expo | dev build on a phone / emulator |
 
 ## Documentation
 
@@ -188,7 +188,7 @@ The web app is one application with one sign-in page. After signing in, the role
 Mobile:
 
 ```bash
-cd frontend/customer-mobile
+cd frontend/ucyss-mobile
 npm install
 npx expo start
 ```
