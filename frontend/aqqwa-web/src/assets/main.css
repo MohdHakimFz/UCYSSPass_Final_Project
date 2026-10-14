@@ -1,0 +1,581 @@
+/* UCYSSPass (Aqqwa) - "liquid glass" theme.
+   Pale aqua background with glossy teal blobs and a clear bubble (see BackgroundBlobs.vue),
+   frosted glass frames, soft white cards, and bold teal gradient headings. */
+
+:root {
+  --bg: #cdeef0;
+  --text: #12343a;
+  --muted: #4a6c71;
+  --teal: #1bb3a0;
+  --teal-2: #4fd6c4;
+  --teal-dark: #0e8a80;
+  --teal-ink: #0f6f6a;
+  --line: rgba(18, 52, 58, 0.09);
+  /* the translucent outer glass */
+  --glass: rgba(255, 255, 255, 0.32);
+  --glass-strong: rgba(255, 255, 255, 0.55);
+  --glass-border: rgba(255, 255, 255, 0.75);
+  /* the soft white inner card */
+  --panel: rgba(250, 253, 253, 0.8);
+  --shadow: 0 24px 60px rgba(16, 112, 120, 0.16), 0 4px 14px rgba(16, 112, 120, 0.06);
+  --primary: var(--teal);
+  --primary-2: var(--teal-2);
+  --danger: #d9435a;
+  --danger-bg: #ffe6ea;
+  --success: #0f8a5f;
+  --success-bg: #dcf7ec;
+  --warn: #9a6a00;
+  --warn-bg: #fff2cf;
+  --info: #1d6fa8;
+  --info-bg: #e0f0fb;
+  --radius: 28px;
+  --radius-sm: 14px;
+  --blur: blur(24px) saturate(160%);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  color: var(--text);
+  background: radial-gradient(120% 80% at 50% 0%, #e2f7f7 0%, var(--bg) 55%, #bfe7ea 100%) fixed;
+  font-family: 'Inter Tight', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0 0 12px;
+  line-height: 1.05;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+}
+/* Bold teal gradient headings, like "Fully Editable" */
+h1 {
+  font-size: 40px;
+  background: linear-gradient(180deg, #23c2ad 0%, #0e8a80 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  padding-bottom: 2px;
+}
+h2 {
+  font-size: 21px;
+  color: var(--teal-ink);
+}
+h3 {
+  font-size: 16px;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+/* Small uppercase label above a heading, like "LIQUID GLASS MOCKUP" */
+.eyebrow {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: 10px;
+}
+
+a {
+  color: var(--teal-dark);
+  font-weight: 500;
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+.container {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 32px 16px 64px;
+}
+
+.page-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+.page-head p {
+  margin: 0;
+}
+
+/* ---------- glass ---------- */
+/* .glass = the crystal-clear outer frame (about 12% white) with a rainbow refraction rim.
+   .card  = the frosted white inner card (about 36% white), heavily blurred so text stays crisp. */
+.glass {
+  position: relative;
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 55%, rgba(255, 255, 255, 0.14) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: var(--radius);
+  box-shadow: 0 24px 60px rgba(16, 112, 120, 0.14),
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.85), /* bright top edge */
+    inset 0 -1px 0 rgba(255, 255, 255, 0.3),
+    inset 2px 0 3px rgba(255, 120, 210, 0.18), /* pink fringe on the left */
+    inset -2px 0 3px rgba(80, 200, 255, 0.22); /* blue fringe on the right */
+  backdrop-filter: blur(10px) saturate(170%);
+  -webkit-backdrop-filter: blur(10px) saturate(170%);
+}
+/* Chromatic rim: a thin rainbow border that follows the rounded corners, like light splitting in glass */
+.glass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1.5px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: conic-gradient(
+    from 200deg,
+    rgba(255, 110, 200, 0.55),
+    rgba(255, 220, 120, 0.45),
+    rgba(120, 255, 200, 0.5),
+    rgba(80, 190, 255, 0.6),
+    rgba(170, 120, 255, 0.5),
+    rgba(255, 255, 255, 0.2) 60%,
+    rgba(255, 255, 255, 0.15) 80%,
+    rgba(255, 110, 200, 0.55)
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+.card {
+  background: linear-gradient(170deg, rgba(255, 255, 255, 0.42) 0%, rgba(255, 255, 255, 0.32) 100%);
+  border: 1.5px solid rgba(255, 255, 255, 0.85);
+  border-radius: var(--radius);
+  box-shadow: 0 18px 44px rgba(16, 112, 120, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 0 30px rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(28px) saturate(140%) brightness(1.06);
+  -webkit-backdrop-filter: blur(28px) saturate(140%) brightness(1.06);
+  padding: 24px;
+}
+.card + .card {
+  margin-top: 18px;
+}
+/* A glass frame with a white card inside it (the look of the whole image) */
+.frame {
+  padding: 14px;
+}
+.frame > .card {
+  box-shadow: 0 10px 30px rgba(16, 112, 120, 0.12), inset 0 1px 0 #fff;
+}
+
+.muted {
+  color: var(--muted);
+}
+.small {
+  font-size: 13px;
+}
+
+.grid {
+  display: grid;
+  gap: 16px;
+}
+.grid-2 {
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+.grid-cards {
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+.grid-stats {
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+}
+
+.row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.spacer {
+  flex: 1;
+}
+
+/* ---------- buttons: solid teal, like "Transparent Background" ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: linear-gradient(180deg, #2cc6b1 0%, #15a596 100%);
+  color: #fff;
+  border-radius: 14px;
+  padding: 11px 22px;
+  font: inherit;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  text-decoration: none;
+  box-shadow: 0 8px 22px rgba(21, 165, 150, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+.btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+  box-shadow: 0 12px 28px rgba(21, 165, 150, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  text-decoration: none;
+}
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  filter: none;
+}
+.btn-arrow::after {
+  content: '→';
+  transition: transform 0.15s ease;
+}
+.btn-arrow:hover:not(:disabled)::after {
+  transform: translateX(3px);
+}
+.btn-ghost {
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--teal-ink);
+  border-color: rgba(27, 179, 160, 0.3);
+  box-shadow: 0 4px 12px rgba(16, 112, 120, 0.08);
+}
+.btn-ghost:hover {
+  background: #fff;
+  box-shadow: 0 6px 16px rgba(16, 112, 120, 0.12);
+}
+.btn-danger {
+  background: linear-gradient(180deg, #f0687c 0%, #d9435a 100%);
+  box-shadow: 0 8px 22px rgba(217, 67, 90, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+.btn-danger:hover {
+  box-shadow: 0 12px 28px rgba(217, 67, 90, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+.btn-success {
+  background: linear-gradient(180deg, #34c98a 0%, #18a06a 100%);
+  box-shadow: 0 8px 22px rgba(24, 160, 106, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+.btn-sm {
+  padding: 7px 14px;
+  font-size: 13px;
+  border-radius: 11px;
+}
+.btn-block {
+  width: 100%;
+}
+
+/* ---------- alerts (friendly messages at the top of a page) ---------- */
+.alert {
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  border: 1px solid;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-weight: 500;
+}
+.alert-error {
+  background: var(--danger-bg);
+  color: #a52a3e;
+  border-color: #f6bcc5;
+}
+.alert-success {
+  background: var(--success-bg);
+  color: #0d6e4c;
+  border-color: #a8e6cb;
+}
+.alert-warn {
+  background: var(--warn-bg);
+  color: #805700;
+  border-color: #f2d98f;
+}
+.alert-info {
+  background: var(--info-bg);
+  color: #1a5f8f;
+  border-color: #b5d9f2;
+}
+.alert .close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.6;
+}
+
+/* ---------- forms ---------- */
+.field {
+  margin-bottom: 16px;
+}
+.field label {
+  display: block;
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 6px;
+  color: var(--text);
+}
+.field input,
+.field select,
+.field textarea,
+.input {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1px solid #d3e6e7;
+  border-radius: 12px;
+  font: inherit;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.85);
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+.field textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+.field input:focus,
+.field select:focus,
+.field textarea:focus,
+.input:focus {
+  border-color: var(--teal);
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(27, 179, 160, 0.18);
+}
+input::placeholder,
+textarea::placeholder {
+  color: #9bb5b8;
+}
+
+/* A field with a 422 error: red border, and the message right under it */
+.field .has-error,
+.input.has-error {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 4px rgba(217, 67, 90, 0.14);
+}
+.field-error {
+  color: var(--danger);
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 6px;
+}
+
+.toggle {
+  display: inline-flex;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid #d3e6e7;
+  border-radius: 14px;
+  padding: 4px;
+}
+.toggle button {
+  border: none;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-weight: 600;
+  padding: 7px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.toggle button.active {
+  background: linear-gradient(180deg, #2cc6b1 0%, #15a596 100%);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(21, 165, 150, 0.3);
+}
+
+/* ---------- tables ---------- */
+.table-wrap {
+  overflow-x: auto;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th,
+td {
+  text-align: left;
+  padding: 13px 10px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+}
+th {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--teal);
+  font-weight: 700;
+}
+tr:last-child td {
+  border-bottom: none;
+}
+tbody tr:hover {
+  background: rgba(27, 179, 160, 0.05);
+}
+
+/* ---------- badges ---------- */
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+  border: 1px solid;
+  white-space: nowrap;
+}
+.badge-green {
+  color: var(--success);
+  background: var(--success-bg);
+  border-color: #a8e6cb;
+}
+.badge-yellow {
+  color: var(--warn);
+  background: var(--warn-bg);
+  border-color: #f2d98f;
+}
+.badge-red {
+  color: var(--danger);
+  background: var(--danger-bg);
+  border-color: #f6bcc5;
+}
+.badge-blue {
+  color: var(--info);
+  background: var(--info-bg);
+  border-color: #b5d9f2;
+}
+.badge-grey {
+  color: var(--muted);
+  background: #eef5f5;
+  border-color: #d3e6e7;
+}
+.badge-purple {
+  color: var(--teal-ink);
+  background: #d9f6f1;
+  border-color: #a9e6dc;
+}
+
+/* ---------- stat tiles ---------- */
+.stat {
+  padding: 20px;
+}
+.stat .label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--teal);
+}
+.stat .value {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin-top: 4px;
+  background: linear-gradient(180deg, #23c2ad 0%, #0e8a80 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ---------- loading and empty states ---------- */
+.loading,
+.empty {
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--muted);
+}
+.spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(27, 179, 160, 0.2);
+  border-top-color: var(--teal);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------- auth pages: glass frame + white card, like the mockup ---------- */
+.auth-wrap {
+  min-height: calc(100vh - 90px);
+  display: grid;
+  place-items: center;
+  padding: 24px 0;
+}
+.auth-frame {
+  width: 100%;
+  max-width: 480px;
+  padding: 18px 18px 22px;
+  border-radius: 38px;
+}
+.auth-card {
+  padding: 34px 30px 30px;
+  border-radius: 26px;
+}
+.auth-foot {
+  text-align: center;
+  margin: 16px 0 0;
+  color: var(--teal-ink);
+  font-size: 14px;
+}
+.hero-title {
+  font-size: 52px;
+  line-height: 0.98;
+  margin: 0 0 16px;
+}
+.hero-title .arrow {
+  display: inline-block;
+  font-weight: 800;
+  margin-right: 6px;
+}
+.hero-sub {
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.45;
+  margin: 0 0 24px;
+  max-width: 320px;
+}
+.brand-mark {
+  font-weight: 800;
+  font-size: 19px;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+.brand-mark span {
+  color: var(--teal);
+}
+
+@media (max-width: 600px) {
+  .card {
+    padding: 18px;
+  }
+  .auth-card {
+    padding: 26px 20px 22px;
+  }
+  .hero-title {
+    font-size: 40px;
+  }
+  h1 {
+    font-size: 30px;
+  }
+}
