@@ -16,7 +16,7 @@ import {
   SideNavLink,
   SkipToContent,
 } from '@carbon/react'
-import { Asleep, Launch, Light, Logout } from '@carbon/icons-react'
+import { Asleep, Help, Launch, Light, Logout } from '@carbon/icons-react'
 import { useAuth } from '@/lib/auth'
 import ThemeSheet from '@/shared/ThemeSheet'
 import FeedbackProvider from './feedback'
@@ -87,6 +87,9 @@ export default function DashboardLayout({
               <span className="who-name">{user?.name}</span>
               <HeaderGlobalAction aria-label={dark ? 'Switch to light theme' : 'Switch to dark theme'} tooltipAlignment="end" onClick={() => setTheme(dark ? 'white' : 'g100')}>
                 {dark ? <Light size={20} /> : <Asleep size={20} />}
+              </HeaderGlobalAction>
+              <HeaderGlobalAction aria-label="User manual" tooltipAlignment="end" onClick={() => window.open('/manual/', '_blank', 'noopener')}>
+                <Help size={20} />
               </HeaderGlobalAction>
               <HeaderGlobalAction aria-label="Open the public site" tooltipAlignment="end" onClick={() => navigate('/')}>
                 <Launch size={20} />

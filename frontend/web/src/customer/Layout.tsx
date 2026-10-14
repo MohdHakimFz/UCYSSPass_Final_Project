@@ -27,6 +27,10 @@ export default function Layout() {
           <nav className="nav" aria-label="Main">
             <NavLink to="/events">Events</NavLink>
             {!staff && <NavLink to="/passes">My passes</NavLink>}
+            {/* A static page in public/manual, outside the React router, so a plain link. */}
+            <a href="/manual/" target="_blank" rel="noopener">
+              User manual
+            </a>
           </nav>
           <ThemeToggle />
           <div className="who">
