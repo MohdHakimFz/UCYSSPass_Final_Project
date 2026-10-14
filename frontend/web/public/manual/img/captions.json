@@ -1,0 +1,327 @@
+[
+ {
+  "app": "hakim",
+  "file": "hakim_01.webp",
+  "caption": "The single sign-in page for all three roles, with links to create an account and reset a forgotten password."
+ },
+ {
+  "app": "hakim",
+  "file": "hakim_02.webp",
+  "caption": "Customer: the Events page with search, category filter (CTF, Bootcamp, Conference, Workshop), date and price filters, and event cards showing the price and seats left."
+ },
+ {
+  "app": "hakim",
+  "file": "hakim_03.webp",
+  "caption": "Customer: booking a paid tier. The seat is held with a countdown while the customer chooses a sandbox payment method (card, online banking or e-wallet) and pays."
+ },
+ {
+  "app": "hakim",
+  "file": "hakim_04.webp",
+  "caption": "Customer: My passes, with each booking's seat, status and the Show pass, Add to calendar and Cancel booking actions."
+ },
+ {
+  "app": "hakim",
+  "file": "hakim_05.webp",
+  "caption": "Organiser: My events with the KPI tiles, the attendance panel and the list of the organiser's own events."
+ },
+ {
+  "app": "hakim",
+  "file": "hakim_06.webp",
+  "caption": "Organiser: the Create event form (In person or Online meeting, title, category, venue, status, start and end, numbered seats)."
+ },
+ {
+  "app": "hakim",
+  "file": "hakim_07.webp",
+  "caption": "Organiser: editing an online event and managing its ticket tiers with the Add tier form."
+ },
+ {
+  "app": "hakim",
+  "file": "hakim_08.webp",
+  "caption": "Organiser: the Check-in page; scan the guest's QR pass, or enter the ticket code by hand."
+ },
+ {
+  "app": "hakim",
+  "file": "hakim_09.webp",
+  "caption": "Administrator: Overview with revenue, tickets sold, seats held, check-in rate, upcoming events and recent activity."
+ },
+ {
+  "app": "hakim",
+  "file": "hakim_10.webp",
+  "caption": "Administrator: every event, with status tabs, type filter, search and the organiser of each event."
+ },
+ {
+  "app": "hakim",
+  "file": "hakim_11.webp",
+  "caption": "Administrator: the action menu on an event (Open, Move back to draft, Mark as completed, Cancel event, Delete)."
+ },
+ {
+  "app": "hakim",
+  "file": "hakim_12.webp",
+  "caption": "Administrator: every booking with seat, payment and status, filter tabs and CSV export."
+ },
+ {
+  "app": "hakim",
+  "file": "hakim_13.webp",
+  "caption": "Administrator: People, with role tabs, search and CSV export."
+ },
+ {
+  "app": "hakim",
+  "file": "hakim_14.webp",
+  "caption": "Administrator: the Add an account dialog (name, email, temporary password, role)."
+ },
+ {
+  "app": "hakim",
+  "file": "hakim_15.webp",
+  "caption": "Administrator: Venues with address and capacity."
+ },
+ {
+  "app": "hakim",
+  "file": "hakim_16.webp",
+  "caption": "Administrator: the Add venue dialog (name, address, capacity)."
+ },
+ {
+  "app": "hakim",
+  "file": "hakim_17.webp",
+  "caption": "Administrator: the Emails log with the email provider's response for each booking email."
+ },
+ {
+  "app": "hakim",
+  "file": "hakim_18.webp",
+  "caption": "Administrator: Organiser tools opens the organiser area, with a Back to admin link."
+ },
+ {
+  "app": "hakim",
+  "file": "hakim_19.webp",
+  "caption": "Error 422: an event whose end is before its start; the form shows \"The end at field must be a date after start at.\""
+ },
+ {
+  "app": "hakim",
+  "file": "hakim_20.webp",
+  "caption": "Error 403: organiser Farid saving Aisyah's event; the form shows \"This action is unauthorized.\""
+ },
+ {
+  "app": "hakim",
+  "file": "hakim_21.webp",
+  "caption": "DevTools: POST /api/bookings with the Bearer token, answered 201 Created."
+ },
+ {
+  "app": "aqqwa",
+  "file": "aqqwa_01.webp",
+  "caption": "Login page of Aqqwa's web frontend, shown after logging out."
+ },
+ {
+  "app": "aqqwa",
+  "file": "aqqwa_02.webp",
+  "caption": "Customer: Events list with the search box, category filter and event cards."
+ },
+ {
+  "app": "aqqwa",
+  "file": "aqqwa_03.webp",
+  "caption": "Customer: event detail with ticket tiers, seats remaining and the seat picker for a numbered-seat event."
+ },
+ {
+  "app": "aqqwa",
+  "file": "aqqwa_04.webp",
+  "caption": "Customer: a paid tier booking is pending, with the seat held and the sandbox payment form."
+ },
+ {
+  "app": "aqqwa",
+  "file": "aqqwa_05.webp",
+  "caption": "Customer: payment received and the booking confirmed."
+ },
+ {
+  "app": "aqqwa",
+  "file": "aqqwa_06.webp",
+  "caption": "Customer: My bookings with status badges, the status filter and the Cancel button."
+ },
+ {
+  "app": "aqqwa",
+  "file": "aqqwa_07.webp",
+  "caption": "Organiser: Dashboard numbers from GET /organiser/summary."
+ },
+ {
+  "app": "aqqwa",
+  "file": "aqqwa_08.webp",
+  "caption": "Organiser: New event form with a physical venue."
+ },
+ {
+  "app": "aqqwa",
+  "file": "aqqwa_09.webp",
+  "caption": "Organiser: New event form switched to Online, showing the meeting link field."
+ },
+ {
+  "app": "aqqwa",
+  "file": "aqqwa_10.webp",
+  "caption": "Organiser: Manage event page with ticket tiers, Add a tier, Publish and the event's bookings."
+ },
+ {
+  "app": "aqqwa",
+  "file": "aqqwa_11.webp",
+  "caption": "Admin: Overview with revenue, users by role, events and bookings by status, and recent bookings."
+ },
+ {
+  "app": "aqqwa",
+  "file": "aqqwa_12.webp",
+  "caption": "Admin: Users page with search, role filter, role dropdown and Delete."
+ },
+ {
+  "app": "aqqwa",
+  "file": "aqqwa_13.webp",
+  "caption": "Admin: Venues page; the shared \"Online\" venue cannot be edited or deleted."
+ },
+ {
+  "app": "aqqwa",
+  "file": "aqqwa_14.webp",
+  "caption": "Admin: All events with search, status filter and Cancel."
+ },
+ {
+  "app": "aqqwa",
+  "file": "aqqwa_15.webp",
+  "caption": "Admin: All bookings across every event."
+ },
+ {
+  "app": "aqqwa",
+  "file": "aqqwa_16.webp",
+  "caption": "Error 422: the New event form submitted empty; each API message is shown in red under its field, and the request carries the Authorization: Bearer header."
+ },
+ {
+  "app": "aqqwa",
+  "file": "aqqwa_17.webp",
+  "caption": "Error 422: POST /api/events sent with invalid input returns 422 Unprocessable Content."
+ },
+ {
+  "app": "aqqwa",
+  "file": "aqqwa_18.webp",
+  "caption": "Error 403: organiser Farid saving Aisyah's event shows \"You are not allowed to do this.\"; DevTools shows the PUT request with the Authorization: Bearer header."
+ },
+ {
+  "app": "aqqwa",
+  "file": "aqqwa_19.webp",
+  "caption": "Error 403: organiser Farid saving another organiser's event, PUT /api/events/19 returns 403 Forbidden."
+ },
+ {
+  "app": "aqqwa",
+  "file": "aqqwa_20.webp",
+  "caption": "DevTools Network: the sandbox payment request POST /api/bookings/222/pay returns 200 OK."
+ },
+ {
+  "app": "aijaz",
+  "file": "aijaz_01.webp",
+  "caption": "Login page (#/login). After logging in, each role goes to its own home: customers to #/events, organisers to #/organiser and admins to #/admin."
+ },
+ {
+  "app": "aijaz",
+  "file": "aijaz_02.webp",
+  "caption": "Customer events list: published events only, with the search box and category filter sent to GET /events as ?search= and ?category=."
+ },
+ {
+  "app": "aijaz",
+  "file": "aijaz_03.webp",
+  "caption": "Event detail with its ticket tiers, the price and seats left for each tier, and a Book button; a sold-out tier offers \"Join waitlist\" instead."
+ },
+ {
+  "app": "aijaz",
+  "file": "aijaz_04.webp",
+  "caption": "After booking a paid tier, the seat is held (pending) and the booking page shows the sandbox payment form (no real money). Paying confirms the booking; a free tier is confirmed straight away."
+ },
+ {
+  "app": "aijaz",
+  "file": "aijaz_05.webp",
+  "caption": "My bookings: each booking with its status badge (pending, confirmed, attended or cancelled), Pay now for a held booking, Cancel where it is still allowed, and paging."
+ },
+ {
+  "app": "aijaz",
+  "file": "aijaz_06.webp",
+  "caption": "Organiser dashboard numbers from GET /organiser/summary: events, published, drafts, upcoming, tickets sold, checked in, waitlisted and net revenue."
+ },
+ {
+  "app": "aijaz",
+  "file": "aijaz_07.webp",
+  "caption": "Organiser creating an event. One form is used for create and edit; Physical shows the venue list and Online shows the meeting-link field."
+ },
+ {
+  "app": "aijaz",
+  "file": "aijaz_08.webp",
+  "caption": "Organiser My events: only this organiser's own events, drafts included (GET /events?organiser_id=), each with its status and a Manage button that opens the event's tiers, Publish / Move back to draft and bookings."
+ },
+ {
+  "app": "aijaz",
+  "file": "aijaz_09.webp",
+  "caption": "Admin overview from GET /admin/stats: revenue, draft events, users by role, events by status, bookings by status and recent activity."
+ },
+ {
+  "app": "aijaz",
+  "file": "aijaz_10.webp",
+  "caption": "Admin users page: the Create a user form, search by name or email, a role filter, and a role dropdown on each row (a change is saved straight away with PUT /users/{id})."
+ },
+ {
+  "app": "aijaz",
+  "file": "aijaz_11.webp",
+  "caption": "Error 422: the organiser event form submitted empty. The form uses novalidate, so the request reaches the API, and each validation message appears in red under its own field (Title, Category, Venue, Starts, Ends), with \"Please check the highlighted fields.\" at the top."
+ },
+ {
+  "app": "aijaz",
+  "file": "aijaz_12.webp",
+  "caption": "Error 403: organiser Farid Rahman opens Aisyah's published event \"API Security Masterclass\" by its address (#/organiser/events/19/edit) and presses Save changes. The API's EventPolicy refuses, and the app shows \"You are not allowed to do this.\""
+ },
+ {
+  "app": "aijaz",
+  "file": "aijaz_13.webp",
+  "caption": "DevTools, Network tab while My bookings loads on the live site: the app's own fetch requests to the Render API, GET /auth/me and GET /bookings?per_page=10&page=1, both 200. Each is preceded by a CORS preflight (204), which the browser sends because the request carries the Authorization: Bearer header."
+ },
+ {
+  "app": "erfan",
+  "file": "erfan_01.webp",
+  "caption": "Customer: event page with the green “You’re in…” booking message."
+ },
+ {
+  "app": "erfan",
+  "file": "erfan_02.webp",
+  "caption": "Customer: My passes showing a booking and its status."
+ },
+ {
+  "app": "erfan",
+  "file": "erfan_03.webp",
+  "caption": "Organiser: My events with the number tiles."
+ },
+ {
+  "app": "erfan",
+  "file": "erfan_04.webp",
+  "caption": "Organiser: event form filled in for the Demo Test Event."
+ },
+ {
+  "app": "erfan",
+  "file": "erfan_05.webp",
+  "caption": "Organiser: event page with the new ticket tier."
+ },
+ {
+  "app": "erfan",
+  "file": "erfan_06.webp",
+  "caption": "Organiser: Bookings tab with the Confirmed filter."
+ },
+ {
+  "app": "erfan",
+  "file": "erfan_07.webp",
+  "caption": "Admin: platform overview."
+ },
+ {
+  "app": "erfan",
+  "file": "erfan_08.webp",
+  "caption": "Admin: users list."
+ },
+ {
+  "app": "erfan",
+  "file": "erfan_09.webp",
+  "caption": "Admin: user form with the role selector."
+ },
+ {
+  "app": "erfan",
+  "file": "erfan_10.webp",
+  "caption": "Error 422: venue with Capacity 0 shows “The capacity field must be at least 1.” under the field."
+ },
+ {
+  "app": "erfan",
+  "file": "erfan_11.webp",
+  "caption": "Error 401: wrong password shows “The provided credentials are incorrect.”"
+ }
+]

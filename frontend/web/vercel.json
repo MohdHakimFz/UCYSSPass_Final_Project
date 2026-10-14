@@ -1,3 +1,4 @@
 {
+  "redirects": [{ "source": "/manual", "destination": "/manual/", "permanent": true }],
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }

@@ -1,0 +1,1605 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UCYSSPass User Manual</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="description" content="User manual for the four UCYSSPass frontends: Hakim's, Aqqwa's and Aijaz's web apps and Erfan's mobile app.">
+<script>
+// Opened as /manual without the slash: add it, so "img/..." points inside /manual/.
+if (/\/manual$/.test(location.pathname)) location.replace(location.pathname + '/' + location.search + location.hash)
+document.documentElement.classList.add('js')
+</script>
+<style>
+:root {
+  --ink: #16181d;
+  --ink-soft: #4a505c;
+  --line: #dfe2e8;
+  --wash: #f5f6f8;
+  --bg: #ffffff;
+  --link: #1d4ed8;
+  --hakim: #4338ca;
+  --aqqwa: #0f766e;
+  --aijaz: #1d63d6;
+  --erfan: #c2410c;
+  --accent: #16181d;
+  --radius: 10px;
+}
+* { box-sizing: border-box; }
+html { scroll-padding-top: 16px; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+a { color: var(--link); }
+code { font: 0.92em ui-monospace, SFMono-Regular, Consolas, monospace; background: var(--wash); padding: 1px 5px; border-radius: 4px; }
+h1, h2, h3, h4 { line-height: 1.25; }
+.skip { position: absolute; left: -999px; }
+.skip:focus { left: 16px; top: 16px; background: #fff; padding: 8px; z-index: 50; }
+
+/* Header */
+.top {
+  border-bottom: 1px solid var(--line);
+  padding: 28px 24px 22px;
+}
+.top-inner { max-width: 1240px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 16px 32px; align-items: end; justify-content: space-between; }
+.top h1 { margin: 0; font-size: 2rem; letter-spacing: -0.01em; }
+.top p { margin: 4px 0 0; color: var(--ink-soft); }
+.search { display: none; }
+.js .search { display: block; }
+.search input {
+  width: 300px; max-width: 100%;
+  font: inherit; padding: 9px 12px;
+  border: 1px solid var(--line); border-radius: 8px;
+}
+.search input:focus { outline: 2px solid var(--ink); outline-offset: 1px; }
+.search-note { font-size: 0.85rem; color: var(--ink-soft); min-height: 1.2em; margin-top: 4px; }
+
+/* Layout */
+.layout { max-width: 1240px; margin: 0 auto; display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 40px; padding: 0 24px 80px; }
+.toc { position: sticky; top: 0; align-self: start; padding-top: 24px; max-height: 100vh; overflow-y: auto; }
+.toc ol { list-style: none; margin: 0; padding: 0; }
+.toc a {
+  display: block; padding: 7px 12px; border-radius: 8px;
+  color: var(--ink-soft); text-decoration: none; font-weight: 500;
+  border-left: 3px solid transparent;
+}
+.toc a:hover { background: var(--wash); color: var(--ink); }
+.toc a.active { color: var(--ink); background: var(--wash); border-left-color: var(--accent); }
+.toc .now { margin: 20px 12px 0; font-size: 0.85rem; color: var(--ink-soft); }
+.toc .now strong { color: var(--accent); }
+main { min-width: 0; padding-top: 8px; overflow-wrap: break-word; }
+section.part { padding-top: 28px; border-top: 1px solid var(--line); margin-top: 28px; }
+section.part:first-child { border-top: 0; margin-top: 0; }
+section.part > h2 { font-size: 1.6rem; margin: 0 0 12px; }
+.lede { color: var(--ink-soft); max-width: 70ch; }
+
+/* Tables */
+.table-wrap { overflow-x: auto; margin: 12px 0 20px; }
+table { border-collapse: collapse; width: 100%; font-size: 0.95rem; }
+th, td { text-align: left; vertical-align: top; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+th { background: var(--wash); font-weight: 600; }
+
+/* App tabs */
+.tabs { display: none; flex-wrap: wrap; gap: 8px; margin: 8px 0 20px; }
+.js .tabs { display: flex; }
+.tabs button {
+  font: inherit; font-weight: 600; font-size: 0.95rem;
+  padding: 8px 14px; border-radius: 999px; cursor: pointer;
+  border: 2px solid var(--c); color: var(--c); background: #fff;
+}
+.tabs button[aria-selected="true"] { background: var(--c); color: #fff; }
+.tabs button:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+[data-app="hakim"] { --c: var(--hakim); }
+[data-app="aqqwa"] { --c: var(--aqqwa); }
+[data-app="aijaz"] { --c: var(--aijaz); }
+[data-app="erfan"] { --c: var(--erfan); }
+
+.panel { border-left: 4px solid var(--c); padding: 2px 0 4px 20px; margin-bottom: 28px; }
+.js .panel { display: none; }
+.js .panel.on { display: block; }
+.panel-title { margin: 0 0 4px; font-size: 1.25rem; color: var(--c); }
+.panel-intro { margin: 0 0 16px; color: var(--ink-soft); }
+
+/* Tasks */
+.task { margin: 0 0 28px; }
+.task h4 { font-size: 1.08rem; margin: 0 0 6px; }
+.task ol, .task ul { margin: 6px 0 10px; padding-left: 1.4em; }
+.task li { margin: 3px 0; }
+.note { background: var(--wash); border-radius: 8px; padding: 10px 14px; margin: 10px 0; font-size: 0.95rem; }
+.note strong:first-child { margin-right: 4px; }
+
+/* Screenshots */
+.shot { margin: 12px 0 8px; max-width: 760px; }
+.shot a { display: block; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: var(--wash); cursor: zoom-in; }
+.shot img { display: block; width: 100%; height: auto; }
+.shot figcaption { font-size: 0.88rem; color: var(--ink-soft); margin-top: 6px; }
+.shots-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0 20px; max-width: 760px; }
+
+/* FAQ */
+.faq dt { font-weight: 600; margin-top: 16px; }
+.faq dd { margin: 4px 0 0; }
+
+.placeholder { background: #fff3c4; border: 1px dashed #b88a00; padding: 1px 6px; border-radius: 4px; font-weight: 600; }
+.hidden-by-search { display: none !important; }
+
+/* Lightbox */
+#lightbox { border: 0; padding: 0; max-width: 96vw; max-height: 94vh; background: transparent; }
+#lightbox::backdrop { background: rgba(10, 12, 16, 0.86); }
+#lightbox figure { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+#lightbox img { max-width: 96vw; max-height: 82vh; border-radius: 6px; background: #fff; }
+#lightbox figcaption { color: #f2f3f5; max-width: 80ch; text-align: center; font-size: 0.95rem; }
+#lightbox button { font: inherit; font-weight: 600; background: #fff; color: var(--ink); border: 0; border-radius: 999px; padding: 6px 16px; cursor: pointer; }
+
+/* Phone: the sidebar becomes a top menu */
+@media (max-width: 860px) {
+  .top { padding: 20px 16px 16px; }
+  .top h1 { font-size: 1.6rem; }
+  .layout { grid-template-columns: minmax(0, 1fr); gap: 0; padding: 0 16px 64px; }
+  .toc { position: sticky; top: 0; z-index: 20; background: #fff; border-bottom: 1px solid var(--line); padding: 8px 0; margin: 0 -16px; max-height: none; }
+  .toc ol { display: flex; overflow-x: auto; gap: 4px; padding: 0 16px; scrollbar-width: none; }
+  .toc a { white-space: nowrap; border-left: 0; border-bottom: 3px solid transparent; border-radius: 6px 6px 0 0; padding: 6px 10px; }
+  .toc a.active { border-bottom-color: var(--accent); }
+  .toc .now { display: none; }
+  html { scroll-padding-top: 64px; }
+  .panel { padding-left: 14px; }
+  .search input { width: 100%; }
+  .search { width: 100%; }
+}
+
+/* Print: every app, in order */
+@media print {
+  .toc, .tabs, .search, .skip, #lightbox { display: none !important; }
+  .layout { display: block; padding: 0; }
+  .js .panel, .panel { display: block !important; }
+  .hidden-by-search { display: block !important; }
+  .panel { break-inside: auto; }
+  .task, .shot { break-inside: avoid; }
+  .shot { max-width: 520px; }
+  a { color: inherit; }
+  section.part { break-before: page; border-top: 0; }
+  section.part:first-child { break-before: auto; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#start">Skip to the manual</a>
+
+<header class="top">
+  <div class="top-inner">
+    <div>
+      <h1>UCYSSPass User Manual</h1>
+      <p>SWC3633 Web API Development, Group 31</p>
+      <p>Last updated: 15 October 2026</p>
+    </div>
+    <div class="search" role="search">
+      <label for="q" class="skip">Search the manual</label>
+      <input id="q" type="search" placeholder="Search this manual" autocomplete="off">
+      <div class="search-note" id="search-note" aria-live="polite"></div>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+<nav class="toc" aria-label="Sections">
+  <ol>
+    <li><a href="#start">1. Getting started</a></li>
+    <li><a href="#roles">2. Roles at a glance</a></li>
+    <li><a href="#customer" data-per-app>3. Customer guide</a></li>
+    <li><a href="#organiser" data-per-app>4. Organiser guide</a></li>
+    <li><a href="#admin" data-per-app>5. Administrator guide</a></li>
+    <li><a href="#errors" data-per-app>6. Errors and what to do</a></li>
+    <li><a href="#faq">7. FAQ</a></li>
+    <li><a href="#about">8. About</a></li>
+  </ol>
+  <p class="now">Reading: <strong id="now-app">Hakim's web app</strong></p>
+</nav>
+
+<main id="main">
+
+<!-- ========================= 1. GETTING STARTED ========================= -->
+<section class="part" id="start">
+  <h2>1. Getting started</h2>
+
+  <div class="block searchable">
+    <p class="lede">UCYSSPass is a ticketing and venue booking system for cybersecurity events such as CTFs, bootcamps, conferences and workshops. Customers book seats and pay in a sandbox, organisers create events and ticket tiers, and administrators look after users, venues and every record. Our group built one shared API and four different frontends on top of it.</p>
+  </div>
+
+  <div class="block searchable">
+    <h3>The four apps</h3>
+    <div class="table-wrap"><table>
+      <thead><tr><th>App</th><th>Built by</th><th>Folder and technology</th><th>Open it</th></tr></thead>
+      <tbody>
+        <tr><td>Hakim's web app</td><td>Mohd Hakim Bin Mohd Fauzi (AM2512020850)</td><td><code>frontend/web</code>, React 19 and Vite</td><td><a href="https://ucyss-web.vercel.app">ucyss-web.vercel.app</a></td></tr>
+        <tr><td>Aqqwa's web app</td><td>Muhammad Nureel Aqqwa Bin Hisham (AM2512021715)</td><td><code>frontend/aqqwa-web</code>, Vue 3 and Vite</td><td><a href="https://ucyss-aqqwa.vercel.app">ucyss-aqqwa.vercel.app</a></td></tr>
+        <tr><td>Aijaz's web app</td><td>Aijaz Bin Khairuddin (AM2512021596)</td><td><code>frontend/aijaz-web</code>, plain JavaScript, Vite and Bootstrap 5</td><td><a href="https://ucyss-aijaz.vercel.app">ucyss-aijaz.vercel.app</a></td></tr>
+        <tr><td>Erfan's mobile app</td><td>Erfan Danish Bin Erwan (AM2512021556)</td><td><code>frontend/ucyss-mobile</code>, Expo React Native</td><td>No public link. See "Running the mobile app" below.</td></tr>
+      </tbody>
+    </table></div>
+    <p>All four apps use the same API at <code>https://ucyss-api.onrender.com/api</code>, so an event created in one app shows up in the other three.</p>
+  </div>
+
+  <div class="block searchable">
+    <h3>Demo accounts</h3>
+    <p>The password for every demo account is <code>password</code>.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Role</th><th>Email</th></tr></thead>
+      <tbody>
+        <tr><td>Administrator</td><td><code>admin@sentrypass.test</code></td></tr>
+        <tr><td>Organiser</td><td><code>aisyah@ucyss.test</code> (Nurul Aisyah)</td></tr>
+        <tr><td>Organiser</td><td><code>farid@ucyss.test</code> (Farid Rahman)</td></tr>
+        <tr><td>Customer</td><td><code>customer@sentrypass.test</code></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="block searchable">
+    <h3>The first load can be slow</h3>
+    <p>The API runs on Render's free plan, which goes to sleep when nobody uses it. The first request after a quiet spell can take up to a minute while the server wakes up. After that, everything is fast.</p>
+    <ul>
+      <li><strong>Aqqwa's</strong> and <strong>Aijaz's</strong> apps show a banner that starts with "Waking up the server" while they wait.</li>
+      <li><strong>Hakim's</strong> web app shows grey loading placeholders until the data arrives.</li>
+      <li><strong>Erfan's</strong> mobile app shows loading placeholders and waits up to 45 seconds before it shows a message.</li>
+    </ul>
+  </div>
+
+  <div class="block searchable">
+    <h3>Sign in and sign out</h3>
+    <ol>
+      <li>Open the app.</li>
+      <li>Go to the sign-in page: click <strong>Sign in</strong> (Hakim) or tap <strong>Sign in</strong> (Erfan). Aqqwa's and Aijaz's apps open on their <strong>Log in</strong> page.</li>
+      <li>Type the <strong>Email</strong> and <strong>Password</strong> of a demo account.</li>
+      <li>Click <strong>Sign in</strong> (Hakim, Erfan) or <strong>Log in</strong> (Aqqwa, Aijaz).</li>
+      <li>Check where you land. Each role goes to its own home page.</li>
+    </ol>
+    <div class="table-wrap"><table>
+      <thead><tr><th>App</th><th>Customer lands on</th><th>Organiser lands on</th><th>Admin lands on</th><th>To sign out</th></tr></thead>
+      <tbody>
+        <tr><td>Hakim</td><td>My passes</td><td>My events (organiser area)</td><td>Overview (admin area)</td><td>Click <strong>Sign out</strong> at the top right. In the organiser and admin areas, click the sign-out icon in the header (its tooltip says <strong>Sign out</strong>).</td></tr>
+        <tr><td>Aqqwa</td><td>Events</td><td>Dashboard</td><td>Overview</td><td>Click <strong>Log out</strong> at the top right.</td></tr>
+        <tr><td>Aijaz</td><td>Events</td><td>Dashboard</td><td>Overview</td><td>Click <strong>Log out</strong> at the top right.</td></tr>
+        <tr><td>Erfan</td><td>Events tab</td><td>My events tab</td><td>Overview tab</td><td>Open the <strong>Account</strong> tab and tap <strong>Sign out</strong>.</td></tr>
+      </tbody>
+    </table></div>
+    <p>New customers can make their own account: <strong>Create account</strong> (Hakim, Erfan), <strong>Sign up</strong> (Aqqwa) or <strong>Create a customer account</strong> (Aqqwa's and Aijaz's login pages). Organiser and admin accounts are made by an administrator.</p>
+    <div class="shots-2">
+      <figure class="shot" data-file="hakim_01.webp"><a href="img/hakim_01.webp"><img loading="lazy" src="img/hakim_01.webp" alt="The single sign-in page for all three roles, with links to create an account and reset a forgotten password." width="1600" height="876" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>The single sign-in page for all three roles, with links to create an account and reset a forgotten password.</figcaption></figure>
+      <figure class="shot" data-file="aqqwa_01.webp"><a href="img/aqqwa_01.webp"><img loading="lazy" src="img/aqqwa_01.webp" alt="Login page of Aqqwa&#x27;s web frontend, shown after logging out." width="1600" height="834" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Login page of Aqqwa&#x27;s web frontend, shown after logging out.</figcaption></figure>
+      <figure class="shot" data-file="aijaz_01.webp"><a href="img/aijaz_01.webp"><img loading="lazy" src="img/aijaz_01.webp" alt="Login page (#/login). After logging in, each role goes to its own home: customers to #/events, organisers to #/organiser and admins to #/admin." width="1600" height="912" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Login page (#/login). After logging in, each role goes to its own home: customers to #/events, organisers to #/organiser and admins to #/admin.</figcaption></figure>
+    </div>
+  </div>
+
+  <div class="block searchable">
+    <h3 id="run-mobile">Running the mobile app</h3>
+    <p>Erfan's app has no public download. To try it, run it with Expo from the repository (these are the steps in the project README):</p>
+    <ol>
+      <li>Open a terminal in <code>frontend/ucyss-mobile</code>.</li>
+      <li>Run <code>npm install</code>.</li>
+      <li>Copy <code>.env.example</code> to <code>.env</code>. It already points the app at the shared API on Render.</li>
+      <li>Run <code>npx expo start</code> and open the app on a phone or an emulator.</li>
+    </ol>
+  </div>
+</section>
+
+<!-- ========================= 2. ROLES ========================= -->
+<section class="part" id="roles">
+  <h2>2. Roles at a glance</h2>
+  <div class="block searchable">
+    <p class="lede">Every request is checked by the API, so a page that is hidden in the menu is also refused by the server.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Role</th><th>What they can do</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Guest</strong> (not signed in)</td><td>Create a customer account and sign in. In Hakim's web app a guest can also browse events and open an event page. The other apps ask you to sign in first.</td></tr>
+        <tr><td><strong>Customer</strong></td><td>Browse events, check availability, make or cancel eligible bookings, and view their own booking details and status.</td></tr>
+        <tr><td><strong>Organiser</strong></td><td>Create and manage events, schedules and ticket availability, and view the bookings for their own events.</td></tr>
+        <tr><td><strong>Administrator</strong></td><td>Manage users and venues, and oversee system records: every event and every booking.</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- ========================= 3. CUSTOMER ========================= -->
+<section class="part per-app" id="customer">
+  <h2>3. Customer guide</h2>
+  <p class="lede">Sign in as <code>customer@sentrypass.test</code> to follow these steps.</p>
+  <div class="tabs" role="tablist" aria-label="Choose an app"><button type="button" role="tab" data-app="hakim" aria-selected="true">Hakim's web app</button><button type="button" role="tab" data-app="aqqwa" aria-selected="false" tabindex="-1">Aqqwa's web app</button><button type="button" role="tab" data-app="aijaz" aria-selected="false" tabindex="-1">Aijaz's web app</button><button type="button" role="tab" data-app="erfan" aria-selected="false" tabindex="-1">Erfan's mobile app</button></div>
+
+  <!-- Hakim customer -->
+  <div class="panel" data-app="hakim" id="customer-hakim">
+    <h3 class="panel-title">Hakim's web app</h3>
+    <p class="panel-intro">The public site has <strong>Events</strong> and <strong>My passes</strong> in the top menu. You can browse without signing in.</p>
+
+    <article class="task searchable">
+      <h4>Browse and filter events</h4>
+      <ol>
+        <li>Click <strong>Events</strong> in the top menu.</li>
+        <li>Type a word in the search box ("Search events, for example web security") and click <strong>Search</strong>.</li>
+        <li>Click a category: <strong>All</strong>, <strong>CTF</strong>, <strong>Bootcamp</strong>, <strong>Conference</strong> or <strong>Workshop</strong>.</li>
+        <li>Pick a date range in the <strong>Any date</strong> list (<strong>Next 7 days</strong>, <strong>Next 30 days</strong>) or a price in the <strong>Any price</strong> list (<strong>Free</strong>, <strong>Up to RM 50</strong>, <strong>Up to RM 100</strong>).</li>
+        <li>Click <strong>Clear filters</strong> to start again. Use <strong>Previous</strong> and <strong>Next</strong> to see more pages.</li>
+      </ol>
+      <p>Each card shows the price ("Free" or "From RM ...") and the seats, for example "12 seats left", "Only 3 seats left" or "Sold out, join the waitlist".</p>
+      <figure class="shot" data-file="hakim_02.webp"><a href="img/hakim_02.webp"><img loading="lazy" src="img/hakim_02.webp" alt="Customer: the Events page with search, category filter (CTF, Bootcamp, Conference, Workshop), date and price filters, and event cards showing the price and seats left." width="1552" height="1348" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Customer: the Events page with search, category filter (CTF, Bootcamp, Conference, Workshop), date and price filters, and event cards showing the price and seats left.</figcaption></figure>
+    </article>
+
+    <article class="task searchable">
+      <h4>Open an event and check seats left</h4>
+      <ol>
+        <li>Click an event card.</li>
+        <li>Read the date, the venue or "online meeting", and the description.</li>
+        <li>Look under <strong>Choose your pass</strong>. Each tier shows its price and "X of Y seats left", or "Sold out".</li>
+        <li>Share the event with <strong>Share on WhatsApp</strong> or <strong>Copy link</strong> if you like.</li>
+      </ol>
+      <p class="note">Free cancellation is allowed until 24 hours before the event. After that, tickets are not refundable.</p>
+    </article>
+
+    <article class="task searchable">
+      <h4>Book a free tier</h4>
+      <ol>
+        <li>Open the event.</li>
+        <li>Click <strong>Book this pass</strong> on a free tier. If you are not signed in, you are sent to <strong>Sign in</strong> and brought back afterwards.</li>
+        <li>Read the green message: "You're in. Your ... pass is confirmed and waiting in My passes."</li>
+      </ol>
+      <p>When a tier is sold out the button says <strong>Join waitlist</strong>. You are confirmed and emailed automatically if a seat opens. A <strong>Members only</strong> tier can only be booked by UCYSS members.</p>
+    </article>
+
+    <article class="task searchable">
+      <h4>Book a paid tier with the sandbox payment</h4>
+      <ol>
+        <li>Click <strong>Book this pass</strong> on a paid tier.</li>
+        <li>Watch the <strong>Complete your booking</strong> window. A timer shows how long "your seat is held".</li>
+        <li>Choose a method under <strong>Pay with</strong>: <strong>Card</strong>, <strong>Online banking</strong> or <strong>E-wallet</strong>.</li>
+        <li>Leave <strong>Sandbox test result</strong> on <strong>Payment succeeds</strong>. Choose <strong>Payment is declined</strong> or <strong>Insufficient funds</strong> to see a failed payment.</li>
+        <li>Click <strong>Pay RM ...</strong>.</li>
+        <li>Read "Paid. You are in." and click <strong>View my pass</strong>.</li>
+      </ol>
+      <p>No real money is used. Click <strong>Release the seat</strong> to give the seat back. If you close the window, the seat stays held until the timer ends, and you can finish from <strong>My passes</strong> with <strong>Pay now</strong>. When the timer runs out you see <strong>Hold ended</strong>.</p>
+      <figure class="shot" data-file="hakim_03.webp"><a href="img/hakim_03.webp"><img loading="lazy" src="img/hakim_03.webp" alt="Customer: booking a paid tier. The seat is held with a countdown while the customer chooses a sandbox payment method (card, online banking or e-wallet) and pays." width="1600" height="875" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Customer: booking a paid tier. The seat is held with a countdown while the customer chooses a sandbox payment method (card, online banking or e-wallet) and pays.</figcaption></figure>
+    </article>
+
+    <article class="task searchable">
+      <h4>Pick a numbered seat</h4>
+      <ol>
+        <li>Open an event with numbered seats. A seat map of the room appears above the tiers.</li>
+        <li>Use the zoom buttons on the map if the seats are small.</li>
+        <li>Click a free seat. The tier's button changes from <strong>Choose a seat above</strong> to <strong>Book seat A5</strong> (with your seat's label).</li>
+        <li>Click <strong>Book seat ...</strong>, then pay if the tier is paid.</li>
+      </ol>
+      <p>If someone else takes the seat first you see "Seat ... was just taken. Pick another one."</p>
+    </article>
+
+    <article class="task searchable">
+      <h4>View My passes and their status</h4>
+      <ol>
+        <li>Click <strong>My passes</strong>.</li>
+        <li>Read each pass: the event, the venue or "Online meeting", the date, the seat and the status tag (<strong>Confirmed</strong>, <strong>Pending</strong>, <strong>Waitlisted</strong>, <strong>Checked in</strong> or <strong>Cancelled</strong>).</li>
+        <li>Check the payment line, for example "Paid RM 30.00" or "Refunded RM 30.00". A waitlisted pass says "You're number N in the queue."</li>
+      </ol>
+      <figure class="shot" data-file="hakim_04.webp"><a href="img/hakim_04.webp"><img loading="lazy" src="img/hakim_04.webp" alt="Customer: My passes, with each booking&#x27;s seat, status and the Show pass, Add to calendar and Cancel booking actions." width="1600" height="847" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Customer: My passes, with each booking&#x27;s seat, status and the Show pass, Add to calendar and Cancel booking actions.</figcaption></figure>
+    </article>
+
+    <article class="task searchable">
+      <h4>Cancel a booking</h4>
+      <ol>
+        <li>Click <strong>My passes</strong>.</li>
+        <li>Click <strong>Cancel booking</strong> on the pass.</li>
+        <li>Read the browser's question. It tells you whether you will be refunded, then click <strong>OK</strong>.</li>
+        <li>Read "Booking cancelled." or "Booking cancelled. RM ... has been refunded."</li>
+      </ol>
+    </article>
+
+    <article class="task searchable">
+      <h4>Extras: QR pass, calendar, online meetings, certificate and profile</h4>
+      <ul>
+        <li><strong>QR pass:</strong> click <strong>Show pass</strong> on a confirmed in-person pass. A large QR code opens for the door scanner. Click <strong>Done</strong> to close it.</li>
+        <li><strong>Calendar:</strong> click <strong>Add to calendar</strong> to download a calendar file (<code>.ics</code>) for the event.</li>
+        <li><strong>Online meeting:</strong> a confirmed online pass has a join button such as <strong>Join on Zoom</strong> or <strong>Join meeting</strong>. Before the meeting opens, the button reads "Opens ..." with the time.</li>
+        <li><strong>Certificate:</strong> after you are checked in and the event has ended, click <strong>Download certificate</strong> to save a PDF.</li>
+        <li><strong>Profile:</strong> click your name at the top right. Change your details and click <strong>Save details</strong>, or fill in <strong>Change password</strong> and click <strong>Change password</strong>.</li>
+        <li><strong>Forgotten password:</strong> click <strong>Forgot your password?</strong> on the sign-in page, click <strong>Send the code</strong>, then type the <strong>Six-digit code</strong> from the email and your new password, and click <strong>Change password</strong>.</li>
+      </ul>
+    </article>
+  </div>
+
+  <!-- Aqqwa customer -->
+  <div class="panel" data-app="aqqwa" id="customer-aqqwa">
+    <h3 class="panel-title">Aqqwa's web app</h3>
+    <p class="panel-intro">Sign in first. The top menu has <strong>Events</strong> and <strong>My bookings</strong>.</p>
+
+    <article class="task searchable">
+      <h4>Browse and filter events</h4>
+      <ol>
+        <li>Click <strong>Events</strong>.</li>
+        <li>Type in the search box ("Search events by title..."). The list updates as you type.</li>
+        <li>Choose a category in the <strong>All categories</strong> list.</li>
+        <li>Use <strong>Previous</strong> and <strong>Next</strong> to see more pages.</li>
+      </ol>
+      <p>Each card shows the category, an <strong>Online</strong> badge for online events, the date, the venue, the lowest price and "N seats left".</p>
+      <figure class="shot" data-file="aqqwa_02.webp"><a href="img/aqqwa_02.webp"><img loading="lazy" src="img/aqqwa_02.webp" alt="Customer: Events list with the search box, category filter and event cards." width="1600" height="838" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Customer: Events list with the search box, category filter and event cards.</figcaption></figure>
+    </article>
+
+    <article class="task searchable">
+      <h4>Open an event and check seats left</h4>
+      <ol>
+        <li>Click an event card.</li>
+        <li>Read <strong>Starts</strong>, <strong>Ends</strong> and <strong>Venue</strong>.</li>
+        <li>Look under <strong>Tickets</strong>. Each tier shows its price and "X of Y seats remaining". "UCYSS members only" marks a members-only tier.</li>
+      </ol>
+      <figure class="shot" data-file="aqqwa_03.webp"><a href="img/aqqwa_03.webp"><img loading="lazy" src="img/aqqwa_03.webp" alt="Customer: event detail with ticket tiers, seats remaining and the seat picker for a numbered-seat event." width="1600" height="837" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Customer: event detail with ticket tiers, seats remaining and the seat picker for a numbered-seat event.</figcaption></figure>
+    </article>
+
+    <article class="task searchable">
+      <h4>Book a free tier</h4>
+      <ol>
+        <li>Click <strong>Book</strong> on a free tier.</li>
+        <li>Read the booking page: "Booking confirmed".</li>
+        <li>Click <strong>My bookings</strong> or <strong>Browse more events</strong>.</li>
+      </ol>
+      <p>When a tier is sold out the button says <strong>Join waitlist</strong>, and the booking page says "You are on the waitlist" with your position.</p>
+    </article>
+
+    <article class="task searchable">
+      <h4>Book a paid tier with the sandbox payment</h4>
+      <ol>
+        <li>Click <strong>Book</strong> on a paid tier.</li>
+        <li>Read "Complete your payment". Your seat is held for a few minutes.</li>
+        <li>Under <strong>Sandbox payment</strong>, choose <strong>Credit / debit card</strong>, <strong>FPX online banking</strong> or <strong>E-wallet</strong>.</li>
+        <li>Click <strong>Pay RM ...</strong>.</li>
+        <li>Read "Payment received. You are in!"</li>
+      </ol>
+      <p>Test mode: no real money is charged.</p>
+      <div class="shots-2">
+        <figure class="shot" data-file="aqqwa_04.webp"><a href="img/aqqwa_04.webp"><img loading="lazy" src="img/aqqwa_04.webp" alt="Customer: a paid tier booking is pending, with the seat held and the sandbox payment form." width="1600" height="835" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Customer: a paid tier booking is pending, with the seat held and the sandbox payment form.</figcaption></figure>
+        <figure class="shot" data-file="aqqwa_05.webp"><a href="img/aqqwa_05.webp"><img loading="lazy" src="img/aqqwa_05.webp" alt="Customer: payment received and the booking confirmed." width="1600" height="836" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Customer: payment received and the booking confirmed.</figcaption></figure>
+      </div>
+    </article>
+
+    <article class="task searchable">
+      <h4>Pick a numbered seat</h4>
+      <ol>
+        <li>Open an event with the <strong>Numbered seats</strong> badge.</li>
+        <li>Click <strong>Book</strong> on a tier. The <strong>Choose a seat</strong> panel opens below.</li>
+        <li>Click a free seat. Taken seats are crossed out and cannot be clicked.</li>
+        <li>Click <strong>Book this seat</strong>. Click <strong>Close</strong> to leave without booking.</li>
+      </ol>
+    </article>
+
+    <article class="task searchable">
+      <h4>View My bookings and their status</h4>
+      <ol>
+        <li>Click <strong>My bookings</strong>.</li>
+        <li>Filter with the status list: <strong>All statuses</strong>, <strong>Confirmed</strong>, <strong>Pending payment</strong>, <strong>Waitlisted</strong>, <strong>Attended</strong> or <strong>Cancelled</strong>.</li>
+        <li>Click <strong>Pay</strong> on a pending booking to finish paying.</li>
+      </ol>
+      <figure class="shot" data-file="aqqwa_06.webp"><a href="img/aqqwa_06.webp"><img loading="lazy" src="img/aqqwa_06.webp" alt="Customer: My bookings with status badges, the status filter and the Cancel button." width="1600" height="835" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Customer: My bookings with status badges, the status filter and the Cancel button.</figcaption></figure>
+    </article>
+
+    <article class="task searchable">
+      <h4>Cancel a booking</h4>
+      <ol>
+        <li>Click <strong>My bookings</strong>.</li>
+        <li>Click <strong>Cancel</strong> on the booking. It appears for confirmed, pending and waitlisted bookings whose event has not ended.</li>
+        <li>Click <strong>OK</strong> in the browser's question.</li>
+        <li>Read "Booking #N was cancelled."</li>
+      </ol>
+    </article>
+
+    <article class="task searchable">
+      <h4>Create an account</h4>
+      <ol>
+        <li>Click <strong>Sign up</strong>, or <strong>Create a customer account</strong> on the login page.</li>
+        <li>Fill in <strong>Full name</strong>, <strong>Email</strong>, <strong>Password</strong> and <strong>Confirm password</strong>.</li>
+        <li>Click <strong>Create account</strong>. You land on <strong>Events</strong>.</li>
+      </ol>
+    </article>
+  </div>
+
+  <!-- Aijaz customer -->
+  <div class="panel" data-app="aijaz" id="customer-aijaz">
+    <h3 class="panel-title">Aijaz's web app</h3>
+    <p class="panel-intro">Sign in first. The top menu has <strong>Events</strong> and <strong>My bookings</strong>.</p>
+
+    <article class="task searchable">
+      <h4>Browse and filter events</h4>
+      <ol>
+        <li>Click <strong>Events</strong>. Only published events are listed.</li>
+        <li>Type in the search box ("Search events...") and click <strong>Search</strong>.</li>
+        <li>Choose a category in the <strong>All categories</strong> list. The list reloads straight away.</li>
+        <li>Use <strong>Previous</strong> and <strong>Next</strong> to see more pages.</li>
+      </ol>
+      <figure class="shot" data-file="aijaz_02.webp"><a href="img/aijaz_02.webp"><img loading="lazy" src="img/aijaz_02.webp" alt="Customer events list: published events only, with the search box and category filter sent to GET /events as ?search= and ?category=." width="1600" height="912" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Customer events list: published events only, with the search box and category filter sent to GET /events as ?search= and ?category=.</figcaption></figure>
+    </article>
+
+    <article class="task searchable">
+      <h4>Open an event and check seats left</h4>
+      <ol>
+        <li>Click <strong>View details</strong> on an event card.</li>
+        <li>Read <strong>Starts</strong>, <strong>Ends</strong>, <strong>Where</strong> and <strong>About</strong>.</li>
+        <li>Look under <strong>Tickets</strong>. Each tier shows the price and "X of Y seats remaining", or "Sold out".</li>
+      </ol>
+      <p>An event that has ended says "This event has ended, so booking is closed."</p>
+      <figure class="shot" data-file="aijaz_03.webp"><a href="img/aijaz_03.webp"><img loading="lazy" src="img/aijaz_03.webp" alt="Event detail with its ticket tiers, the price and seats left for each tier, and a Book button; a sold-out tier offers &quot;Join waitlist&quot; instead." width="1600" height="912" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Event detail with its ticket tiers, the price and seats left for each tier, and a Book button; a sold-out tier offers &quot;Join waitlist&quot; instead.</figcaption></figure>
+    </article>
+
+    <article class="task searchable">
+      <h4>Book a free tier</h4>
+      <ol>
+        <li>Click <strong>Book</strong> on a free tier.</li>
+        <li>Read the booking page: "Booking confirmed. Your place is reserved. See you there!"</li>
+      </ol>
+      <p>A sold-out tier shows <strong>Join waitlist</strong>. The booking page then says "You are on the waitlist." with your place in the queue.</p>
+    </article>
+
+    <article class="task searchable">
+      <h4>Book a paid tier with the sandbox payment</h4>
+      <ol>
+        <li>Click <strong>Book</strong> on a paid tier.</li>
+        <li>Read "Payment needed." Your seat is held for a few minutes.</li>
+        <li>Choose a <strong>Payment method</strong>: <strong>Card</strong>, <strong>FPX online banking</strong> or <strong>E-wallet</strong>.</li>
+        <li>Click <strong>Pay RM ...</strong>.</li>
+        <li>Read "Payment received. Your booking is confirmed."</li>
+      </ol>
+      <figure class="shot" data-file="aijaz_04.webp"><a href="img/aijaz_04.webp"><img loading="lazy" src="img/aijaz_04.webp" alt="After booking a paid tier, the seat is held (pending) and the booking page shows the sandbox payment form (no real money). Paying confirms the booking; a free tier is confirmed straight away." width="1600" height="912" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>After booking a paid tier, the seat is held (pending) and the booking page shows the sandbox payment form (no real money). Paying confirms the booking; a free tier is confirmed straight away.</figcaption></figure>
+    </article>
+
+    <article class="task searchable">
+      <h4>Pick a numbered seat</h4>
+      <ol>
+        <li>Open an event with numbered seats. Each tier that still has seats shows a <strong>Seat</strong> list.</li>
+        <li>Choose a seat in the list. Only free seats are listed.</li>
+        <li>Click <strong>Book</strong>.</li>
+      </ol>
+    </article>
+
+    <article class="task searchable">
+      <h4>View My bookings and their status</h4>
+      <ol>
+        <li>Click <strong>My bookings</strong>.</li>
+        <li>Read each row: event, ticket, start time, seat and status (pending, confirmed, attended, waitlisted or cancelled).</li>
+        <li>Click the event title to open the booking page, or <strong>Pay now</strong> on a held booking.</li>
+      </ol>
+      <figure class="shot" data-file="aijaz_05.webp"><a href="img/aijaz_05.webp"><img loading="lazy" src="img/aijaz_05.webp" alt="My bookings: each booking with its status badge (pending, confirmed, attended or cancelled), Pay now for a held booking, Cancel where it is still allowed, and paging." width="1600" height="914" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>My bookings: each booking with its status badge (pending, confirmed, attended or cancelled), Pay now for a held booking, Cancel where it is still allowed, and paging.</figcaption></figure>
+    </article>
+
+    <article class="task searchable">
+      <h4>Cancel a booking</h4>
+      <ol>
+        <li>Click <strong>Cancel</strong> in <strong>My bookings</strong>, or <strong>Cancel this booking</strong> on the booking page.</li>
+        <li>Click <strong>OK</strong> in the browser's question "Cancel this booking?".</li>
+        <li>Read "Your booking was cancelled."</li>
+      </ol>
+    </article>
+
+    <article class="task searchable">
+      <h4>Create an account</h4>
+      <ol>
+        <li>Click <strong>Create a customer account</strong> on the <strong>Log in</strong> page.</li>
+        <li>Fill in <strong>Name</strong>, <strong>Email</strong>, <strong>Password</strong> and <strong>Confirm password</strong>.</li>
+        <li>Click <strong>Create account</strong>.</li>
+      </ol>
+    </article>
+  </div>
+
+  <!-- Erfan customer -->
+  <div class="panel" data-app="erfan" id="customer-erfan">
+    <h3 class="panel-title">Erfan's mobile app</h3>
+    <p class="panel-intro">Tap <strong>Sign in</strong> on the welcome screen. Customers get three tabs: <strong>Events</strong>, <strong>My passes</strong> and <strong>Account</strong>.</p>
+
+    <article class="task searchable">
+      <h4>Browse and filter events</h4>
+      <ol>
+        <li>Open the <strong>Events</strong> tab.</li>
+        <li>Type in the "Search events" box.</li>
+        <li>Tap a category chip: <strong>All</strong>, <strong>CTF</strong>, <strong>Bootcamp</strong>, <strong>Conference</strong> or <strong>Workshop</strong>.</li>
+        <li>Tap <strong>Any date</strong>, <strong>Next 7 days</strong> or <strong>Next 30 days</strong>, and a price chip: <strong>Free</strong>, <strong>Up to RM 50</strong> or <strong>Up to RM 100</strong>.</li>
+        <li>Tap <strong>Clear filters</strong> to start again.</li>
+      </ol>
+      <p>Each card shows the seats, for example "Only 3 left" or "Sold out · waitlist".</p>
+    </article>
+
+    <article class="task searchable">
+      <h4>Open an event and check seats left</h4>
+      <ol>
+        <li>Tap an event.</li>
+        <li>Look under <strong>Choose your pass</strong>. Each tier shows the price and "X of Y seats left", or "Sold out".</li>
+        <li>Tap <strong>Share this event</strong> to send it to a friend.</li>
+      </ol>
+    </article>
+
+    <article class="task searchable">
+      <h4>Book a free tier</h4>
+      <ol>
+        <li>Tap <strong>Book this pass</strong> on a free tier.</li>
+        <li>Read the green message: "You're in. Your ... pass is confirmed and waiting in My passes."</li>
+      </ol>
+      <p>A sold-out tier shows <strong>Join waitlist</strong>.</p>
+      <figure class="shot" data-file="erfan_01.webp"><a href="img/erfan_01.webp"><img loading="lazy" src="img/erfan_01.webp" alt="Customer: event page with the green “You’re in…” booking message." width="502" height="908" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Customer: event page with the green “You’re in…” booking message.</figcaption></figure>
+    </article>
+
+    <article class="task searchable">
+      <h4>Book a paid tier with the sandbox payment</h4>
+      <ol>
+        <li>Tap <strong>Book this pass</strong> on a paid tier.</li>
+        <li>Watch the <strong>Complete your booking</strong> sheet. A timer shows how long the seat is held.</li>
+        <li>Choose a method under <strong>Pay with</strong>: <strong>Card</strong>, <strong>Online banking</strong> or <strong>E-wallet</strong>.</li>
+        <li>Leave <strong>Sandbox test result</strong> on <strong>Succeeds</strong>, or pick <strong>Declined</strong> or <strong>No funds</strong> to test a failure.</li>
+        <li>Tap <strong>Pay RM ...</strong>, read "Paid. You are in." and tap <strong>Done</strong>.</li>
+      </ol>
+      <p>Tap <strong>Release the seat</strong> to give it back, or <strong>Close and pay later</strong> to finish from <strong>My passes</strong> with <strong>Pay now</strong> before the timer ends.</p>
+    </article>
+
+    <article class="task searchable">
+      <h4>Pick a numbered seat</h4>
+      <ol>
+        <li>Open an event with numbered seats. A seat map appears above the tiers.</li>
+        <li>Tap a free seat. The button changes from <strong>Choose a seat above</strong> to <strong>Book seat ...</strong>.</li>
+        <li>Tap <strong>Book seat ...</strong>.</li>
+      </ol>
+    </article>
+
+    <article class="task searchable">
+      <h4>View My passes and their status</h4>
+      <ol>
+        <li>Open the <strong>My passes</strong> tab.</li>
+        <li>Read each pass and its status (<strong>Confirmed</strong>, <strong>Pending</strong>, <strong>Waitlisted</strong>, <strong>Checked in</strong> or <strong>Cancelled</strong>).</li>
+      </ol>
+      <p>Passes you have opened before are saved on the phone. Without a connection you see "You're offline. Showing the passes saved on this phone. Cancelling needs a connection."</p>
+      <figure class="shot" data-file="erfan_02.webp"><a href="img/erfan_02.webp"><img loading="lazy" src="img/erfan_02.webp" alt="Customer: My passes showing a booking and its status." width="505" height="897" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Customer: My passes showing a booking and its status.</figcaption></figure>
+    </article>
+
+    <article class="task searchable">
+      <h4>Cancel a booking</h4>
+      <ol>
+        <li>Tap <strong>Cancel booking</strong> on the pass.</li>
+        <li>Read the dialog. It says whether you will be refunded.</li>
+        <li>Tap <strong>Cancel booking</strong> to confirm, or <strong>Keep my pass</strong> to stop.</li>
+      </ol>
+    </article>
+
+    <article class="task searchable">
+      <h4>Extras: QR pass, calendar, online meetings and account</h4>
+      <ul>
+        <li><strong>QR pass:</strong> tap <strong>Show pass</strong>. The brightness goes up and the screen stays on while the pass is open. Tap <strong>Done</strong> to close it.</li>
+        <li><strong>Calendar:</strong> tap <strong>Add to calendar</strong> in the open pass to add the event to the phone's calendar.</li>
+        <li><strong>Online meeting:</strong> a confirmed online pass has <strong>Join on Zoom</strong> (or another platform) or <strong>Join meeting</strong>. Before the meeting opens, it reads "Opens ...".</li>
+        <li><strong>Account tab:</strong> choose <strong>Auto</strong>, <strong>Light</strong> or <strong>Dark</strong> under <strong>Appearance</strong>, tap <strong>Edit profile</strong> to change your details or password, or tap <strong>Sign out</strong>.</li>
+        <li><strong>Forgotten password:</strong> tap <strong>Forgot your password?</strong> on the sign-in screen and follow <strong>Send the code</strong>, then <strong>Change password</strong>.</li>
+      </ul>
+    </article>
+  </div>
+</section>
+
+<!-- ========================= 4. ORGANISER ========================= -->
+<section class="part per-app" id="organiser">
+  <h2>4. Organiser guide</h2>
+  <p class="lede">Sign in as <code>aisyah@ucyss.test</code> or <code>farid@ucyss.test</code>. An organiser only sees and changes their own events.</p>
+  <div class="tabs" role="tablist" aria-label="Choose an app"><button type="button" role="tab" data-app="hakim" aria-selected="true">Hakim's web app</button><button type="button" role="tab" data-app="aqqwa" aria-selected="false" tabindex="-1">Aqqwa's web app</button><button type="button" role="tab" data-app="aijaz" aria-selected="false" tabindex="-1">Aijaz's web app</button><button type="button" role="tab" data-app="erfan" aria-selected="false" tabindex="-1">Erfan's mobile app</button></div>
+
+  <!-- Hakim organiser -->
+  <div class="panel" data-app="hakim" id="organiser-hakim">
+    <h3 class="panel-title">Hakim's web app</h3>
+    <p class="panel-intro">The organiser area has a side menu with <strong>My events</strong> and <strong>Check-in</strong>. On a phone, open it with the menu button at the top left.</p>
+
+    <article class="task searchable">
+      <h4>Dashboard numbers</h4>
+      <ol>
+        <li>Click <strong>My events</strong>.</li>
+        <li>Read the tiles: <strong>Upcoming events</strong>, <strong>Tickets sold</strong>, <strong>Checked in</strong> and <strong>Net revenue</strong>.</li>
+        <li>Read the <strong>Attendance</strong> panel to see how many registered guests really came to events that have started.</li>
+      </ol>
+      <figure class="shot" data-file="hakim_05.webp"><a href="img/hakim_05.webp"><img loading="lazy" src="img/hakim_05.webp" alt="Organiser: My events with the KPI tiles, the attendance panel and the list of the organiser&#x27;s own events." width="1600" height="872" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Organiser: My events with the KPI tiles, the attendance panel and the list of the organiser&#x27;s own events.</figcaption></figure>
+    </article>
+
+    <article class="task searchable">
+      <h4>Create an event (in person or online)</h4>
+      <ol>
+        <li>Click <strong>Create event</strong>.</li>
+        <li>Choose <strong>In person</strong> or <strong>Online meeting</strong>.</li>
+        <li>Fill in <strong>Title</strong> and <strong>Category</strong>.</li>
+        <li>Choose a <strong>Venue</strong> (in person), or paste a <strong>Meeting link</strong> (online). The form shows which platform it detected, such as Zoom.</li>
+        <li>Set <strong>Status</strong>, <strong>Starts</strong>, <strong>Ends</strong> and <strong>Description</strong>. For an in-person event, turn on <strong>Numbered seats</strong> if guests should choose their exact seat.</li>
+        <li>Click <strong>Create event</strong>. The event is saved as a draft and its page opens.</li>
+      </ol>
+      <figure class="shot" data-file="hakim_06.webp"><a href="img/hakim_06.webp"><img loading="lazy" src="img/hakim_06.webp" alt="Organiser: the Create event form (In person or Online meeting, title, category, venue, status, start and end, numbered seats)." width="1600" height="534" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Organiser: the Create event form (In person or Online meeting, title, category, venue, status, start and end, numbered seats).</figcaption></figure>
+    </article>
+
+    <article class="task searchable">
+      <h4>Add, edit and delete ticket tiers</h4>
+      <ol>
+        <li>Open the event from <strong>My events</strong>.</li>
+        <li>Under <strong>Ticket tiers</strong>, click <strong>Add tier</strong>.</li>
+        <li>Fill in <strong>Name</strong>, <strong>Price (RM)</strong> and <strong>Seats</strong>. Set <strong>Who can book</strong> to <strong>Anyone</strong> or <strong>UCYSS members only</strong>. A numbered-seat event also asks for <strong>Seats per row</strong>.</li>
+        <li>Click <strong>Save tier</strong>.</li>
+        <li>Click <strong>Edit</strong> on a tier to change it, or <strong>Delete</strong> and then <strong>Delete tier</strong> to remove it.</li>
+      </ol>
+      <figure class="shot" data-file="hakim_07.webp"><a href="img/hakim_07.webp"><img loading="lazy" src="img/hakim_07.webp" alt="Organiser: editing an online event and managing its ticket tiers with the Add tier form." width="1600" height="742" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Organiser: editing an online event and managing its ticket tiers with the Add tier form.</figcaption></figure>
+    </article>
+
+    <article class="task searchable">
+      <h4>Publish, or move back to draft</h4>
+      <ol>
+        <li>Open the event.</li>
+        <li>Click <strong>Publish event</strong> at the top. Customers can see it and book straight away.</li>
+        <li>Click <strong>Move back to draft</strong> to hide it again.</li>
+      </ol>
+      <p>You can also use the actions menu on a row in <strong>My events</strong>: <strong>Publish</strong> or <strong>Move back to draft</strong>.</p>
+    </article>
+
+    <article class="task searchable">
+      <h4>Edit or delete an event</h4>
+      <ol>
+        <li>Open the event, change the fields and click <strong>Save event</strong>.</li>
+        <li>To cancel it, set <strong>Status</strong> to Cancelled, click <strong>Save event</strong> and confirm with <strong>Cancel the event</strong>. Every active booking is cancelled, paid tickets are refunded and guests are emailed.</li>
+        <li>Click <strong>Duplicate event</strong> to copy it, or <strong>Export attendees (CSV)</strong> to download the guest list.</li>
+      </ol>
+      <p class="note">The organiser area has no delete button. An administrator can delete an event from <strong>Events</strong> in the admin area.</p>
+    </article>
+
+    <article class="task searchable">
+      <h4>View the bookings for an event</h4>
+      <ol>
+        <li>Open the event.</li>
+        <li>Scroll to <strong>Attendees</strong> to see each guest, tier, seat, booking time and status.</li>
+        <li>For a numbered-seat event, look at <strong>Seat map</strong> to see who holds each seat.</li>
+      </ol>
+    </article>
+
+    <article class="task searchable">
+      <h4>Check guests in at the door</h4>
+      <ol>
+        <li>Click <strong>Check-in</strong> in the side menu.</li>
+        <li>Choose the event in the <strong>Event</strong> list.</li>
+        <li>Click <strong>Start scanning</strong> and point the camera at the guest's QR pass.</li>
+        <li>Read the result. "Cleared to enter" means the guest is checked in.</li>
+        <li>Click <strong>Scan next guest</strong>.</li>
+      </ol>
+      <p>If the camera does not work, open <strong>Can't scan? Enter the ticket instead</strong>, type the booking number and signature, and click <strong>Check in</strong>. A failed scan shows "Forged or altered ticket", "Already used, or not confirmed", "Not your event" or "Not a UCYSS ticket".</p>
+      <figure class="shot" data-file="hakim_08.webp"><a href="img/hakim_08.webp"><img loading="lazy" src="img/hakim_08.webp" alt="Organiser: the Check-in page; scan the guest&#x27;s QR pass, or enter the ticket code by hand." width="1600" height="395" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Organiser: the Check-in page; scan the guest&#x27;s QR pass, or enter the ticket code by hand.</figcaption></figure>
+    </article>
+
+    <article class="task searchable">
+      <h4>Send an announcement</h4>
+      <ol>
+        <li>Open a published event and scroll to <strong>Announcements</strong>.</li>
+        <li>Fill in <strong>Subject</strong> and <strong>Message</strong>.</li>
+        <li>Click <strong>Send to N people</strong> and confirm with <strong>Send announcement</strong>. Everyone booked, and everyone on the waitlist, is emailed.</li>
+      </ol>
+    </article>
+  </div>
+
+  <!-- Aqqwa organiser -->
+  <div class="panel" data-app="aqqwa" id="organiser-aqqwa">
+    <h3 class="panel-title">Aqqwa's web app</h3>
+    <p class="panel-intro">The top menu has <strong>Dashboard</strong>, <strong>My events</strong> and <strong>New event</strong>.</p>
+
+    <article class="task searchable">
+      <h4>Dashboard numbers</h4>
+      <ol>
+        <li>Click <strong>Dashboard</strong>.</li>
+        <li>Read the tiles: <strong>Events</strong>, <strong>Published</strong>, <strong>Drafts</strong>, <strong>Upcoming</strong>, <strong>Tickets sold</strong>, <strong>Checked in</strong>, <strong>Waitlisted</strong> and <strong>Net revenue</strong>.</li>
+      </ol>
+      <figure class="shot" data-file="aqqwa_07.webp"><a href="img/aqqwa_07.webp"><img loading="lazy" src="img/aqqwa_07.webp" alt="Organiser: Dashboard numbers from GET /organiser/summary." width="1600" height="835" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Organiser: Dashboard numbers from GET /organiser/summary.</figcaption></figure>
+    </article>
+
+    <article class="task searchable">
+      <h4>Create an event (physical or online)</h4>
+      <ol>
+        <li>Click <strong>New event</strong> in the menu, or <strong>+ New event</strong>.</li>
+        <li>Fill in <strong>Title</strong>, <strong>Category</strong> and <strong>Status</strong>.</li>
+        <li>Under <strong>Where</strong>, click <strong>Physical</strong> and choose a <strong>Venue</strong>, or click <strong>Online</strong> and paste the <strong>Meeting link</strong>.</li>
+        <li>Fill in <strong>Starts</strong>, <strong>Ends</strong> and <strong>Description</strong>.</li>
+        <li>Click <strong>Create event</strong>. Read "Event created. Now add its ticket tiers."</li>
+      </ol>
+      <div class="shots-2">
+        <figure class="shot" data-file="aqqwa_08.webp"><a href="img/aqqwa_08.webp"><img loading="lazy" src="img/aqqwa_08.webp" alt="Organiser: New event form with a physical venue." width="1600" height="837" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Organiser: New event form with a physical venue.</figcaption></figure>
+        <figure class="shot" data-file="aqqwa_09.webp"><a href="img/aqqwa_09.webp"><img loading="lazy" src="img/aqqwa_09.webp" alt="Organiser: New event form switched to Online, showing the meeting link field." width="1600" height="836" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Organiser: New event form switched to Online, showing the meeting link field.</figcaption></figure>
+      </div>
+    </article>
+
+    <article class="task searchable">
+      <h4>Add, edit and delete ticket tiers</h4>
+      <ol>
+        <li>Click <strong>Manage</strong> on the event in <strong>My events</strong>.</li>
+        <li>Under <strong>Add a tier</strong>, fill in <strong>Name</strong>, <strong>Price (RM, 0 = free)</strong> and <strong>Capacity</strong>.</li>
+        <li>Click <strong>Add tier</strong>.</li>
+        <li>Click <strong>Edit</strong> on a tier, change it and click <strong>Save</strong> (or <strong>Cancel</strong>).</li>
+        <li>Click <strong>Delete</strong> on a tier and click <strong>OK</strong> to remove it.</li>
+      </ol>
+      <figure class="shot" data-file="aqqwa_10.webp"><a href="img/aqqwa_10.webp"><img loading="lazy" src="img/aqqwa_10.webp" alt="Organiser: Manage event page with ticket tiers, Add a tier, Publish and the event&#x27;s bookings." width="1600" height="830" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Organiser: Manage event page with ticket tiers, Add a tier, Publish and the event&#x27;s bookings.</figcaption></figure>
+    </article>
+
+    <article class="task searchable">
+      <h4>Publish, or move back to draft</h4>
+      <ol>
+        <li>Open the event with <strong>Manage</strong>.</li>
+        <li>Click <strong>Publish</strong>. Read "Event published. Customers can now book it."</li>
+        <li>Click <strong>Move back to draft</strong> to hide it again.</li>
+      </ol>
+    </article>
+
+    <article class="task searchable">
+      <h4>Edit or delete an event</h4>
+      <ol>
+        <li>Click <strong>Edit details</strong> on the event page (or <strong>Edit</strong> in <strong>My events</strong>).</li>
+        <li>Change the fields and click <strong>Save changes</strong>.</li>
+        <li>To delete, click <strong>Delete</strong> on the event page and click <strong>OK</strong>. An event that still has active bookings cannot be deleted.</li>
+      </ol>
+    </article>
+
+    <article class="task searchable">
+      <h4>View the bookings for an event</h4>
+      <ol>
+        <li>Open the event with <strong>Manage</strong>.</li>
+        <li>Scroll to <strong>Bookings</strong>. Click <strong>Refresh</strong> to load new ones.</li>
+      </ol>
+      <p class="note">Aqqwa's app has no check-in or announcements pages.</p>
+    </article>
+  </div>
+
+  <!-- Aijaz organiser -->
+  <div class="panel" data-app="aijaz" id="organiser-aijaz">
+    <h3 class="panel-title">Aijaz's web app</h3>
+    <p class="panel-intro">The top menu has <strong>Dashboard</strong> and <strong>My events</strong>.</p>
+
+    <article class="task searchable">
+      <h4>Dashboard numbers</h4>
+      <ol>
+        <li>Click <strong>Dashboard</strong>.</li>
+        <li>Read the tiles: <strong>Events</strong>, <strong>Published</strong>, <strong>Drafts</strong>, <strong>Upcoming</strong>, <strong>Tickets sold</strong>, <strong>Checked in</strong>, <strong>Waitlisted</strong> and <strong>Net revenue</strong>.</li>
+      </ol>
+      <figure class="shot" data-file="aijaz_06.webp"><a href="img/aijaz_06.webp"><img loading="lazy" src="img/aijaz_06.webp" alt="Organiser dashboard numbers from GET /organiser/summary: events, published, drafts, upcoming, tickets sold, checked in, waitlisted and net revenue." width="1600" height="914" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Organiser dashboard numbers from GET /organiser/summary: events, published, drafts, upcoming, tickets sold, checked in, waitlisted and net revenue.</figcaption></figure>
+    </article>
+
+    <article class="task searchable">
+      <h4>Create an event (physical or online)</h4>
+      <ol>
+        <li>Click <strong>Create event</strong>.</li>
+        <li>Fill in <strong>Title</strong>, <strong>Category</strong> and <strong>Status</strong>.</li>
+        <li>Under <strong>Type</strong>, click <strong>Physical</strong> and choose a <strong>Venue</strong>, or click <strong>Online</strong> and paste the <strong>Meeting link</strong>.</li>
+        <li>Fill in <strong>Starts</strong>, <strong>Ends</strong> and <strong>Description</strong>.</li>
+        <li>Click <strong>Create event</strong>. Read "Event created. Now add its ticket tiers below."</li>
+      </ol>
+      <figure class="shot" data-file="aijaz_07.webp"><a href="img/aijaz_07.webp"><img loading="lazy" src="img/aijaz_07.webp" alt="Organiser creating an event. One form is used for create and edit; Physical shows the venue list and Online shows the meeting-link field." width="1600" height="915" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Organiser creating an event. One form is used for create and edit; Physical shows the venue list and Online shows the meeting-link field.</figcaption></figure>
+    </article>
+
+    <article class="task searchable">
+      <h4>Add, edit and delete ticket tiers</h4>
+      <ol>
+        <li>Open the event with <strong>Manage</strong> in <strong>My events</strong>.</li>
+        <li>Under <strong>Add a tier</strong>, fill in <strong>Name</strong>, <strong>Price (RM, 0 = free)</strong> and <strong>Capacity</strong>. Tick <strong>Members only</strong> if needed.</li>
+        <li>Click <strong>Add tier</strong>.</li>
+        <li>Click <strong>Edit</strong> on a tier, change it and click <strong>Save tier</strong> (or <strong>Cancel edit</strong>).</li>
+        <li>Click <strong>Delete</strong> on a tier and click <strong>OK</strong>.</li>
+      </ol>
+      <figure class="shot" data-file="aijaz_08.webp"><a href="img/aijaz_08.webp"><img loading="lazy" src="img/aijaz_08.webp" alt="Organiser My events: only this organiser&#x27;s own events, drafts included (GET /events?organiser_id=), each with its status and a Manage button that opens the event&#x27;s tiers, Publish / Move back to draft and bookings." width="1600" height="915" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Organiser My events: only this organiser&#x27;s own events, drafts included (GET /events?organiser_id=), each with its status and a Manage button that opens the event&#x27;s tiers, Publish / Move back to draft and bookings.</figcaption></figure>
+    </article>
+
+    <article class="task searchable">
+      <h4>Publish, or move back to draft</h4>
+      <ol>
+        <li>Open the event with <strong>Manage</strong>.</li>
+        <li>Click <strong>Publish</strong>. Read "Event published."</li>
+        <li>Click <strong>Move back to draft</strong> to hide it again.</li>
+      </ol>
+    </article>
+
+    <article class="task searchable">
+      <h4>Edit or delete an event</h4>
+      <ol>
+        <li>Click <strong>Edit details</strong> on the event page.</li>
+        <li>Change the fields and click <strong>Save changes</strong>.</li>
+        <li>To delete, click <strong>Delete event</strong> and click <strong>OK</strong>.</li>
+      </ol>
+    </article>
+
+    <article class="task searchable">
+      <h4>View the bookings for an event</h4>
+      <ol>
+        <li>Open the event with <strong>Manage</strong>.</li>
+        <li>Scroll to <strong>Bookings for this event</strong>.</li>
+      </ol>
+      <p class="note">Aijaz's app has no check-in or announcements pages.</p>
+    </article>
+  </div>
+
+  <!-- Erfan organiser -->
+  <div class="panel" data-app="erfan" id="organiser-erfan">
+    <h3 class="panel-title">Erfan's mobile app</h3>
+    <p class="panel-intro">Organisers get four tabs: <strong>My events</strong>, <strong>Check-in</strong>, <strong>Bookings</strong> and <strong>Account</strong>.</p>
+
+    <article class="task searchable">
+      <h4>Dashboard numbers</h4>
+      <ol>
+        <li>Open the <strong>My events</strong> tab.</li>
+        <li>Read the tiles: <strong>Events</strong>, <strong>Published</strong>, <strong>Drafts</strong>, <strong>Upcoming</strong>, <strong>Tickets sold</strong>, <strong>Checked in</strong>, <strong>Waitlisted</strong> and <strong>Net revenue</strong>.</li>
+      </ol>
+      <figure class="shot" data-file="erfan_03.webp"><a href="img/erfan_03.webp"><img loading="lazy" src="img/erfan_03.webp" alt="Organiser: My events with the number tiles." width="505" height="897" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Organiser: My events with the number tiles.</figcaption></figure>
+    </article>
+
+    <article class="task searchable">
+      <h4>Create an event (physical or online)</h4>
+      <ol>
+        <li>Tap <strong>New event</strong>.</li>
+        <li>Fill in <strong>Title</strong> and choose a <strong>Category</strong>.</li>
+        <li>Under <strong>Where</strong>, choose <strong>Physical venue</strong> and pick a <strong>Venue</strong>, or choose <strong>Online</strong> and type the <strong>Meeting link</strong>.</li>
+        <li>Type <strong>Starts</strong> and <strong>Ends</strong> as <code>YYYY-MM-DD HH:mm</code>, for example <code>2026-11-20 09:00</code>.</li>
+        <li>Choose a <strong>Status</strong> and fill in <strong>Description</strong>.</li>
+        <li>Tap <strong>Create event</strong>.</li>
+      </ol>
+      <figure class="shot" data-file="erfan_04.webp"><a href="img/erfan_04.webp"><img loading="lazy" src="img/erfan_04.webp" alt="Organiser: event form filled in for the Demo Test Event." width="502" height="895" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Organiser: event form filled in for the Demo Test Event.</figcaption></figure>
+    </article>
+
+    <article class="task searchable">
+      <h4>Add, edit and delete ticket tiers</h4>
+      <ol>
+        <li>Tap the event in <strong>My events</strong>.</li>
+        <li>Tap <strong>Add tier</strong>.</li>
+        <li>Fill in <strong>Tier name</strong>, <strong>Price (RM)</strong> and <strong>Seats</strong>. Turn on <strong>Members only</strong> if needed. A price of 0 makes the tier free.</li>
+        <li>Tap <strong>Add tier</strong>.</li>
+        <li>Tap <strong>Edit</strong> on a tier and then <strong>Save tier</strong>, or tap <strong>Delete</strong> and confirm with <strong>Delete</strong>.</li>
+      </ol>
+      <figure class="shot" data-file="erfan_05.webp"><a href="img/erfan_05.webp"><img loading="lazy" src="img/erfan_05.webp" alt="Organiser: event page with the new ticket tier." width="502" height="897" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Organiser: event page with the new ticket tier.</figcaption></figure>
+    </article>
+
+    <article class="task searchable">
+      <h4>Publish, or move back to draft</h4>
+      <ol>
+        <li>Open the event.</li>
+        <li>Tap <strong>Publish</strong>, or <strong>Move back to draft</strong>.</li>
+      </ol>
+    </article>
+
+    <article class="task searchable">
+      <h4>Edit or delete an event</h4>
+      <ol>
+        <li>Open the event and tap <strong>Edit details</strong>.</li>
+        <li>Change the fields and tap <strong>Save changes</strong>.</li>
+        <li>To delete, tap <strong>Delete event</strong> and confirm with <strong>Delete event</strong>. Events with active bookings cannot be deleted.</li>
+      </ol>
+    </article>
+
+    <article class="task searchable">
+      <h4>View the bookings for an event</h4>
+      <ol>
+        <li>Open the event and tap <strong>View bookings</strong>, or open the <strong>Bookings</strong> tab for all your events.</li>
+        <li>Filter with <strong>All</strong>, <strong>Confirmed</strong>, <strong>Pending</strong>, <strong>Waitlisted</strong>, <strong>Checked in</strong> or <strong>Cancelled</strong>.</li>
+        <li>Tap <strong>Check in</strong> on a confirmed booking to check the guest in by hand.</li>
+      </ol>
+      <figure class="shot" data-file="erfan_06.webp"><a href="img/erfan_06.webp"><img loading="lazy" src="img/erfan_06.webp" alt="Organiser: Bookings tab with the Confirmed filter." width="507" height="893" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Organiser: Bookings tab with the Confirmed filter.</figcaption></figure>
+    </article>
+
+    <article class="task searchable">
+      <h4>Check guests in at the door</h4>
+      <ol>
+        <li>Open the <strong>Check-in</strong> tab.</li>
+        <li>Tap <strong>Allow camera</strong> the first time.</li>
+        <li>Point the camera at the guest's QR pass.</li>
+        <li>Read the result. "Checked in. Welcome!" means it worked. "Not checked in" or "Not a UCYSS pass" means it did not.</li>
+        <li>Tap <strong>Scan next guest</strong>.</li>
+      </ol>
+      <p class="note">Erfan's app has no announcements screen.</p>
+    </article>
+  </div>
+</section>
+
+<!-- ========================= 5. ADMIN ========================= -->
+<section class="part per-app" id="admin">
+  <h2>5. Administrator guide</h2>
+  <p class="lede">Sign in as <code>admin@sentrypass.test</code>. Please do not change or delete the shared demo accounts, because the whole group uses them.</p>
+  <div class="tabs" role="tablist" aria-label="Choose an app"><button type="button" role="tab" data-app="hakim" aria-selected="true">Hakim's web app</button><button type="button" role="tab" data-app="aqqwa" aria-selected="false" tabindex="-1">Aqqwa's web app</button><button type="button" role="tab" data-app="aijaz" aria-selected="false" tabindex="-1">Aijaz's web app</button><button type="button" role="tab" data-app="erfan" aria-selected="false" tabindex="-1">Erfan's mobile app</button></div>
+
+  <!-- Hakim admin -->
+  <div class="panel" data-app="hakim" id="admin-hakim">
+    <h3 class="panel-title">Hakim's web app</h3>
+    <p class="panel-intro">The admin side menu has <strong>Overview</strong>, <strong>Events</strong>, <strong>Bookings</strong>, <strong>Venues</strong>, <strong>People</strong>, <strong>Emails</strong> and <strong>Organiser tools</strong>.</p>
+
+    <article class="task searchable">
+      <h4>Overview</h4>
+      <ol>
+        <li>Click <strong>Overview</strong>.</li>
+        <li>Read the tiles: <strong>Net revenue</strong>, <strong>Tickets sold</strong>, <strong>Seats held</strong> and <strong>Check-in rate</strong>.</li>
+        <li>Read <strong>Upcoming events</strong>, <strong>Needs attention</strong> and <strong>Recent activity</strong>, then the charts lower down.</li>
+      </ol>
+      <figure class="shot" data-file="hakim_09.webp"><a href="img/hakim_09.webp"><img loading="lazy" src="img/hakim_09.webp" alt="Administrator: Overview with revenue, tickets sold, seats held, check-in rate, upcoming events and recent activity." width="1600" height="878" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Administrator: Overview with revenue, tickets sold, seats held, check-in rate, upcoming events and recent activity.</figcaption></figure>
+    </article>
+
+    <article class="task searchable">
+      <h4>Manage users</h4>
+      <ol>
+        <li>Click <strong>People</strong>. Filter with <strong>Everyone</strong>, <strong>Customers</strong>, <strong>Organisers</strong> or <strong>Admins</strong>, or search by name or email.</li>
+        <li>To create an account, click <strong>Add account</strong>, fill in <strong>Full name</strong>, <strong>Email</strong>, <strong>Temporary password</strong> and <strong>Role</strong>, and click <strong>Add account</strong>.</li>
+        <li>To change a role, open the row's actions menu, click <strong>Change role</strong>, pick the <strong>Role</strong> and click <strong>Save role</strong>.</li>
+        <li>To delete, click <strong>Delete account</strong> in the menu and confirm.</li>
+        <li>Click <strong>Add to member list</strong> to let someone book members-only tiers. Click <strong>Export CSV</strong> to download the list.</li>
+      </ol>
+      <p class="note">Your own account has no actions menu. This app does not lock the shared demo accounts, so take care with them.</p>
+      <div class="shots-2">
+        <figure class="shot" data-file="hakim_13.webp"><a href="img/hakim_13.webp"><img loading="lazy" src="img/hakim_13.webp" alt="Administrator: People, with role tabs, search and CSV export." width="1600" height="650" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Administrator: People, with role tabs, search and CSV export.</figcaption></figure>
+        <figure class="shot" data-file="hakim_14.webp"><a href="img/hakim_14.webp"><img loading="lazy" src="img/hakim_14.webp" alt="Administrator: the Add an account dialog (name, email, temporary password, role)." width="1600" height="695" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Administrator: the Add an account dialog (name, email, temporary password, role).</figcaption></figure>
+      </div>
+    </article>
+
+    <article class="task searchable">
+      <h4>Manage venues</h4>
+      <ol>
+        <li>Click <strong>Venues</strong>.</li>
+        <li>Click <strong>Add venue</strong>, fill in <strong>Name</strong>, <strong>Address</strong> and <strong>Capacity</strong>, and click <strong>Save venue</strong>.</li>
+        <li>Use the row's menu to <strong>Edit</strong> or <strong>Delete</strong> a venue. A venue that still has events cannot be deleted.</li>
+      </ol>
+      <div class="shots-2">
+        <figure class="shot" data-file="hakim_15.webp"><a href="img/hakim_15.webp"><img loading="lazy" src="img/hakim_15.webp" alt="Administrator: Venues with address and capacity." width="1600" height="528" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Administrator: Venues with address and capacity.</figcaption></figure>
+        <figure class="shot" data-file="hakim_16.webp"><a href="img/hakim_16.webp"><img loading="lazy" src="img/hakim_16.webp" alt="Administrator: the Add venue dialog (name, address, capacity)." width="1600" height="686" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Administrator: the Add venue dialog (name, address, capacity).</figcaption></figure>
+      </div>
+    </article>
+
+    <article class="task searchable">
+      <h4>All events</h4>
+      <ol>
+        <li>Click <strong>Events</strong>. Filter with <strong>All</strong>, <strong>Published</strong>, <strong>Draft</strong>, <strong>Cancelled</strong> or <strong>Completed</strong>, the type list (<strong>All types</strong>, <strong>In person</strong>, <strong>Online</strong>) or the search box.</li>
+        <li>Open a row's actions menu and choose <strong>Open</strong>, <strong>Publish</strong>, <strong>Move back to draft</strong>, <strong>Mark as completed</strong>, <strong>Cancel event</strong> or <strong>Delete</strong>.</li>
+        <li>Click <strong>Open</strong> to see who created the event, <strong>How it's going</strong>, the tiers, the seat map and its bookings, with <strong>Export attendees (CSV)</strong>.</li>
+      </ol>
+      <div class="shots-2">
+        <figure class="shot" data-file="hakim_10.webp"><a href="img/hakim_10.webp"><img loading="lazy" src="img/hakim_10.webp" alt="Administrator: every event, with status tabs, type filter, search and the organiser of each event." width="1600" height="621" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Administrator: every event, with status tabs, type filter, search and the organiser of each event.</figcaption></figure>
+        <figure class="shot" data-file="hakim_11.webp"><a href="img/hakim_11.webp"><img loading="lazy" src="img/hakim_11.webp" alt="Administrator: the action menu on an event (Open, Move back to draft, Mark as completed, Cancel event, Delete)." width="1600" height="608" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Administrator: the action menu on an event (Open, Move back to draft, Mark as completed, Cancel event, Delete).</figcaption></figure>
+      </div>
+    </article>
+
+    <article class="task searchable">
+      <h4>All bookings</h4>
+      <ol>
+        <li>Click <strong>Bookings</strong>.</li>
+        <li>Filter with <strong>All</strong>, <strong>Confirmed</strong>, <strong>Waitlisted</strong>, <strong>Awaiting payment</strong>, <strong>Checked in</strong> or <strong>Cancelled</strong>.</li>
+        <li>Use the row's menu to <strong>Cancel booking</strong> (the seat goes to the waitlist) or <strong>Delete record</strong>. Click <strong>Export CSV</strong> to download.</li>
+      </ol>
+      <figure class="shot" data-file="hakim_12.webp"><a href="img/hakim_12.webp"><img loading="lazy" src="img/hakim_12.webp" alt="Administrator: every booking with seat, payment and status, filter tabs and CSV export." width="1600" height="563" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Administrator: every booking with seat, payment and status, filter tabs and CSV export.</figcaption></figure>
+    </article>
+
+    <article class="task searchable">
+      <h4>Extras: Emails log and Organiser tools</h4>
+      <ul>
+        <li><strong>Emails:</strong> every booking email the platform tried to send, with the provider's answer. Filter with the <strong>Show</strong> list and open <strong>Raw response</strong> on a row.</li>
+        <li><strong>Organiser tools:</strong> opens the organiser area so an admin can create and run events. Click <strong>Back to admin</strong> to return.</li>
+      </ul>
+      <div class="shots-2">
+        <figure class="shot" data-file="hakim_17.webp"><a href="img/hakim_17.webp"><img loading="lazy" src="img/hakim_17.webp" alt="Administrator: the Emails log with the email provider&#x27;s response for each booking email." width="1600" height="648" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Administrator: the Emails log with the email provider&#x27;s response for each booking email.</figcaption></figure>
+        <figure class="shot" data-file="hakim_18.webp"><a href="img/hakim_18.webp"><img loading="lazy" src="img/hakim_18.webp" alt="Administrator: Organiser tools opens the organiser area, with a Back to admin link." width="1600" height="877" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Administrator: Organiser tools opens the organiser area, with a Back to admin link.</figcaption></figure>
+      </div>
+    </article>
+  </div>
+
+  <!-- Aqqwa admin -->
+  <div class="panel" data-app="aqqwa" id="admin-aqqwa">
+    <h3 class="panel-title">Aqqwa's web app</h3>
+    <p class="panel-intro">The admin menu has <strong>Overview</strong>, <strong>Users</strong>, <strong>Venues</strong>, <strong>Events</strong> and <strong>Bookings</strong>.</p>
+
+    <article class="task searchable">
+      <h4>Overview</h4>
+      <ol>
+        <li>Click <strong>Overview</strong>.</li>
+        <li>Read <strong>Net revenue</strong>, <strong>Gross revenue</strong>, <strong>Refunded</strong>, <strong>Users</strong>, <strong>Events</strong> and <strong>Bookings</strong>.</li>
+        <li>Read <strong>Users by role</strong>, <strong>Events by status</strong>, <strong>Bookings by status</strong> and <strong>Recent bookings</strong>. Click <strong>Refresh</strong> for new numbers.</li>
+      </ol>
+      <figure class="shot" data-file="aqqwa_11.webp"><a href="img/aqqwa_11.webp"><img loading="lazy" src="img/aqqwa_11.webp" alt="Admin: Overview with revenue, users by role, events and bookings by status, and recent bookings." width="1600" height="835" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Admin: Overview with revenue, users by role, events and bookings by status, and recent bookings.</figcaption></figure>
+    </article>
+
+    <article class="task searchable">
+      <h4>Manage users</h4>
+      <ol>
+        <li>Click <strong>Users</strong>. Search by name or email, or filter with <strong>All roles</strong>.</li>
+        <li>To create an account, click <strong>+ New user</strong>, fill in <strong>Name</strong>, <strong>Email</strong>, <strong>Password (min 8 characters)</strong> and <strong>Role</strong>, and click <strong>Create user</strong>.</li>
+        <li>To change a role, pick a new one in the row's role list. It is saved straight away.</li>
+        <li>To delete, click <strong>Delete</strong> and click <strong>OK</strong>.</li>
+      </ol>
+      <p class="note">The four shared demo accounts are protected. Their rows say "Demo account" and have no role list or <strong>Delete</strong> button. Your own row says "You".</p>
+      <figure class="shot" data-file="aqqwa_12.webp"><a href="img/aqqwa_12.webp"><img loading="lazy" src="img/aqqwa_12.webp" alt="Admin: Users page with search, role filter, role dropdown and Delete." width="1600" height="835" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Admin: Users page with search, role filter, role dropdown and Delete.</figcaption></figure>
+    </article>
+
+    <article class="task searchable">
+      <h4>Manage venues</h4>
+      <ol>
+        <li>Click <strong>Venues</strong>.</li>
+        <li>Click <strong>+ New venue</strong>, fill in <strong>Name</strong>, <strong>Address</strong> and <strong>Capacity</strong>, and click <strong>Create venue</strong>.</li>
+        <li>Click <strong>Edit</strong> and then <strong>Save venue</strong>, or <strong>Delete</strong> and <strong>OK</strong>.</li>
+      </ol>
+      <p>The shared "Online" venue says "Used by online events" and cannot be edited or deleted.</p>
+      <figure class="shot" data-file="aqqwa_13.webp"><a href="img/aqqwa_13.webp"><img loading="lazy" src="img/aqqwa_13.webp" alt="Admin: Venues page; the shared &quot;Online&quot; venue cannot be edited or deleted." width="1600" height="837" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Admin: Venues page; the shared &quot;Online&quot; venue cannot be edited or deleted.</figcaption></figure>
+    </article>
+
+    <article class="task searchable">
+      <h4>All events</h4>
+      <ol>
+        <li>Click <strong>Events</strong>. Search by title or filter with <strong>All statuses</strong>.</li>
+        <li>Click <strong>Publish</strong> on an event that is not published.</li>
+        <li>Click <strong>Cancel</strong> and <strong>OK</strong> to cancel an event. Its active bookings are cancelled too.</li>
+      </ol>
+      <figure class="shot" data-file="aqqwa_14.webp"><a href="img/aqqwa_14.webp"><img loading="lazy" src="img/aqqwa_14.webp" alt="Admin: All events with search, status filter and Cancel." width="1600" height="837" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Admin: All events with search, status filter and Cancel.</figcaption></figure>
+    </article>
+
+    <article class="task searchable">
+      <h4>All bookings</h4>
+      <ol>
+        <li>Click <strong>Bookings</strong>.</li>
+        <li>Filter with <strong>All statuses</strong>, <strong>Confirmed</strong>, <strong>Pending</strong>, <strong>Waitlisted</strong>, <strong>Attended</strong> or <strong>Cancelled</strong>.</li>
+      </ol>
+      <figure class="shot" data-file="aqqwa_15.webp"><a href="img/aqqwa_15.webp"><img loading="lazy" src="img/aqqwa_15.webp" alt="Admin: All bookings across every event." width="1600" height="836" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Admin: All bookings across every event.</figcaption></figure>
+    </article>
+  </div>
+
+  <!-- Aijaz admin -->
+  <div class="panel" data-app="aijaz" id="admin-aijaz">
+    <h3 class="panel-title">Aijaz's web app</h3>
+    <p class="panel-intro">The admin menu has <strong>Overview</strong>, <strong>Users</strong>, <strong>Venues</strong>, <strong>Events</strong> and <strong>Bookings</strong>.</p>
+
+    <article class="task searchable">
+      <h4>Overview</h4>
+      <ol>
+        <li>Click <strong>Overview</strong>.</li>
+        <li>Read <strong>Net revenue</strong>, <strong>Gross revenue</strong>, <strong>Refunded</strong> and <strong>Draft events</strong>.</li>
+        <li>Read <strong>Users by role</strong>, <strong>Events by status</strong>, <strong>Bookings by status</strong> and <strong>Recent activity</strong>.</li>
+      </ol>
+      <figure class="shot" data-file="aijaz_09.webp"><a href="img/aijaz_09.webp"><img loading="lazy" src="img/aijaz_09.webp" alt="Admin overview from GET /admin/stats: revenue, draft events, users by role, events by status, bookings by status and recent activity." width="1600" height="914" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Admin overview from GET /admin/stats: revenue, draft events, users by role, events by status, bookings by status and recent activity.</figcaption></figure>
+    </article>
+
+    <article class="task searchable">
+      <h4>Manage users</h4>
+      <ol>
+        <li>Click <strong>Users</strong>.</li>
+        <li>To create an account, fill in the <strong>Create a user</strong> form (<strong>Name</strong>, <strong>Email</strong>, <strong>Password (min 8)</strong>, <strong>Role</strong>) and click <strong>Create user</strong>.</li>
+        <li>Search by name or email, or choose <strong>All roles</strong>, and click <strong>Search</strong>.</li>
+        <li>To change a role, pick a new one in the row's role list. It is saved straight away.</li>
+        <li>To delete, click <strong>Delete</strong> and click <strong>OK</strong>.</li>
+      </ol>
+      <p class="note">The four shared demo accounts and your own account show a <strong>protected</strong> badge. Their role list and <strong>Delete</strong> button are switched off.</p>
+      <figure class="shot" data-file="aijaz_10.webp"><a href="img/aijaz_10.webp"><img loading="lazy" src="img/aijaz_10.webp" alt="Admin users page: the Create a user form, search by name or email, a role filter, and a role dropdown on each row (a change is saved straight away with PUT /users/{id})." width="1600" height="914" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Admin users page: the Create a user form, search by name or email, a role filter, and a role dropdown on each row (a change is saved straight away with PUT /users/{id}).</figcaption></figure>
+    </article>
+
+    <article class="task searchable">
+      <h4>Manage venues</h4>
+      <ol>
+        <li>Click <strong>Venues</strong>.</li>
+        <li>Fill in the <strong>Add a venue</strong> form (<strong>Name</strong>, <strong>Address</strong>, <strong>Capacity</strong>) and click <strong>Add venue</strong>.</li>
+        <li>Click <strong>Edit</strong>, change it and click <strong>Save venue</strong> (or <strong>Cancel edit</strong>).</li>
+        <li>Click <strong>Delete</strong> and <strong>OK</strong> to remove a venue.</li>
+      </ol>
+      <p>The shared "Online" venue shows a <strong>system</strong> badge and cannot be changed.</p>
+    </article>
+
+    <article class="task searchable">
+      <h4>All events</h4>
+      <ol>
+        <li>Click <strong>Events</strong>. Search, or filter with <strong>All owners</strong> and <strong>All statuses</strong>, and click <strong>Search</strong>.</li>
+        <li>Click <strong>Publish</strong> or <strong>Cancel</strong> on a row. Cancelling asks "Cancel this event?" first.</li>
+        <li>Click <strong>Manage</strong> to open the full event page: tiers, <strong>Publish</strong>, <strong>Move back to draft</strong>, <strong>Edit details</strong>, <strong>Delete event</strong> and its bookings. The page also shows the <strong>Owner</strong>.</li>
+        <li>Click <strong>Create event</strong> to make an event for any organiser. Choose its <strong>Owner</strong> in the form. The owner cannot be changed later.</li>
+      </ol>
+    </article>
+
+    <article class="task searchable">
+      <h4>All bookings</h4>
+      <ol>
+        <li>Click <strong>Bookings</strong>.</li>
+        <li>Filter with <strong>All statuses</strong>.</li>
+      </ol>
+    </article>
+  </div>
+
+  <!-- Erfan admin -->
+  <div class="panel" data-app="erfan" id="admin-erfan">
+    <h3 class="panel-title">Erfan's mobile app</h3>
+    <p class="panel-intro">Admins get five tabs: <strong>Overview</strong>, <strong>Events</strong>, <strong>Users</strong>, <strong>Venues</strong> and <strong>Account</strong>.</p>
+
+    <article class="task searchable">
+      <h4>Overview</h4>
+      <ol>
+        <li>Open the <strong>Overview</strong> tab ("Platform overview").</li>
+        <li>Read <strong>Revenue</strong> (<strong>Net revenue</strong>, <strong>Gross</strong>, <strong>Refunded</strong>, <strong>Payments</strong>), <strong>Users by role</strong>, <strong>Events by status</strong>, <strong>Bookings by status</strong> and <strong>Recent activity</strong>.</li>
+      </ol>
+      <figure class="shot" data-file="erfan_07.webp"><a href="img/erfan_07.webp"><img loading="lazy" src="img/erfan_07.webp" alt="Admin: platform overview." width="505" height="892" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Admin: platform overview.</figcaption></figure>
+    </article>
+
+    <article class="task searchable">
+      <h4>Manage users</h4>
+      <ol>
+        <li>Open the <strong>Users</strong> tab. Search by name or email, or tap <strong>All</strong>, <strong>Customers</strong>, <strong>Organisers</strong> or <strong>Admins</strong>.</li>
+        <li>To create an account, tap <strong>New user</strong>, fill in <strong>Full name</strong>, <strong>Email</strong>, <strong>Role</strong> and <strong>Password</strong>, and tap <strong>Create user</strong>.</li>
+        <li>To change a role, tap the user, pick the new <strong>Role</strong> and tap <strong>Save changes</strong>.</li>
+        <li>To delete, tap the user, tap <strong>Delete user</strong> and confirm.</li>
+      </ol>
+      <p class="note">The shared demo accounts are marked DEMO and are locked: they cannot be edited, have their role changed or be deleted.</p>
+      <div class="shots-2">
+        <figure class="shot" data-file="erfan_08.webp"><a href="img/erfan_08.webp"><img loading="lazy" src="img/erfan_08.webp" alt="Admin: users list." width="507" height="897" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Admin: users list.</figcaption></figure>
+        <figure class="shot" data-file="erfan_09.webp"><a href="img/erfan_09.webp"><img loading="lazy" src="img/erfan_09.webp" alt="Admin: user form with the role selector." width="505" height="896" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Admin: user form with the role selector.</figcaption></figure>
+      </div>
+    </article>
+
+    <article class="task searchable">
+      <h4>Manage venues</h4>
+      <ol>
+        <li>Open the <strong>Venues</strong> tab.</li>
+        <li>Tap <strong>New venue</strong>, fill in <strong>Venue name</strong>, <strong>Address</strong> and <strong>Capacity</strong>, and tap <strong>Add venue</strong>.</li>
+        <li>Tap a venue to edit it and tap <strong>Save changes</strong>, or tap <strong>Delete venue</strong> and confirm.</li>
+      </ol>
+      <p>The "Online" venue is built in and is used automatically by online events.</p>
+    </article>
+
+    <article class="task searchable">
+      <h4>All events</h4>
+      <ol>
+        <li>Open the <strong>Events</strong> tab. Search, or tap <strong>All</strong>, <strong>Published</strong>, <strong>Drafts</strong>, <strong>Cancelled</strong> or <strong>Completed</strong>.</li>
+        <li>Read who made each event ("By ...").</li>
+        <li>Tap <strong>Publish</strong>, <strong>Bookings</strong> or <strong>Cancel event</strong> on an event. Cancelling asks you to confirm first.</li>
+      </ol>
+    </article>
+
+    <article class="task searchable">
+      <h4>All bookings</h4>
+      <ol>
+        <li>Open the <strong>Events</strong> tab.</li>
+        <li>Tap <strong>All bookings</strong>, then filter by status.</li>
+      </ol>
+    </article>
+  </div>
+</section>
+
+<!-- ========================= 6. ERRORS ========================= -->
+<section class="part per-app" id="errors">
+  <h2>6. Errors and what to do</h2>
+  <p class="lede">These are the messages each app really shows. Where an app passes on the server's own words, the message comes from the API.</p>
+  <div class="tabs" role="tablist" aria-label="Choose an app"><button type="button" role="tab" data-app="hakim" aria-selected="true">Hakim's web app</button><button type="button" role="tab" data-app="aqqwa" aria-selected="false" tabindex="-1">Aqqwa's web app</button><button type="button" role="tab" data-app="aijaz" aria-selected="false" tabindex="-1">Aijaz's web app</button><button type="button" role="tab" data-app="erfan" aria-selected="false" tabindex="-1">Erfan's mobile app</button></div>
+
+  <!-- Hakim errors -->
+  <div class="panel" data-app="hakim" id="errors-hakim">
+    <h3 class="panel-title">Hakim's web app</h3>
+    <div class="table-wrap searchable"><table>
+      <thead><tr><th>Code</th><th>What you see</th><th>Why it happens</th><th>What to do</th></tr></thead>
+      <tbody>
+        <tr><td>422</td><td>The first problem with the form, for example "The end at field must be a date after start at."</td><td>A field is missing or wrong.</td><td>Fix that field and save again.</td></tr>
+        <tr><td>401</td><td>"The provided credentials are incorrect."</td><td>Wrong email or password.</td><td>Check both and sign in again.</td></tr>
+        <tr><td>401</td><td>No message. You are sent to the <strong>Sign in</strong> page.</td><td>Your session has expired or was signed out elsewhere.</td><td>Sign in again.</td></tr>
+        <tr><td>403</td><td>"This action is unauthorized." When booking: "Only customer accounts can book seats."</td><td>Your role may not do this, for example an organiser editing another organiser's event.</td><td>Use the right account.</td></tr>
+        <tr><td>404</td><td>"Resource not found."</td><td>The event or booking no longer exists.</td><td>Go back to the list and refresh.</td></tr>
+        <tr><td>409</td><td>The server's reason, for example "You already have an active booking for this ticket type.", "That seat was just taken. Pick another one." or "Cannot delete a venue that still has events."</td><td>The action clashes with the current data.</td><td>Read the reason, refresh and choose again.</td></tr>
+        <tr><td>429</td><td>"Too many booking attempts. Wait a minute and try again." Elsewhere: "Too many requests. Please slow down."</td><td>Too many requests in a short time (bookings are limited to 5 a minute).</td><td>Wait a minute.</td></tr>
+        <tr><td>Offline or timeout</td><td>"Can't reach the server. Check that the API is running."</td><td>No internet, or the server did not answer.</td><td>Check your connection and try again.</td></tr>
+        <tr><td>Server waking up</td><td>Grey loading placeholders stay on screen.</td><td>The free server was asleep.</td><td>Wait up to a minute.</td></tr>
+      </tbody>
+    </table></div>
+    <div class="shots-2">
+      <figure class="shot" data-file="hakim_19.webp"><a href="img/hakim_19.webp"><img loading="lazy" src="img/hakim_19.webp" alt="Error 422: an event whose end is before its start; the form shows &quot;The end at field must be a date after start at.&quot;" width="1600" height="853" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Error 422: an event whose end is before its start; the form shows &quot;The end at field must be a date after start at.&quot;</figcaption></figure>
+      <figure class="shot" data-file="hakim_20.webp"><a href="img/hakim_20.webp"><img loading="lazy" src="img/hakim_20.webp" alt="Error 403: organiser Farid saving Aisyah&#x27;s event; the form shows &quot;This action is unauthorized.&quot;" width="1600" height="858" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Error 403: organiser Farid saving Aisyah&#x27;s event; the form shows &quot;This action is unauthorized.&quot;</figcaption></figure>
+    </div>
+    <h4>See a request in DevTools</h4>
+    <figure class="shot" data-file="hakim_21.webp"><a href="img/hakim_21.webp"><img loading="lazy" src="img/hakim_21.webp" alt="DevTools: POST /api/bookings with the Bearer token, answered 201 Created." width="1600" height="876" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>DevTools: POST /api/bookings with the Bearer token, answered 201 Created.</figcaption></figure>
+  </div>
+
+  <!-- Aqqwa errors -->
+  <div class="panel" data-app="aqqwa" id="errors-aqqwa">
+    <h3 class="panel-title">Aqqwa's web app</h3>
+    <div class="table-wrap searchable"><table>
+      <thead><tr><th>Code</th><th>What you see</th><th>Why it happens</th><th>What to do</th></tr></thead>
+      <tbody>
+        <tr><td>422</td><td>"Please fix the highlighted fields." at the top, and each message in red under its field.</td><td>A field is missing or wrong.</td><td>Fix the red fields and save again.</td></tr>
+        <tr><td>401</td><td>"The provided credentials are incorrect."</td><td>Wrong email or password.</td><td>Check both and log in again.</td></tr>
+        <tr><td>401</td><td>"Your session has expired. Please log in again."</td><td>Your token has expired.</td><td>Log in again.</td></tr>
+        <tr><td>403</td><td>"You are not allowed to do this."</td><td>Your role may not do this.</td><td>Use the right account.</td></tr>
+        <tr><td>404</td><td>"We could not find what you were looking for. It may have been removed." On an event page: "This event does not exist or is not open to the public."</td><td>The item no longer exists.</td><td>Go back to the list.</td></tr>
+        <tr><td>409</td><td>The server's reason, or "This conflicts with existing data. Please refresh and try again."</td><td>The action clashes with the current data.</td><td>Refresh and try again.</td></tr>
+        <tr><td>429</td><td>"Too many attempts. Please wait a minute and try again."</td><td>Too many requests in a short time.</td><td>Wait a minute.</td></tr>
+        <tr><td>Offline or timeout</td><td>"Cannot reach the server. Please check your internet connection." or "The server took too long to respond. Please try again."</td><td>No internet, or no answer within 60 seconds.</td><td>Check your connection and try again.</td></tr>
+        <tr><td>Server waking up</td><td>"Waking up the server. The free server sleeps when idle, so the first request can take up to a minute."</td><td>The free server was asleep.</td><td>Wait. The banner goes away by itself.</td></tr>
+      </tbody>
+    </table></div>
+    <div class="shots-2">
+      <figure class="shot" data-file="aqqwa_16.webp"><a href="img/aqqwa_16.webp"><img loading="lazy" src="img/aqqwa_16.webp" alt="Error 422: the New event form submitted empty; each API message is shown in red under its field, and the request carries the Authorization: Bearer header." width="1600" height="835" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Error 422: the New event form submitted empty; each API message is shown in red under its field, and the request carries the Authorization: Bearer header.</figcaption></figure>
+      <figure class="shot" data-file="aqqwa_18.webp"><a href="img/aqqwa_18.webp"><img loading="lazy" src="img/aqqwa_18.webp" alt="Error 403: organiser Farid saving Aisyah&#x27;s event shows &quot;You are not allowed to do this.&quot;; DevTools shows the PUT request with the Authorization: Bearer header." width="1600" height="833" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Error 403: organiser Farid saving Aisyah&#x27;s event shows &quot;You are not allowed to do this.&quot;; DevTools shows the PUT request with the Authorization: Bearer header.</figcaption></figure>
+    </div>
+    <h4>See the requests in DevTools</h4>
+    <div class="shots-2">
+      <figure class="shot" data-file="aqqwa_17.webp"><a href="img/aqqwa_17.webp"><img loading="lazy" src="img/aqqwa_17.webp" alt="Error 422: POST /api/events sent with invalid input returns 422 Unprocessable Content." width="695" height="815" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Error 422: POST /api/events sent with invalid input returns 422 Unprocessable Content.</figcaption></figure>
+      <figure class="shot" data-file="aqqwa_19.webp"><a href="img/aqqwa_19.webp"><img loading="lazy" src="img/aqqwa_19.webp" alt="Error 403: organiser Farid saving another organiser&#x27;s event, PUT /api/events/19 returns 403 Forbidden." width="699" height="802" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Error 403: organiser Farid saving another organiser&#x27;s event, PUT /api/events/19 returns 403 Forbidden.</figcaption></figure>
+      <figure class="shot" data-file="aqqwa_20.webp"><a href="img/aqqwa_20.webp"><img loading="lazy" src="img/aqqwa_20.webp" alt="DevTools Network: the sandbox payment request POST /api/bookings/222/pay returns 200 OK." width="703" height="803" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>DevTools Network: the sandbox payment request POST /api/bookings/222/pay returns 200 OK.</figcaption></figure>
+    </div>
+  </div>
+
+  <!-- Aijaz errors -->
+  <div class="panel" data-app="aijaz" id="errors-aijaz">
+    <h3 class="panel-title">Aijaz's web app</h3>
+    <div class="table-wrap searchable"><table>
+      <thead><tr><th>Code</th><th>What you see</th><th>Why it happens</th><th>What to do</th></tr></thead>
+      <tbody>
+        <tr><td>422</td><td>"Please check the highlighted fields." at the top, and each message in red under its field.</td><td>A field is missing or wrong.</td><td>Fix the red fields and save again.</td></tr>
+        <tr><td>401</td><td>"The provided credentials are incorrect."</td><td>Wrong email or password.</td><td>Check both and log in again.</td></tr>
+        <tr><td>401</td><td>"Your session has expired. Please log in again."</td><td>Your token has expired.</td><td>Log in again.</td></tr>
+        <tr><td>403</td><td>"You are not allowed to do this." Sometimes followed by the server's reason.</td><td>Your role may not do this.</td><td>Use the right account.</td></tr>
+        <tr><td>404</td><td>"We could not find what you were looking for." The page shows "This item does not exist or was removed."</td><td>The item no longer exists.</td><td>Go back to the list.</td></tr>
+        <tr><td>409</td><td>The server's reason, or "That conflicts with something that already exists."</td><td>The action clashes with the current data.</td><td>Read the reason and try again.</td></tr>
+        <tr><td>429</td><td>"Too many requests. Please wait a minute and try again."</td><td>Too many requests in a short time.</td><td>Wait a minute.</td></tr>
+        <tr><td>Offline or timeout</td><td>"You are offline. Check your internet connection and try again." or "Can't reach the server, it may be waking up, try again in a moment."</td><td>No internet, or no answer within 60 seconds.</td><td>Check your connection and click <strong>Try again</strong>.</td></tr>
+        <tr><td>Server waking up</td><td>"Waking up the server. The first request can take up to a minute..."</td><td>The free server was asleep.</td><td>Wait. The banner goes away by itself.</td></tr>
+      </tbody>
+    </table></div>
+    <div class="shots-2">
+      <figure class="shot" data-file="aijaz_11.webp"><a href="img/aijaz_11.webp"><img loading="lazy" src="img/aijaz_11.webp" alt="Error 422: the organiser event form submitted empty. The form uses novalidate, so the request reaches the API, and each validation message appears in red under its own field (Title, Category, Venue, Starts, Ends), with &quot;Please check the highlighted fields.&quot; at the top." width="1600" height="913" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Error 422: the organiser event form submitted empty. The form uses novalidate, so the request reaches the API, and each validation message appears in red under its own field (Title, Category, Venue, Starts, Ends), with &quot;Please check the highlighted fields.&quot; at the top.</figcaption></figure>
+      <figure class="shot" data-file="aijaz_12.webp"><a href="img/aijaz_12.webp"><img loading="lazy" src="img/aijaz_12.webp" alt="Error 403: organiser Farid Rahman opens Aisyah&#x27;s published event &quot;API Security Masterclass&quot; by its address (#/organiser/events/19/edit) and presses Save changes. The API&#x27;s EventPolicy refuses, and the app shows &quot;You are not allowed to do this.&quot;" width="1600" height="913" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Error 403: organiser Farid Rahman opens Aisyah&#x27;s published event &quot;API Security Masterclass&quot; by its address (#/organiser/events/19/edit) and presses Save changes. The API&#x27;s EventPolicy refuses, and the app shows &quot;You are not allowed to do this.&quot;</figcaption></figure>
+    </div>
+    <h4>See the requests in DevTools</h4>
+    <figure class="shot" data-file="aijaz_13.webp"><a href="img/aijaz_13.webp"><img loading="lazy" src="img/aijaz_13.webp" alt="DevTools, Network tab while My bookings loads on the live site: the app&#x27;s own fetch requests to the Render API, GET /auth/me and GET /bookings?per_page=10&amp;page=1, both 200. Each is preceded by a CORS preflight (204), which the browser sends because the request carries the Authorization: Bearer header." width="1600" height="914" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>DevTools, Network tab while My bookings loads on the live site: the app&#x27;s own fetch requests to the Render API, GET /auth/me and GET /bookings?per_page=10&amp;page=1, both 200. Each is preceded by a CORS preflight (204), which the browser sends because the request carries the Authorization: Bearer header.</figcaption></figure>
+  </div>
+
+  <!-- Erfan errors -->
+  <div class="panel" data-app="erfan" id="errors-erfan">
+    <h3 class="panel-title">Erfan's mobile app</h3>
+    <div class="table-wrap searchable"><table>
+      <thead><tr><th>Code</th><th>What you see</th><th>Why it happens</th><th>What to do</th></tr></thead>
+      <tbody>
+        <tr><td>422</td><td>The message under the field, for example "The capacity field must be at least 1." The organiser and admin forms add "Please fix the fields marked in red."</td><td>A field is missing or wrong.</td><td>Fix the red fields and save again.</td></tr>
+        <tr><td>401</td><td>"The provided credentials are incorrect."</td><td>Wrong email or password.</td><td>Check both and sign in again.</td></tr>
+        <tr><td>401</td><td>No message. You are taken back to the welcome screen.</td><td>Your session has expired.</td><td>Sign in again.</td></tr>
+        <tr><td>403</td><td>On organiser and admin screens: "You are not allowed to do this." When booking: "Only customer accounts can book seats." Elsewhere: "This action is unauthorized."</td><td>Your role may not do this.</td><td>Use the right account.</td></tr>
+        <tr><td>404</td><td>"Resource not found."</td><td>The item no longer exists.</td><td>Go back and pull down to refresh.</td></tr>
+        <tr><td>409</td><td>The server's reason, for example "That seat was just taken. Pick another one."</td><td>The action clashes with the current data.</td><td>Read the reason and choose again.</td></tr>
+        <tr><td>429</td><td>"Too many booking attempts. Wait a minute and try again." On organiser and admin screens: "Too many tries. Please wait a minute and try again."</td><td>Too many requests in a short time.</td><td>Wait a minute.</td></tr>
+        <tr><td>Offline or timeout</td><td>"Can't reach the server. It may be waking up after being idle — please try again in a moment." On My passes: "You're offline. Showing the passes saved on this phone. Cancelling needs a connection."</td><td>No internet, or no answer within 45 seconds.</td><td>Check your connection and try again.</td></tr>
+        <tr><td>Server waking up</td><td>Loading placeholders stay on screen.</td><td>The free server was asleep.</td><td>Wait up to a minute.</td></tr>
+      </tbody>
+    </table></div>
+    <div class="shots-2">
+      <figure class="shot" data-file="erfan_10.webp"><a href="img/erfan_10.webp"><img loading="lazy" src="img/erfan_10.webp" alt="Error 422: venue with Capacity 0 shows “The capacity field must be at least 1.” under the field." width="505" height="900" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Error 422: venue with Capacity 0 shows “The capacity field must be at least 1.” under the field.</figcaption></figure>
+      <figure class="shot" data-file="erfan_11.webp"><a href="img/erfan_11.webp"><img loading="lazy" src="img/erfan_11.webp" alt="Error 401: wrong password shows “The provided credentials are incorrect.”" width="502" height="896" onerror="var f=this.closest('figure');if(f)f.remove()"></a><figcaption>Error 401: wrong password shows “The provided credentials are incorrect.”</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<!-- ========================= 7. FAQ ========================= -->
+<section class="part" id="faq">
+  <h2>7. FAQ</h2>
+  <dl class="faq">
+    <div class="searchable">
+      <dt>Why can't I see the Admin menu?</dt>
+      <dd>Menus depend on your role. Only an administrator sees the admin pages. Sign out and sign in as <code>admin@sentrypass.test</code>.</dd>
+    </div>
+    <div class="searchable">
+      <dt>Why is the first load slow?</dt>
+      <dd>The API is on a free server that sleeps when idle. The first request can take up to a minute. After that it is fast.</dd>
+    </div>
+    <div class="searchable">
+      <dt>Why did my booking say pending?</dt>
+      <dd>You booked a paid tier. The seat is held for a few minutes while you pay. Pay before the timer ends, or the seat goes back on sale.</dd>
+    </div>
+    <div class="searchable">
+      <dt>Why was I sent back to my home page?</dt>
+      <dd>You opened a page for another role. Each app sends you back to your own home. Aqqwa's app says "That page is for ...s only, so you were sent back to your own home." Aijaz's app says "That page is not available for your account, so we brought you back here."</dd>
+    </div>
+    <div class="searchable">
+      <dt>Why am I on the waitlist?</dt>
+      <dd>The tier was sold out. If someone cancels, the next person in line is confirmed automatically.</dd>
+    </div>
+    <div class="searchable">
+      <dt>Do I get my money back if I cancel?</dt>
+      <dd>Free cancellation is allowed until 24 hours before the event. After that, tickets are not refunded. All payments are sandbox payments, so no real money moves.</dd>
+    </div>
+    <div class="searchable">
+      <dt>Why can't I change or delete a demo account?</dt>
+      <dd>Aqqwa's, Aijaz's and Erfan's apps lock the four shared demo accounts, because the whole group uses them in the demo video.</dd>
+    </div>
+    <div class="searchable">
+      <dt>Do I need an account to look at events?</dt>
+      <dd>In Hakim's web app, no: anyone can browse and open events. Aqqwa's, Aijaz's and Erfan's apps ask you to sign in first.</dd>
+    </div>
+  </dl>
+</section>
+
+<!-- ========================= 8. ABOUT ========================= -->
+<section class="part" id="about">
+  <h2>8. About</h2>
+  <div class="block searchable">
+    <h3>Group 31 members</h3>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Name</th><th>Student ID</th><th>Built</th></tr></thead>
+      <tbody>
+        <tr><td>Mohd Hakim Bin Mohd Fauzi (group leader)</td><td>AM2512020850</td><td>Hakim's web app (<code>frontend/web</code>)</td></tr>
+        <tr><td>Muhammad Nureel Aqqwa Bin Hisham</td><td>AM2512021715</td><td>Aqqwa's web app (<code>frontend/aqqwa-web</code>)</td></tr>
+        <tr><td>Aijaz Bin Khairuddin</td><td>AM2512021596</td><td>Aijaz's web app (<code>frontend/aijaz-web</code>)</td></tr>
+        <tr><td>Erfan Danish Bin Erwan</td><td>AM2512021556</td><td>Erfan's mobile app (<code>frontend/ucyss-mobile</code>)</td></tr>
+      </tbody>
+    </table></div>
+    <p>GitHub repository: <a href="https://github.com/MohdHakimFz/UCYSSPass_Final_Project">github.com/MohdHakimFz/UCYSSPass_Final_Project</a></p>
+    <p>Demo video: <span class="placeholder" id="video-link">VIDEO_LINK_HERE</span></p>
+  </div>
+</section>
+
+</main>
+</div>
+
+<dialog id="lightbox" aria-label="Screenshot">
+  <figure>
+    <img alt="">
+    <figcaption></figcaption>
+    <button type="button" id="lightbox-close">Close (Esc)</button>
+  </figure>
+</dialog>
+
+<script id="captions-fallback" type="application/json">[{"app":"hakim","file":"hakim_01.webp","caption":"The single sign-in page for all three roles, with links to create an account and reset a forgotten password."},{"app":"hakim","file":"hakim_02.webp","caption":"Customer: the Events page with search, category filter (CTF, Bootcamp, Conference, Workshop), date and price filters, and event cards showing the price and seats left."},{"app":"hakim","file":"hakim_03.webp","caption":"Customer: booking a paid tier. The seat is held with a countdown while the customer chooses a sandbox payment method (card, online banking or e-wallet) and pays."},{"app":"hakim","file":"hakim_04.webp","caption":"Customer: My passes, with each booking's seat, status and the Show pass, Add to calendar and Cancel booking actions."},{"app":"hakim","file":"hakim_05.webp","caption":"Organiser: My events with the KPI tiles, the attendance panel and the list of the organiser's own events."},{"app":"hakim","file":"hakim_06.webp","caption":"Organiser: the Create event form (In person or Online meeting, title, category, venue, status, start and end, numbered seats)."},{"app":"hakim","file":"hakim_07.webp","caption":"Organiser: editing an online event and managing its ticket tiers with the Add tier form."},{"app":"hakim","file":"hakim_08.webp","caption":"Organiser: the Check-in page; scan the guest's QR pass, or enter the ticket code by hand."},{"app":"hakim","file":"hakim_09.webp","caption":"Administrator: Overview with revenue, tickets sold, seats held, check-in rate, upcoming events and recent activity."},{"app":"hakim","file":"hakim_10.webp","caption":"Administrator: every event, with status tabs, type filter, search and the organiser of each event."},{"app":"hakim","file":"hakim_11.webp","caption":"Administrator: the action menu on an event (Open, Move back to draft, Mark as completed, Cancel event, Delete)."},{"app":"hakim","file":"hakim_12.webp","caption":"Administrator: every booking with seat, payment and status, filter tabs and CSV export."},{"app":"hakim","file":"hakim_13.webp","caption":"Administrator: People, with role tabs, search and CSV export."},{"app":"hakim","file":"hakim_14.webp","caption":"Administrator: the Add an account dialog (name, email, temporary password, role)."},{"app":"hakim","file":"hakim_15.webp","caption":"Administrator: Venues with address and capacity."},{"app":"hakim","file":"hakim_16.webp","caption":"Administrator: the Add venue dialog (name, address, capacity)."},{"app":"hakim","file":"hakim_17.webp","caption":"Administrator: the Emails log with the email provider's response for each booking email."},{"app":"hakim","file":"hakim_18.webp","caption":"Administrator: Organiser tools opens the organiser area, with a Back to admin link."},{"app":"hakim","file":"hakim_19.webp","caption":"Error 422: an event whose end is before its start; the form shows \"The end at field must be a date after start at.\""},{"app":"hakim","file":"hakim_20.webp","caption":"Error 403: organiser Farid saving Aisyah's event; the form shows \"This action is unauthorized.\""},{"app":"hakim","file":"hakim_21.webp","caption":"DevTools: POST /api/bookings with the Bearer token, answered 201 Created."},{"app":"aqqwa","file":"aqqwa_01.webp","caption":"Login page of Aqqwa's web frontend, shown after logging out."},{"app":"aqqwa","file":"aqqwa_02.webp","caption":"Customer: Events list with the search box, category filter and event cards."},{"app":"aqqwa","file":"aqqwa_03.webp","caption":"Customer: event detail with ticket tiers, seats remaining and the seat picker for a numbered-seat event."},{"app":"aqqwa","file":"aqqwa_04.webp","caption":"Customer: a paid tier booking is pending, with the seat held and the sandbox payment form."},{"app":"aqqwa","file":"aqqwa_05.webp","caption":"Customer: payment received and the booking confirmed."},{"app":"aqqwa","file":"aqqwa_06.webp","caption":"Customer: My bookings with status badges, the status filter and the Cancel button."},{"app":"aqqwa","file":"aqqwa_07.webp","caption":"Organiser: Dashboard numbers from GET /organiser/summary."},{"app":"aqqwa","file":"aqqwa_08.webp","caption":"Organiser: New event form with a physical venue."},{"app":"aqqwa","file":"aqqwa_09.webp","caption":"Organiser: New event form switched to Online, showing the meeting link field."},{"app":"aqqwa","file":"aqqwa_10.webp","caption":"Organiser: Manage event page with ticket tiers, Add a tier, Publish and the event's bookings."},{"app":"aqqwa","file":"aqqwa_11.webp","caption":"Admin: Overview with revenue, users by role, events and bookings by status, and recent bookings."},{"app":"aqqwa","file":"aqqwa_12.webp","caption":"Admin: Users page with search, role filter, role dropdown and Delete."},{"app":"aqqwa","file":"aqqwa_13.webp","caption":"Admin: Venues page; the shared \"Online\" venue cannot be edited or deleted."},{"app":"aqqwa","file":"aqqwa_14.webp","caption":"Admin: All events with search, status filter and Cancel."},{"app":"aqqwa","file":"aqqwa_15.webp","caption":"Admin: All bookings across every event."},{"app":"aqqwa","file":"aqqwa_16.webp","caption":"Error 422: the New event form submitted empty; each API message is shown in red under its field, and the request carries the Authorization: Bearer header."},{"app":"aqqwa","file":"aqqwa_17.webp","caption":"Error 422: POST /api/events sent with invalid input returns 422 Unprocessable Content."},{"app":"aqqwa","file":"aqqwa_18.webp","caption":"Error 403: organiser Farid saving Aisyah's event shows \"You are not allowed to do this.\"; DevTools shows the PUT request with the Authorization: Bearer header."},{"app":"aqqwa","file":"aqqwa_19.webp","caption":"Error 403: organiser Farid saving another organiser's event, PUT /api/events/19 returns 403 Forbidden."},{"app":"aqqwa","file":"aqqwa_20.webp","caption":"DevTools Network: the sandbox payment request POST /api/bookings/222/pay returns 200 OK."},{"app":"aijaz","file":"aijaz_01.webp","caption":"Login page (#/login). After logging in, each role goes to its own home: customers to #/events, organisers to #/organiser and admins to #/admin."},{"app":"aijaz","file":"aijaz_02.webp","caption":"Customer events list: published events only, with the search box and category filter sent to GET /events as ?search= and ?category=."},{"app":"aijaz","file":"aijaz_03.webp","caption":"Event detail with its ticket tiers, the price and seats left for each tier, and a Book button; a sold-out tier offers \"Join waitlist\" instead."},{"app":"aijaz","file":"aijaz_04.webp","caption":"After booking a paid tier, the seat is held (pending) and the booking page shows the sandbox payment form (no real money). Paying confirms the booking; a free tier is confirmed straight away."},{"app":"aijaz","file":"aijaz_05.webp","caption":"My bookings: each booking with its status badge (pending, confirmed, attended or cancelled), Pay now for a held booking, Cancel where it is still allowed, and paging."},{"app":"aijaz","file":"aijaz_06.webp","caption":"Organiser dashboard numbers from GET /organiser/summary: events, published, drafts, upcoming, tickets sold, checked in, waitlisted and net revenue."},{"app":"aijaz","file":"aijaz_07.webp","caption":"Organiser creating an event. One form is used for create and edit; Physical shows the venue list and Online shows the meeting-link field."},{"app":"aijaz","file":"aijaz_08.webp","caption":"Organiser My events: only this organiser's own events, drafts included (GET /events?organiser_id=), each with its status and a Manage button that opens the event's tiers, Publish / Move back to draft and bookings."},{"app":"aijaz","file":"aijaz_09.webp","caption":"Admin overview from GET /admin/stats: revenue, draft events, users by role, events by status, bookings by status and recent activity."},{"app":"aijaz","file":"aijaz_10.webp","caption":"Admin users page: the Create a user form, search by name or email, a role filter, and a role dropdown on each row (a change is saved straight away with PUT /users/{id})."},{"app":"aijaz","file":"aijaz_11.webp","caption":"Error 422: the organiser event form submitted empty. The form uses novalidate, so the request reaches the API, and each validation message appears in red under its own field (Title, Category, Venue, Starts, Ends), with \"Please check the highlighted fields.\" at the top."},{"app":"aijaz","file":"aijaz_12.webp","caption":"Error 403: organiser Farid Rahman opens Aisyah's published event \"API Security Masterclass\" by its address (#/organiser/events/19/edit) and presses Save changes. The API's EventPolicy refuses, and the app shows \"You are not allowed to do this.\""},{"app":"aijaz","file":"aijaz_13.webp","caption":"DevTools, Network tab while My bookings loads on the live site: the app's own fetch requests to the Render API, GET /auth/me and GET /bookings?per_page=10&page=1, both 200. Each is preceded by a CORS preflight (204), which the browser sends because the request carries the Authorization: Bearer header."},{"app":"erfan","file":"erfan_01.webp","caption":"Customer: event page with the green “You’re in…” booking message."},{"app":"erfan","file":"erfan_02.webp","caption":"Customer: My passes showing a booking and its status."},{"app":"erfan","file":"erfan_03.webp","caption":"Organiser: My events with the number tiles."},{"app":"erfan","file":"erfan_04.webp","caption":"Organiser: event form filled in for the Demo Test Event."},{"app":"erfan","file":"erfan_05.webp","caption":"Organiser: event page with the new ticket tier."},{"app":"erfan","file":"erfan_06.webp","caption":"Organiser: Bookings tab with the Confirmed filter."},{"app":"erfan","file":"erfan_07.webp","caption":"Admin: platform overview."},{"app":"erfan","file":"erfan_08.webp","caption":"Admin: users list."},{"app":"erfan","file":"erfan_09.webp","caption":"Admin: user form with the role selector."},{"app":"erfan","file":"erfan_10.webp","caption":"Error 422: venue with Capacity 0 shows “The capacity field must be at least 1.” under the field."},{"app":"erfan","file":"erfan_11.webp","caption":"Error 401: wrong password shows “The provided credentials are incorrect.”"}]</script>
+<script>
+(function () {
+  var APPS = { hakim: "Hakim's web app", aqqwa: "Aqqwa's web app", aijaz: "Aijaz's web app", erfan: "Erfan's mobile app" };
+  var PER_APP = ['customer', 'organiser', 'admin', 'errors'];
+  var SECTIONS = ['start', 'roles', 'customer', 'organiser', 'admin', 'errors', 'faq', 'about'];
+  var app = 'hakim';
+
+  // ---- Captions: captions.json is the source; the embedded copy is the fallback ----
+  function applyCaptions(list) {
+    var byFile = {};
+    list.forEach(function (c) { byFile[c.file] = c.caption; });
+    document.querySelectorAll('figure.shot').forEach(function (fig) {
+      var text = byFile[fig.dataset.file];
+      if (!text) return;
+      fig.querySelector('img').alt = text;
+      fig.querySelector('figcaption').textContent = text;
+    });
+  }
+  var fallback = [];
+  try { fallback = JSON.parse(document.getElementById('captions-fallback').textContent); } catch (e) { /* keep the captions already in the page */ }
+  applyCaptions(fallback);
+  if (window.fetch) {
+    fetch('img/captions.json').then(function (r) { return r.ok ? r.json() : null; }).then(function (list) { if (Array.isArray(list)) applyCaptions(list); }).catch(function () {});
+  }
+
+  // ---- App switcher ----
+  function setApp(next) {
+    if (!APPS[next]) return;
+    app = next;
+    document.documentElement.style.setProperty('--accent', 'var(--' + app + ')');
+    document.getElementById('now-app').textContent = APPS[app];
+    document.querySelectorAll('.per-app .panel').forEach(function (p) { p.classList.toggle('on', p.dataset.app === app); });
+    document.querySelectorAll('.tabs button').forEach(function (b) {
+      var on = b.dataset.app === app;
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+      b.tabIndex = on ? 0 : -1;
+    });
+    runSearch();
+  }
+
+  function currentSection() {
+    var active = document.querySelector('.toc a.active');
+    return active ? active.getAttribute('href').slice(1) : 'start';
+  }
+
+  // "#aijaz/organiser", "#aijaz", "#organiser" or "#customer-aqqwa"
+  function readHash(scroll) {
+    var h = decodeURIComponent(location.hash.slice(1));
+    if (!h) { setApp(app); return; }
+    var parts = h.split('/');
+    var section = null;
+    if (APPS[parts[0]]) { setApp(parts[0]); section = parts[1] || null; }
+    else {
+      var m = h.match(/^(customer|organiser|admin|errors)-(hakim|aqqwa|aijaz|erfan)$/);
+      if (m) { setApp(m[2]); section = m[1]; } else { setApp(app); section = h; }
+    }
+    if (scroll && section) {
+      var el = document.getElementById(section);
+      if (el) el.scrollIntoView();
+    }
+  }
+
+  document.querySelectorAll('.tabs').forEach(function (bar) {
+    bar.addEventListener('click', function (e) {
+      var btn = e.target.closest('button[data-app]');
+      if (!btn) return;
+      var before = bar.getBoundingClientRect().top;
+      setApp(btn.dataset.app);
+      // Keep the tab bar under the reader's finger while the content above it changes height.
+      window.scrollBy(0, bar.getBoundingClientRect().top - before);
+      history.replaceState(null, '', '#' + app + '/' + bar.closest('section').id);
+    });
+    bar.addEventListener('keydown', function (e) {
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      var keys = Object.keys(APPS);
+      var i = keys.indexOf(app) + (e.key === 'ArrowRight' ? 1 : -1);
+      var next = keys[(i + keys.length) % keys.length];
+      bar.querySelector('button[data-app="' + next + '"]').click();
+      bar.querySelector('button[data-app="' + next + '"]').focus();
+    });
+  });
+
+  document.querySelectorAll('.toc a').forEach(function (a) {
+    a.addEventListener('click', function (e) {
+      var id = a.getAttribute('href').slice(1);
+      e.preventDefault();
+      var hash = PER_APP.indexOf(id) >= 0 ? '#' + app + '/' + id : '#' + id;
+      history.pushState(null, '', hash);
+      document.getElementById(id).scrollIntoView();
+    });
+  });
+
+  window.addEventListener('hashchange', function () { readHash(true); });
+
+  // ---- Highlight the section being read ----
+  var links = {};
+  document.querySelectorAll('.toc a').forEach(function (a) { links[a.getAttribute('href').slice(1)] = a; });
+  function spy() {
+    var current = 'start';
+    var line = window.innerHeight * 0.25;
+    SECTIONS.forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el && !el.classList.contains('hidden-by-search') && el.getBoundingClientRect().top <= line) current = id;
+    });
+    if (window.innerHeight + window.scrollY >= document.body.scrollHeight - 4) current = 'about';
+    if (current === lastSpied) return;
+    lastSpied = current;
+    Object.keys(links).forEach(function (id) {
+      links[id].classList.toggle('active', id === current);
+      if (id === current) links[id].setAttribute('aria-current', 'true'); else links[id].removeAttribute('aria-current');
+    });
+    // On a phone the menu is one scrolling row: bring the current section into view.
+    var row = document.querySelector('.toc ol');
+    if (row.scrollWidth > row.clientWidth) row.scrollLeft = links[current].parentNode.offsetLeft - row.offsetLeft - 16;
+  }
+  var lastSpied = null;
+  var ticking = false;
+  window.addEventListener('scroll', function () {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(function () { spy(); ticking = false; });
+  }, { passive: true });
+  window.addEventListener('resize', spy);
+
+  // ---- Search ----
+  var q = document.getElementById('q');
+  var note = document.getElementById('search-note');
+  function runSearch() {
+    if (!q) return;
+    var term = q.value.trim().toLowerCase();
+    var shown = 0;
+    document.querySelectorAll('.searchable').forEach(function (el) {
+      var panel = el.closest('.panel');
+      var inScope = !panel || panel.dataset.app === app;
+      var hit = !term || el.textContent.toLowerCase().indexOf(term) >= 0;
+      el.classList.toggle('hidden-by-search', !hit);
+      if (hit && inScope && term) shown++;
+    });
+    document.querySelectorAll('section.part').forEach(function (sec) {
+      var items = Array.prototype.filter.call(sec.querySelectorAll('.searchable'), function (el) {
+        var panel = el.closest('.panel');
+        return !panel || panel.dataset.app === app;
+      });
+      var any = items.some(function (el) { return !el.classList.contains('hidden-by-search'); });
+      sec.classList.toggle('hidden-by-search', !!term && !any);
+    });
+    document.querySelectorAll('.panel figure.shot, .panel > .shots-2, .panel > h4').forEach(function (el) {
+      if (el.closest('.task')) return;
+      el.classList.toggle('hidden-by-search', !!term);
+    });
+    note.textContent = term ? (shown ? shown + ' matching ' + (shown === 1 ? 'part' : 'parts') + ' in ' + APPS[app] + ' and the shared sections' : 'Nothing matches. Try another word, or switch app.') : '';
+    spy();
+  }
+  if (q) q.addEventListener('input', runSearch);
+
+  // ---- Lightbox ----
+  var box = document.getElementById('lightbox');
+  var boxImg = box.querySelector('img');
+  var boxCap = box.querySelector('figcaption');
+  document.addEventListener('click', function (e) {
+    var link = e.target.closest('figure.shot a');
+    if (!link || typeof box.showModal !== 'function') return;
+    e.preventDefault();
+    var img = link.querySelector('img');
+    boxImg.src = link.getAttribute('href');
+    boxImg.alt = img.alt;
+    boxCap.textContent = img.alt;
+    box.showModal();
+  });
+  document.getElementById('lightbox-close').addEventListener('click', function () { box.close(); });
+  box.addEventListener('click', function (e) { if (e.target === box) box.close(); });
+  box.addEventListener('close', function () { boxImg.removeAttribute('src'); });
+
+  readHash(true);
+  spy();
+})();
+</script>
+</body>
+</html>
